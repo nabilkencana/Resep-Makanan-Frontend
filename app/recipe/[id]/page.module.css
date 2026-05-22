@@ -1,0 +1,485 @@
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Recipe Detail Page — /recipe/[id]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.page {
+  min-height: 100vh;
+  background: #f9f9fb;
+  padding-bottom: 80px;
+}
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 420px;
+}
+@media (min-width: 768px) { .hero { height: 520px; } }
+@media (min-width: 1024px) { .hero { height: 600px; } }
+
+.heroImg {
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%);
+}
+
+.backBtn {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+  z-index: 10;
+}
+.backBtn:hover { background: rgba(255,255,255,0.28); transform: translateX(-2px); }
+
+/* ── Floating header card ── */
+.headerCard {
+  max-width: 1200px;
+  margin: -60px auto 0;
+  position: relative;
+  z-index: 10;
+  padding: 0 1rem;
+}
+@media (min-width: 768px) { .headerCard { padding: 0 2rem; margin-top: -80px; } }
+
+.headerCard > div,
+.headerCard > p,
+.headerCard > section {
+  /* inner box */
+}
+
+/* white floating panel */
+.headerCard {
+  background: transparent;
+}
+
+/* wrap the card content in a white box */
+.tagRow,
+.titleRow,
+.description,
+.metaRow {
+  background: transparent;
+}
+
+/* Card panel wrapping */
+.headerCard > .tagRow { margin-bottom: 0; }
+
+/* Re-do: put everything in a single white card */
+.headerCard {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+  border: 1px solid rgba(188,202,187,0.35);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+@media (min-width: 768px) {
+  .headerCard {
+    padding: 2.5rem;
+    gap: 1.5rem;
+  }
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: #f0f5f0;
+  color: #006d36;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #1a1c1d;
+  line-height: 1.15;
+  margin: 0;
+  flex: 1;
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1.5px solid #bccabb;
+  color: #1a1c1d;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+.saveBtn:hover {
+  background: #f0f5f0;
+  border-color: #006d36;
+  box-shadow: 0 2px 8px rgba(0,109,54,0.1);
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #4a5a4a;
+  margin: 0;
+  max-width: 680px;
+}
+
+/* Meta row */
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e8e8ea;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.metaIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f3f3f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.metaLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6d7b6d;
+  margin: 0 0 0.15rem;
+}
+
+.metaValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1c1d;
+  margin: 0;
+}
+
+.metaSub {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #6d7b6d;
+}
+
+/* ── Body: two columns ── */
+.body {
+  max-width: 1200px;
+  margin: 2.5rem auto 0;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+@media (min-width: 768px) { .body { padding: 0 2rem; } }
+@media (min-width: 1024px) {
+  .body {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5rem;
+    margin-top: 3rem;
+  }
+}
+
+/* ── Ingredients column ── */
+.ingredientsCol {
+  width: 100%;
+}
+@media (min-width: 1024px) {
+  .ingredientsCol {
+    width: 340px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 90px; /* below the fixed navbar */
+  }
+}
+
+.ingredientsCard {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  border: 1px solid rgba(188,202,187,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ingredientsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.colTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1c1d;
+  margin: 0;
+}
+
+.servingBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #006d36;
+  background: #f0f5f0;
+  padding: 0.25rem 0.7rem;
+  border-radius: 9999px;
+}
+
+.ingredientList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.ingredientList::-webkit-scrollbar { width: 4px; }
+.ingredientList::-webkit-scrollbar-thumb { background: #cdd8cd; border-radius: 9999px; }
+
+.ingredientItem {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0.75rem 0;
+}
+.ingredientItem:last-child { border-bottom: none; }
+
+.checkLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  position: relative;
+  padding: 0.2rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.checkLabel:hover { background: #f4f7f4; }
+
+.checkInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkBox {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid #bccabb;
+  background: #fff;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+  margin-top: 1px;
+}
+.checkInput:checked ~ .ingBody .checkBox,
+.checkInput:checked + .checkBox {
+  background: #006d36;
+  border-color: #006d36;
+}
+
+/* target the checkbox box when input is checked */
+.checkLabel:has(.checkInput:checked) .checkBox {
+  background: #006d36;
+  border-color: #006d36;
+}
+.checkLabel:has(.checkInput:checked) .ingText {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.ingBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ingText {
+  font-size: 0.9rem;
+  color: #2a3a2a;
+  line-height: 1.45;
+  transition: opacity 0.2s;
+}
+
+.ingAmount {
+  color: #006d36;
+  font-weight: 700;
+}
+
+.ingNote {
+  font-size: 0.75rem;
+  color: #6d7b6d;
+}
+
+.groceryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.8rem;
+  background: #f4f7f4;
+  border: 1.5px solid #bccabb;
+  color: #3d4a3e;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.groceryBtn:hover {
+  background: #e8f0e8;
+  border-color: #006d36;
+  color: #006d36;
+}
+
+/* ── Steps column ── */
+.stepsCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.stepList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stepCard {
+  position: relative;
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  border: 1px solid rgba(188,202,187,0.3);
+  display: flex;
+  gap: 1.25rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.stepCard:hover {
+  box-shadow: 0 6px 24px rgba(0,109,54,0.1);
+  transform: translateY(-1px);
+}
+
+/* Left accent bar (hover turns green) */
+.stepAccent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e2e2e4;
+  transition: background 0.3s;
+  border-radius: 0;
+}
+.stepCard:hover .stepAccent { background: #006d36; }
+
+.stepLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.stepNum {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f4f7f4;
+  border: 2px solid #e2e8e2;
+  color: #006d36;
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepIcon {
+  font-size: 1.3rem;
+}
+
+.stepBody { flex: 1; }
+
+.stepTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1c1d;
+  margin: 0 0 0.6rem;
+}
+
+.stepText {
+  font-size: 0.925rem;
+  line-height: 1.7;
+  color: #4a5a4a;
+  margin: 0;
+}
+
+/* highlight "Pro tip:" bold text */
+.stepText strong { color: #1a1c1d; }

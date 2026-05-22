@@ -1,0 +1,17 @@
+.scroll-reveal {
+  margin: 0;
+  padding: 0;
+}
+
+.scroll-reveal-text {
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  line-height: 1.55;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each animated word lives in an inline-block span */
+.sr-word {
+  display: inline-block;
+}

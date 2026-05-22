@@ -1,0 +1,57 @@
+.section {
+  padding: 7rem 0 6rem;
+  background: var(--clr-surface-bright);
+  border-top: 1px solid rgba(188, 202, 187, 0.2);
+  border-bottom: 1px solid rgba(188, 202, 187, 0.2);
+  overflow: hidden;
+}
+
+.inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* "Filosofi Kami" pill label */
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--clr-primary);
+  background: rgba(0, 109, 54, 0.08);
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+/* ScrollReveal container override */
+.revealContainer {
+  /* remove default margin from h2 */
+  margin: 0 !important;
+}
+
+/* ScrollReveal text override */
+.revealText {
+  font-size: clamp(1.65rem, 3.8vw, 2.85rem) !important;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: var(--clr-on-surface);
+}
+
+/* Attribution */
+.attribution {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--clr-on-surface-variant);
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  padding-left: 0.15rem;
+}
