@@ -6,14 +6,10 @@ import Footer from './components/Footer';
 
 export default function Home() {
   return (
-    <>
-      <NavBar />
-      <main style={{ flexGrow: 1, paddingTop: '72px' }}>
-        <HeroSection />
-        <RecipesSection />
-        <QuoteSection />
-      </main>
-      <Footer />
-    </>
+    <main style={{ flexGrow: 1, paddingTop: '72px' }}>
+      <HeroSection />
+      <RecipesSection />
+      <QuoteSection />
+    </main>
   );
 }

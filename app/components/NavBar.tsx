@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import styles from './NavBar.module.css';
 
 const GooeyNav    = dynamic(() => import('./GooeyNav'),    { ssr: false });
@@ -10,7 +11,7 @@ const TextPressure = dynamic(() => import('./TextPressure'), { ssr: false });
 const NAV_ITEMS = [
   { label: 'Jelajahi', href: '/' },
   { label: 'Kategori', href: '/kategori' },
-  { label: 'Jurnal',   href: '#' },
+  { label: 'Jurnal',   href: '/journal' },
 ];
 
 /* ── Inline SVGs – no external font needed ── */
@@ -34,12 +35,19 @@ const IconPerson = () => (
 
 export default function NavBar() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
 
   // focus the input whenever the search panel opens
   useEffect(() => {
     if (searchOpen) inputRef.current?.focus();
   }, [searchOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   return (
     <header className={styles.header} role="banner">
@@ -105,10 +113,39 @@ export default function NavBar() {
           </div>
 
           {/* Profile – icon only */}
-          <button className={styles.profileBtn} id="nav-profile" aria-label="Profil">
+          <Link href="/profile" className={styles.profileBtn} id="nav-profile" aria-label="Profil">
             <IconPerson />
+          </Link>
+
+          {/* Hamburger Menu (Mobile Only) */}
+          <button 
+            className={`${styles.hamburgerBtn} ${mobileMenuOpen ? styles.menuOpen : ''}`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <span className={styles.hamburgerLine}></span>
+            <span className={styles.hamburgerLine}></span>
+            <span className={styles.hamburgerLine}></span>
           </button>
 
+        </div>
+      </div>
+
+      {/* Mobile Overlay Menu */}
+      <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.menuOpen : ''}`} onClick={() => setMobileMenuOpen(false)}>
+        <div onClick={(e) => e.stopPropagation()}>
+          <GooeyNav
+            items={NAV_ITEMS}
+            initialActiveIndex={0}
+            particleCount={12}
+            particleDistances={[120, 15]}
+            particleR={120}
+            animationTime={500}
+            timeVariance={250}
+            colors={[1, 2, 3, 1, 2, 3, 1, 4]}
+            vertical={true}
+          />
         </div>
       </div>
     </header>

@@ -20,12 +20,19 @@ export const metadata: Metadata = {
   },
 };
 
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id" className={inter.variable}>
-      <body>{children}</body>
+      <body>
+        <NavBar />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }

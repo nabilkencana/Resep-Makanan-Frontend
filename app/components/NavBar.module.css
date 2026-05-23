@@ -152,3 +152,93 @@
   background: #fff;
   box-shadow: 0 0 0 3px rgba(0, 109, 54, 0.1);
 }
+
+/* ── Mobile Hamburger Button ────────── */
+.hamburgerBtn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid var(--clr-outline-variant, #bccabb);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 110;
+}
+.hamburgerBtn:hover {
+  background: #fff;
+  border-color: var(--clr-primary, #006d36);
+}
+
+.hamburgerLine {
+  width: 18px;
+  height: 2px;
+  background: var(--clr-on-surface-variant, #3d4a3e);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburgerBtn.menuOpen .hamburgerLine:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburgerBtn.menuOpen .hamburgerLine:nth-child(2) {
+  opacity: 0;
+}
+.hamburgerBtn.menuOpen .hamburgerLine:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (min-width: 768px) {
+  .hamburgerBtn { display: none; }
+}
+
+/* ── Mobile Overlay Menu ────────────── */
+.mobileMenu {
+  position: fixed;
+  inset: 0;
+  background: rgba(249, 249, 251, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 105;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mobileMenu.menuOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobileNavList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  text-align: center;
+}
+
+.mobileNavLink {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--clr-on-surface, #1a1c1d);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.mobileNavLink:hover, .mobileNavLink.active {
+  color: var(--clr-primary, #006d36);
+}
+
+@media (min-width: 768px) {
+  .mobileMenu { display: none !important; }
+}

@@ -13,6 +13,7 @@ const GooeyNav = ({
   timeVariance = 300,
   colors = [1, 2, 3, 1, 2, 3, 1, 4],
   initialActiveIndex = 0,
+  vertical = false,
 }) => {
   const router   = useRouter();
   const pathname = usePathname();
@@ -157,7 +158,7 @@ const GooeyNav = ({
   }, [activeIndex]);
 
   return (
-    <div className="gooey-nav-container" ref={containerRef}>
+    <div className={`gooey-nav-container ${vertical ? 'vertical' : ''}`} ref={containerRef}>
       <nav>
         <ul ref={navRef}>
           {items.map((item, index) => (

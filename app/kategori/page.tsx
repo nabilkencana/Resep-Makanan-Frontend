@@ -1,7 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 import { CATEGORIES } from '../data/categories';
 import styles from './page.module.css';
 import NewsletterForm from './NewsletterForm';
@@ -26,10 +24,7 @@ const TOTAL_CATEGORIES = CATEGORIES.length;
 
 export default function KategoriPage() {
   return (
-    <>
-      <NavBar />
-
-      <div className={styles.page}>
+    <div className={styles.page}>
 
         {/* ── Hero ── */}
         <div className={styles.hero}>
@@ -136,8 +131,5 @@ export default function KategoriPage() {
 
         </main>
       </div>
-
-      <Footer />
-    </>
   );
 }
