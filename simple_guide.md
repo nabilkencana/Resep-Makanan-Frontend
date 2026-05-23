@@ -1,6 +1,6 @@
 # 🍳 Dapur Nusantara — Simple Guide
 
-> Panduan cepat memahami proyek ini dalam 5 menit.
+> Baca dalam 5 menit. Semua yang perlu diketahui tentang proyek ini.
 
 ---
 
@@ -9,24 +9,37 @@
 | | |
 |---|---|
 | **Framework** | Next.js 16 App Router |
-| **Styling** | CSS Modules (`.module.css`) |
-| **Animasi** | Framer Motion + GSAP + CSS |
-| **Data** | File TypeScript statis (tidak ada backend/DB) |
-| **Deploy** | Vercel (via `npm run dev` untuk lokal) |
+| **Bahasa** | TypeScript + JSX |
+| **Styling** | CSS Modules (`.module.css`) — tidak ada Tailwind |
+| **Animasi** | Framer Motion + GSAP + CSS murni |
+| **Data** | File TypeScript statis — tidak ada backend/DB |
+| **Deploy** | Vercel (lokal: `npm run dev`) |
 
 ---
 
-## Struktur Folder Penting
+## Halaman & Fitur
+
+| Rute | Tipe | Isi Utama |
+|---|---|---|
+| `/` | Server | Hero (BlurText, CardSwap, CountUp), Grid 5 Resep |
+| `/kategori` | Server + Client | 8 kartu Bento (GSAP), RotatingText, Newsletter |
+| `/recipe/[id]` | Server | Detail resep: bahan checkbox, langkah bernomor, SEO auto |
+| `/journal` | Server | Tabel planner mingguan + TiltedCard 3D + sidebar resep |
+| `/profile` | Client | 3 tab: Resep Tersimpan, Aktivitas, Pengaturan |
+
+---
+
+## Struktur Folder
 
 ```
 app/
 ├── layout.tsx        ← NavBar + Footer dipasang di sini (persisten)
 ├── page.tsx          ← Beranda (/)
-├── kategori/         ← Halaman kategori (/kategori)
-├── journal/          ← Perencana makan mingguan (/journal)
-├── profile/          ← Profil pengguna (/profile)
-├── recipe/[id]/      ← Detail resep dinamis (/recipe/chicken)
-├── components/       ← Semua komponen UI
+├── kategori/         ← /kategori + sub-komponen (CategoryGrid, HeroTitle, dll)
+├── journal/          ← /journal: perencana makan
+├── profile/          ← /profile: 3 tab + Icons.tsx SVG custom
+├── recipe/[id]/      ← /recipe/[id]: detail resep dinamis + not-found.tsx
+├── components/       ← Semua komponen UI (26 file)
 └── data/
     ├── recipes.ts    ← 5 resep (tambah di sini)
     └── categories.ts ← 8 kategori (tambah di sini)
@@ -34,61 +47,91 @@ app/
 
 ---
 
-## Alur Halaman
+## Alur Pengguna
 
 ```mermaid
 graph TD
-    A([Buka Situs]) --> B[Beranda]
-    B --> C[Klik Resep]
-    B --> D[Klik Kategori]
-    B --> E[Klik Jurnal]
-    B --> F[Klik Profil]
-    C --> G[Modal Detail]
-    G --> H[Halaman Resep Penuh]
-    D --> I[Daftar Kategori]
-    I --> J[Filter Resep per Kategori]
+    A(["Buka Situs"]) --> B["Beranda /"]
+    B -->|Klik kartu resep| C["/recipe/id"]
+    B -->|Klik Kategori| D["/kategori"]
+    B -->|Klik Jurnal| E["/journal"]
+    B -->|Klik ikon profil| F["/profile"]
+    D -->|Klik kartu| G["/kategori/sarapan"]
+    G -->|Klik resep| C
+    F --> H["Tab Resep"]
+    F --> I["Tab Aktivitas"]
+    F --> J["Tab Pengaturan"]
 ```
 
 ---
 
 ## Server vs Client
 
-```mermaid
-graph LR
-    S["🖥 SERVER\nlayout, page.tsx"] -->|Hydration| C["⚡ CLIENT\nNavBar, HeroSection\nCategoryGrid, TiltedCard\nProfileTabs, RecipeModal"]
+Aturan simpel:
+- **Default** → Server Component (HTML dikirim server, cepat)
+- **Ada `useState`, animasi, event handler** → tambah `'use client'`
+
+| Server | Client |
+|---|---|
+| layout.tsx, semua `page.tsx` | NavBar, HeroSection, CategoryGrid |
+| Footer.tsx | TiltedCard, RecipeDetailModal |
+| recipe/[id]/page.tsx | GooeyNav, profile/page.tsx |
+
+---
+
+## Animasi — Siapa Pakai Apa
+
+| Halaman | Komponen Animasi | Library |
+|---|---|---|
+| NavBar | GooeyNav (partikel cair) | CSS + DOM injection |
+| Beranda | BlurText, CardSwap, CountUp | Framer Motion |
+| Kategori | RotatingText, CategoryGrid | GSAP ScrollTrigger |
+| Jurnal | TiltedCard (3D hover) | Framer Motion |
+| Profile | Transisi tab | CSS transition |
+
+---
+
+## Data
+
+```
+data/recipes.ts    → RECIPES[]         → RecipesSection, /recipe/[id]
+data/categories.ts → CATEGORIES[]      → /kategori
+journal/page.tsx   → SCHEDULE[]        → Inline hardcoded (statis)
+profile/page.tsx   → SAVED_RECIPES[]   → Inline hardcoded (statis)
+                     ACTIVITIES[]
 ```
 
-Aturan sederhana:
-- **Tidak butuh interaksi?** → Biarkan jadi Server Component (default)
-- **Butuh `useState`, animasi, event handler?** → Tambahkan `'use client'` di baris pertama
+**Interface `RecipeData`:**  `id`, `title`, `tag`, `tags[]`, `rating`, `prepTime`, `cookTime`, `servings`, `calories`, `src`, `heroSrc`, `ingredients[]`, `steps[]`, `author`
+
+**Interface `CategoryData`:** `id`, `name`, `emoji`, `color`, `colorEnd`, `recipeCount`, `featuredTag`
+
+---
+
+## Mobile vs Desktop
+
+| Elemen | Desktop | Mobile |
+|---|---|---|
+| NavBar | GooeyNav horizontal | Hamburger → overlay GooeyNav |
+| Hero | 2 kolom + CardSwap | 1 kolom (CardSwap hidden) |
+| Resep Grid | 2 kolom masonry | 1 kolom |
+| Kategori | 4 kolom bento | 2 kolom |
+| Profile tabs | Normal | Horizontal scroll |
+| Planner | Tabel 4 kolom | Horizontal scroll |
 
 ---
 
 ## Cara Menambah Konten
 
-**Resep baru** → Edit `app/data/recipes.ts`, tambah objek ke array `RECIPES`
-
-**Kategori baru** → Edit `app/data/categories.ts`, tambah objek ke array `CATEGORIES`
-
-**Halaman baru** → Buat `app/nama-halaman/page.tsx`, lalu tambahkan ke `NAV_ITEMS` di `NavBar.tsx`
+**Resep baru** → tambah objek ke `RECIPES[]` di `data/recipes.ts`  
+**Kategori baru** → tambah objek ke `CATEGORIES[]` di `data/categories.ts`  
+**Halaman baru** → buat `app/nama/page.tsx` → daftarkan ke `NAV_ITEMS` di `NavBar.tsx`
 
 ---
 
-## Menjalankan Proyek
+## Perintah Terminal
 
 ```bash
 npm run dev     # Development (localhost:3000)
-npm run build   # Build production
-npm run start   # Jalankan production build
+npm run build   # Build produksi
+npm run start   # Jalankan build
 ```
-
----
-
-## Komponen Animasi Mana di Halaman Mana?
-
-| Halaman | Animasi |
-|---|---|
-| Beranda | `BlurText`, `CardSwap`, `CountUp`, `RotatingText` |
-| Kategori | `GSAP ScrollTrigger` (kartu melayang), `RotatingText` |
-| Jurnal | `TiltedCard` (efek 3D Framer Motion) |
-| NavBar | `GooeyNav` (efek partikel cair, desktop + mobile) |

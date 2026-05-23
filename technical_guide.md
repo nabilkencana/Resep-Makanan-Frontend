@@ -1,6 +1,6 @@
 # 📖 Panduan Teknis & Arsitektur — Dapur Nusantara
 
-Dokumen ini adalah panduan lengkap yang menjelaskan struktur folder, alur pengguna (*user journey*), arsitektur sistem, dan keputusan teknis di balik pengembangan situs **Dapur Nusantara**.
+Panduan lengkap berdasarkan kode asli proyek. Mencakup semua halaman, komponen, data, animasi, dan alur sistem.
 
 ---
 
@@ -8,103 +8,237 @@ Dokumen ini adalah panduan lengkap yang menjelaskan struktur folder, alur penggu
 
 | Lapisan | Teknologi | Peran |
 |---|---|---|
-| **Framework** | Next.js 16 (App Router) | Rendering, routing, optimasi SEO |
+| **Framework** | Next.js 16 (App Router) | Rendering, routing, SEO |
 | **Bahasa** | TypeScript + JSX | Type-safety dan komponen interaktif |
 | **Styling** | CSS Modules + Global CSS | Isolasi gaya per komponen |
-| **Animasi** | Framer Motion, GSAP, CSS | Animasi berbasis fisika dan scroll |
-| **Font** | Google Fonts (Inter) | Tipografi modern lewat `next/font` |
-| **Build Tool** | Turbopack (bawaan Next.js 16) | Kompilasi lebih cepat dari Webpack |
-| **Data** | Static TypeScript Files | `data/recipes.ts`, `data/categories.ts` |
+| **Animasi** | Framer Motion, GSAP, CSS | Animasi fisika dan scroll |
+| **Font** | Inter via `next/font/google` | Tipografi modern |
+| **Build Tool** | Turbopack (Next.js 16) | Kompilasi lebih cepat |
+| **Data** | Static TypeScript files | Tidak ada backend/DB |
 
 ---
 
-## 📁 Struktur Folder
+## 📁 Struktur Folder Lengkap
 
 ```
 frontend-resep/
 └── app/
-    ├── layout.tsx              ← Root layout (NavBar + Footer persisten)
-    ├── globals.css             ← Token desain global (warna, font, spacing)
-    ├── page.tsx                ← Halaman Beranda (/)
+    ├── layout.tsx              ← Root layout: NavBar + Footer persisten di semua halaman
+    ├── globals.css             ← CSS Variables global (warna, spacing, font)
+    ├── page.tsx                ← Beranda (/)
     │
-    ├── components/             ← Komponen UI yang dapat digunakan ulang
-    │   ├── NavBar.tsx          ← Navigasi utama (Client, animasi GooeyNav)
-    │   ├── GooeyNav.jsx        ← Efek navigasi partikel cair
-    │   ├── HeroSection.tsx     ← Hero beranda (BlurText, CardSwap)
-    │   ├── RecipesSection.tsx  ← Grid resep bergaya Masonry
-    │   ├── RecipeDetailModal.tsx ← Modal detail resep (Client)
-    │   ├── TiltedCard.jsx      ← Kartu animasi 3D (Framer Motion)
-    │   ├── Footer.tsx          ← Footer situs
-    │   └── [lainnya]           ← BlurText, SplitText, CountUp, dll
+    ├── components/             ← Semua komponen UI
+    │   ├── NavBar.tsx          ← Navigasi + hamburger mobile
+    │   ├── NavBar.module.css
+    │   ├── GooeyNav.jsx        ← Efek partikel cair + routing
+    │   ├── GooeyNav.css
+    │   ├── HeroSection.tsx     ← Section hero beranda
+    │   ├── HeroSection.module.css
+    │   ├── RecipesSection.tsx  ← Grid masonry resep
+    │   ├── RecipesSection.module.css
+    │   ├── RecipeDetailModal.tsx ← Modal slide-up detail resep
+    │   ├── RecipeDetailModal.module.css
+    │   ├── TiltedCard.jsx      ← Kartu gambar animasi 3D
+    │   ├── TiltedCard.css
+    │   ├── Footer.tsx
+    │   ├── Footer.module.css
+    │   ├── BlurText.jsx        ← Teks muncul dengan blur per kata
+    │   ├── SplitText.jsx       ← Teks muncul karakter per karakter
+    │   ├── CardSwap.jsx        ← Kartu yang berputar bergantian
+    │   ├── CardSwap.css
+    │   ├── CountUp.jsx         ← Angka animasi naik
+    │   ├── RotatingText.jsx    ← Teks berputar (kata berganti)
+    │   ├── RotatingText.css
+    │   ├── ScrollReveal.jsx    ← Teks muncul saat di-scroll
+    │   ├── ScrollReveal.css
+    │   ├── TextPressure.jsx    ← Font berubah berat saat hover
+    │   └── QuoteSection.tsx    ← Section quote di beranda
     │
     ├── data/
-    │   ├── recipes.ts          ← Data statis semua resep (5 resep)
-    │   └── categories.ts       ← Data statis semua kategori (8 kategori)
+    │   ├── recipes.ts          ← 5 resep statis (RecipeData[])
+    │   └── categories.ts       ← 8 kategori statis (CategoryData[])
     │
     ├── kategori/
-    │   ├── page.tsx            ← Halaman daftar semua kategori (/kategori)
-    │   ├── CategoryGrid.tsx    ← Grid kategori Bento + GSAP ScrollTrigger
-    │   └── [id]/page.tsx       ← Halaman detail per kategori
+    │   ├── page.tsx            ← /kategori: listing semua kategori
+    │   ├── page.module.css
+    │   ├── CategoryGrid.tsx    ← Grid bento + GSAP
+    │   ├── HeroStats.tsx       ← Statistik di hero kategori
+    │   ├── HeroTitle.tsx       ← Judul dengan RotatingText
+    │   ├── HeroSubtitle.tsx
+    │   └── NewsletterForm.tsx  ← Form langganan newsletter
     │
     ├── journal/
-    │   └── page.tsx            ← Halaman Jurnal Mingguan (/journal)
+    │   ├── page.tsx            ← /journal: perencana makan mingguan
+    │   └── page.module.css
     │
     ├── profile/
-    │   └── page.tsx            ← Halaman Profil dengan Tab (/profile)
+    │   ├── page.tsx            ← /profile: profil pengguna (3 tab)
+    │   ├── page.module.css
+    │   └── Icons.tsx           ← Kumpulan icon SVG custom
     │
     └── recipe/
-        └── [id]/page.tsx       ← Halaman detail resep dinamis (/recipe/chicken)
+        ├── layout.tsx          ← Layout khusus halaman resep
+        ├── not-found.tsx       ← Halaman 404 untuk resep tidak ditemukan
+        └── [id]/
+            ├── page.tsx        ← /recipe/[id]: detail resep dinamis
+            └── page.module.css
 ```
 
 ---
 
 ## 🎨 Mengapa CSS Modules?
 
-### 1. Isolasi Scope Mutlak
-Dengan CSS Modules, nama kelas seperti `.card` di-*hash* menjadi sesuatu seperti `page_card__Xj3K` saat kompilasi. Tidak ada tabrakan nama antar komponen meski menggunakan nama yang sama.
-
-### 2. Zero-Runtime Performance
-CSS Modules dikompilasi menjadi file `.css` statis oleh Next.js. Tidak ada overhead JavaScript saat di-*render* seperti CSS-in-JS (Styled-Components, Emotion).
-
-### 3. Code Splitting Otomatis
-Next.js hanya memuat CSS dari halaman yang sedang dibuka. CSS `/profile` tidak akan diunduh ketika pengguna membuka `/kategori`.
-
-### 4. Cocok untuk Animasi Kompleks
-Animasi `GooeyNav` menggunakan filter SVG kompleks dan variabel CSS kustom (`--color-1`, `--time`, dll). Kontrol tingkat rendah ini hanya mudah dilakukan dengan CSS mentah, bukan *utility classes*.
+| Masalah | CSS Biasa | CSS Modules |
+|---|---|---|
+| Tabrakan nama kelas | `.card` bisa konflik | `.card` → `page_card__Xj3K` (unik) |
+| Loading CSS | Semua sekaligus | Hanya halaman aktif |
+| JavaScript overhead | CSS-in-JS butuh runtime | File `.css` statis, nol overhead |
+| Animasi kompleks | Sulit dengan utility | Kontrol penuh variabel CSS |
 
 ---
 
-## 🔄 Diagram Alur Sistem (System Architecture)
+## 📄 Detail Setiap Halaman
+
+### 🏠 Beranda (`/`)
+**File:** `app/page.tsx`  
+**Tipe:** Server Component
+
+Komponen yang dirender:
+1. **HeroSection** — Judul animasi `BlurText`, search bar, `CountUp` statistik (2400+ resep, 98% kepuasan, 12.4k pengguna), dan `CardSwap` (4 kartu resep berputar otomatis di sebelah kanan, hanya tampil di desktop ≥900px)
+2. **RecipesSection** — Grid masonry 5 resep dari `data/recipes.ts`, setiap kartu bisa diklik ke halaman `/recipe/[id]`
+3. **QuoteSection** — Kutipan motivasi
+
+---
+
+### 📂 Kategori (`/kategori`)
+**File:** `app/kategori/page.tsx`  
+**Tipe:** Server Component (dengan Client sub-komponen)
+
+- **Hero** dengan gambar background, `RotatingText` (kata berputar: Sarapan, Vegan, Italia...), dan statistik animasi
+- **Search bar** di dalam hero
+- **CategoryGrid** (Client, GSAP) — 8 kartu kategori dalam layout **Bento Grid** (beberapa kartu besar `span 2`), animasi melayang setelah muncul dari bawah saat di-scroll
+- **Popular Tags** — chip filter per tag
+- **Newsletter** — form email
+
+**8 kategori:** Sarapan, Makan Siang, Makan Malam, Cemilan, Vegan, Minuman, Roti & Kue, Italia
+
+---
+
+### 📋 Detail Resep (`/recipe/[id]`)
+**File:** `app/recipe/[id]/page.tsx`  
+**Tipe:** Server Component + `generateMetadata`
+
+- Mengambil data dari `getRecipeById(id)` di `data/recipes.ts`
+- Jika tidak ditemukan → `notFound()` → render `not-found.tsx`
+- SEO: `generateMetadata` otomatis mengisi `<title>` dan `<meta description>` per resep
+- Menampilkan: hero image, tags, judul, rating, deskripsi, prep/cook time, porsi, kalori, bahan-bahan interaktif (checkbox), langkah memasak bernomor
+
+**5 resep tersedia:** `chicken`, `salad`, `bowl`, `bread`, `pizza`
+
+---
+
+### 📓 Jurnal (`/journal`)
+**File:** `app/journal/page.tsx`  
+**Tipe:** Server Component
+
+Fitur:
+- **Tabel perencana mingguan** (Sen–Jum × Sarapan/Makan Siang/Makan Malam)
+- Sel yang terisi menampilkan `TiltedCard` — gambar beranimasi 3D saat di-hover
+- **Sidebar Rekomendasi Musiman** — 3 resep yang bisa didrag ke jadwal (UI, belum fungsional drag)
+- Tombol **"Buat Daftar Belanja"**
+- Data `SCHEDULE` hardcoded (statis), `RECIPES` statis dalam file
+
+---
+
+### 👤 Profil (`/profile`)
+**File:** `app/profile/page.tsx`  
+**Tipe:** Client Component (`'use client'`, `useState`)
+
+Tiga tab dikendalikan `useState<'RECIPES' | 'ACTIVITY' | 'SETTINGS'>`:
+
+| Tab | Konten |
+|---|---|
+| **Resep Tersimpan** | 3 kartu resep dengan badge, rating, waktu |
+| **Aktivitas** | Feed aktivitas (resep disimpan, komentar, pencapaian, dll) |
+| **Pengaturan** | Bento grid: Informasi Pribadi, Preferensi Diet, Keamanan Akun, Notifikasi |
+
+- Menggunakan icon SVG custom dari `profile/Icons.tsx` (tidak pakai icon font)
+- Pengaturan terbagi: login sosial (Google, Facebook), toggle notifikasi, preferensi diet
+
+---
+
+## 🗄 Struktur Data
+
+### `RecipeData` (dari `data/recipes.ts`)
+```typescript
+interface RecipeData {
+  id: string;          // Digunakan sebagai URL: /recipe/[id]
+  title: string;
+  tag: string;         // Satu kategori utama
+  tags: string[];      // Beberapa tag untuk filter
+  rating: string;
+  reviews: number;
+  prepTime: string;
+  cookTime: string;
+  servings: number;
+  calories: number;
+  src: string;         // Gambar untuk kartu (thumbnail)
+  heroSrc: string;     // Gambar besar untuk halaman detail
+  description: string;
+  ingredients: Ingredient[];  // { amount, name, note? }
+  steps: Step[];              // { step, title, text, icon }
+  author: string;
+}
+```
+
+### `CategoryData` (dari `data/categories.ts`)
+```typescript
+interface CategoryData {
+  id: string;          // Digunakan sebagai URL: /kategori/[id]
+  name: string;
+  description: string;
+  emoji: string;
+  color: string;       // Warna gradient atas
+  colorEnd: string;    // Warna gradient bawah
+  textColor: string;
+  recipeCount: number;
+  featuredTag: string;
+  highlight: string;
+}
+```
+
+---
+
+## 🔄 Diagram Alur Sistem
 
 ```mermaid
 graph TD
-    Browser["Pengguna (Browser)"]
-    Layout["app/layout.tsx (Root Shell)"]
-    NavBar["NavBar.tsx (Client)"]
+    Browser["Pengguna Browser"]
+    Layout["app/layout.tsx Root Shell"]
+    NavBar["NavBar.tsx Client"]
     GooeyNav["GooeyNav.jsx"]
-    Footer["Footer.tsx (Server)"]
+    Footer["Footer.tsx Server"]
 
-    subgraph Pages ["Halaman (Next.js App Router)"]
+    subgraph Pages ["Halaman App Router"]
         Home["/ Beranda"]
         Kategori["/kategori"]
-        KategoriDetail["/kategori/id"]
         Journal["/journal"]
         Profile["/profile"]
         RecipeDetail["/recipe/id"]
     end
 
-    subgraph DataLayer ["Lapisan Data (Static)"]
+    subgraph DataLayer ["Data Statis"]
         RecipesData["data/recipes.ts"]
         CategoriesData["data/categories.ts"]
     end
 
-    subgraph ClientComponents ["Komponen Interaktif (Client)"]
-        HeroSection["HeroSection"]
-        RecipesSection["RecipesSection"]
-        CategoryGrid["CategoryGrid (GSAP)"]
-        TiltedCard["TiltedCard (Framer)"]
-        RecipeModal["RecipeDetailModal"]
-        ProfileTabs["Profile Tabs"]
+    subgraph ClientComp ["Komponen Client"]
+        HeroSec["HeroSection"]
+        RecSec["RecipesSection"]
+        CatGrid["CategoryGrid GSAP"]
+        TCard["TiltedCard Framer"]
+        Modal["RecipeDetailModal"]
+        ProfTabs["Profile Tabs useState"]
     end
 
     Browser --> Layout
@@ -113,276 +247,174 @@ graph TD
     Layout --> Footer
     NavBar --> GooeyNav
 
-    Home --> HeroSection
-    Home --> RecipesSection
-    Kategori --> CategoryGrid
-    Journal --> TiltedCard
-    Profile --> ProfileTabs
-    RecipeDetail --> RecipeModal
+    Home --> HeroSec
+    Home --> RecSec
+    Kategori --> CatGrid
+    Journal --> TCard
+    Profile --> ProfTabs
+    RecipeDetail --> Modal
 
-    RecipesSection --> RecipesData
-    CategoryGrid --> CategoriesData
+    RecSec --> RecipesData
+    CatGrid --> CategoriesData
     RecipeDetail --> RecipesData
 ```
 
 ---
 
-## 🧭 Diagram Perjalanan Pengguna (User Journey)
+## 🧭 Alur Pengguna (User Journey)
 
 ```mermaid
 graph TD
-    Start(["Pengguna Membuka Situs"])
-    Landing["Halaman Beranda (/)"]
-    Search["Mencari Resep di Hero Search"]
-    Browse["Menelusuri Kartu Resep"]
-    Modal["Membuka Modal Detail Resep"]
-    GoCategory["Klik Tombol Kategori"]
-    CategoryPage["/kategori"]
-    CategoryDetail["/kategori/id (mis: sarapan)"]
+    Start(["Buka Situs"])
+    Home["Beranda /"]
+    Browse["Lihat Kartu Resep"]
     RecipePage["/recipe/id"]
-    Journal["/journal (Perencana Makan)"]
+    CatPage["/kategori"]
+    CatDetail["/kategori/sarapan"]
+    Journal["/journal"]
     Profile["/profile"]
+    TabRec["Tab: Resep Tersimpan"]
+    TabAct["Tab: Aktivitas"]
+    TabSet["Tab: Pengaturan"]
 
-    Start --> Landing
-    Landing --> Search
-    Landing --> Browse
-    Landing --> GoCategory
+    Start --> Home
+    Home -->|"Klik kartu resep"| RecipePage
+    Home -->|"Klik Kategori nav"| CatPage
+    Home -->|"Klik Jurnal nav"| Journal
+    Home -->|"Klik ikon profil"| Profile
 
-    Browse --> Modal
-    Modal -->|"Lihat Resep Lengkap"| RecipePage
+    CatPage -->|"Klik kartu kategori"| CatDetail
+    CatDetail -->|"Klik resep"| RecipePage
+    RecipePage -->|"Tombol Kembali"| Home
 
-    GoCategory --> CategoryPage
-    CategoryPage -->|"Klik Kartu Kategori"| CategoryDetail
-    CategoryDetail -->|"Klik Resep"| RecipePage
-
-    Landing -->|"Klik Menu Jurnal"| Journal
-    Landing -->|"Klik Ikon Profil"| Profile
-
-    RecipePage -->|"Kembali"| Landing
+    Profile --> TabRec
+    Profile --> TabAct
+    Profile --> TabSet
 ```
 
 ---
 
-## 🎬 Diagram Alur Animasi
+## 🎬 Komponen Animasi
 
 ```mermaid
 graph TD
-    subgraph NavBar ["NavBar - Persisten di layout.tsx"]
-        Hamburger["Hamburger Button Mobile"]
-        GooeyDesktop["GooeyNav Desktop"]
-        MobileOverlay["Mobile Overlay Menu"]
-        GooeyNav2["GooeyNav vertical=true"]
-        Hamburger -->|Toggle| MobileOverlay
-        MobileOverlay --> GooeyNav2
+    subgraph Nav ["NavBar - Desktop dan Mobile"]
+        GDesktop["GooeyNav horizontal - Desktop"]
+        HBurger["Hamburger Button - Mobile"]
+        GMobile["GooeyNav vertical=true - Mobile Overlay"]
+        HBurger --> GMobile
     end
 
-    subgraph HomePage ["Halaman Beranda"]
-        BlurText["BlurText - Judul masuk berbias"]
-        CardSwap["CardSwap - Kartu geser otomatis"]
-        CountUp["CountUp - Angka statistik animasi"]
-        ScrollReveal["ScrollReveal - Teks muncul saat scroll"]
+    subgraph Hero ["HeroSection - Beranda"]
+        BT["BlurText - Judul masuk berbias per kata"]
+        CS["CardSwap - 4 kartu resep berputar"]
+        CU["CountUp - Angka naik animasi"]
     end
 
-    subgraph CategoryPage ["Halaman Kategori"]
-        RotatingText["RotatingText - Kata berputar di Hero"]
-        GSAP["GSAP ScrollTrigger - Kartu muncul bertahap"]
+    subgraph KatPage ["Kategori Page"]
+        RT["RotatingText - Kata berputar di judul"]
+        GSAP["GSAP ScrollTrigger - Kartu muncul dan melayang"]
     end
 
-    subgraph JournalPage ["Halaman Jurnal"]
-        TiltedCard3D["TiltedCard - Gambar miring 3D Framer Motion"]
+    subgraph JourPage ["Journal Page"]
+        TC["TiltedCard - Gambar miring 3D saat hover"]
     end
 ```
 
 ---
 
-## ⚙️ Alur Server Component vs Client Component
+## ⚙️ Server vs Client Component
 
 ```mermaid
 graph TD
-    subgraph Server ["SERVER (Dirender di Node.js, HTML dikirim ke Browser)"]
-        Layout2["layout.tsx"]
-        PageHome["app/page.tsx"]
-        PageKat["kategori/page.tsx"]
-        PageJour["journal/page.tsx"]
-        PageProf["profile/page.tsx"]
-        PageRec["recipe/id/page.tsx"]
-        Footer2["Footer.tsx"]
+    subgraph Server ["SERVER - HTML dikirim ke browser"]
+        L["layout.tsx"]
+        PH["page.tsx Beranda"]
+        PK["kategori page.tsx"]
+        PJ["journal page.tsx"]
+        PP["profile page.tsx"]
+        PR["recipe id page.tsx"]
+        F["Footer.tsx"]
     end
 
-    subgraph Client ["CLIENT (JavaScript dijalankan di Browser)"]
-        NavBar2["NavBar.tsx → use client"]
-        HeroSec["HeroSection.tsx → use client"]
-        CatGrid["CategoryGrid.tsx → use client"]
-        TCard["TiltedCard.jsx → use client"]
-        RecModal["RecipeDetailModal.tsx → use client"]
-        ProfTabs["ProfileTabs (useState) → use client"]
-        GooeyN["GooeyNav.jsx → use client"]
+    subgraph Client ["CLIENT - JS dijalankan di browser"]
+        NB["NavBar use client"]
+        HS["HeroSection use client"]
+        CG["CategoryGrid use client"]
+        Ti["TiltedCard use client"]
+        RM["RecipeDetailModal use client"]
+        PT["profile page use client - useState tab"]
+        GN["GooeyNav use client"]
     end
 
-    Server -->|"Hydration"| Client
-    Layout2 --> NavBar2
-    PageHome --> HeroSec
-    PageKat --> CatGrid
-    PageJour --> TCard
-    PageRec --> RecModal
-    PageProf --> ProfTabs
-    NavBar2 --> GooeyN
+    Server -->|Hydration| Client
+    L --> NB
+    PH --> HS
+    PK --> CG
+    PJ --> Ti
+    PR --> RM
+    PP --> PT
+    NB --> GN
 ```
 
 ---
 
-## 📊 Alur Data Statis
+## 📊 Alur Data
 
 ```mermaid
 graph LR
-    subgraph DataSource ["Sumber Data (TypeScript Static Files)"]
-        RecipesTS["data/recipes.ts\n(5 RecipeData objects)"]
-        CatsTS["data/categories.ts\n(8 CategoryData objects)"]
+    subgraph Src ["Sumber Data"]
+        RT["recipes.ts - 5 RecipeData"]
+        CT["categories.ts - 8 CategoryData"]
     end
 
-    subgraph Consumers ["Konsumen Data"]
-        RecSec["RecipesSection.tsx\nMenunjukkan kartu resep di Beranda"]
-        RecPage["recipe/id/page.tsx\nDetail resep lengkap"]
-        CatPage["kategori/page.tsx\nGrid kategori Bento"]
-        JourPage["journal/page.tsx\nJadwal SCHEDULE[]"]
+    subgraph Use ["Digunakan oleh"]
+        RS["RecipesSection - Beranda"]
+        RP["recipe id page - Detail"]
+        KP["kategori page - Grid"]
+        JP["journal page - Inline statis"]
     end
 
-    RecipesTS -->|"import RECIPES"| RecSec
-    RecipesTS -->|"getRecipeById(id)"| RecPage
-    CatsTS -->|"import CATEGORIES"| CatPage
-    JourPage -->|"Static inline data"| JourPage
+    RT -->|import RECIPES| RS
+    RT -->|getRecipeById| RP
+    CT -->|import CATEGORIES| KP
+    JP -->|SCHEDULE hardcoded| JP
+```
+
+---
+
+## 📱 Responsivitas Mobile
+
+| Elemen | Desktop | Mobile |
+|---|---|---|
+| NavBar | GooeyNav horizontal | Hamburger → GooeyNav vertical overlay |
+| Hero | 2 kolom (teks + CardSwap) | 1 kolom (CardSwap disembunyikan) |
+| RecipesSection | 2 kolom masonry | 1 kolom |
+| CategoryGrid | 4 kolom bento | 2 kolom |
+| Profile tabs | Tab horizontal | Horizontal scroll (overflow-x: auto) |
+| Journal planner | Tabel 4 kolom | Horizontal scroll |
+| Font size | Tetap | `clamp()` otomatis menyusut |
+
+---
+
+## 🚀 Cara Menjalankan
+
+```bash
+npm run dev      # Development server (localhost:3000)
+npm run build    # Build produksi
+npm run start    # Jalankan build produksi
 ```
 
 ---
 
 > [!TIP]
-> **Cara Menambah Halaman Baru**  
-> Cukup buat folder baru di `app/nama-halaman/page.tsx`. NavBar dan Footer otomatis terpasang dari `layout.tsx`. Tambahkan rute baru ke array `NAV_ITEMS` di `NavBar.tsx` untuk integrasi animasi GooeyNav.
+> **Tambah Halaman Baru**  
+> Buat `app/nama/page.tsx` → NavBar & Footer otomatis terpasang dari `layout.tsx` → Tambahkan ke `NAV_ITEMS` di `NavBar.tsx`.
 
 > [!NOTE]
-> **Cara Menambah Resep Baru**  
-> Tambahkan objek baru ke array `RECIPES` di `app/data/recipes.ts` mengikuti interface `RecipeData`. Resep baru akan otomatis muncul di `RecipesSection` dan dapat diakses lewat URL `/recipe/[id]`.
+> **Tambah Resep**  
+> Tambah objek ke `RECIPES[]` di `data/recipes.ts` ikuti interface `RecipeData`. URL otomatis jadi `/recipe/[id]`.
 
-
-Dokumen ini adalah panduan teknis lengkap yang menjelaskan alur kerja (*flow*), arsitektur, dan keputusan teknis di balik pengembangan situs **Dapur Nusantara**. 
-
----
-
-## 🏗 Arsitektur Utama (Tech Stack)
-
-Situs ini dibangun dengan ekosistem modern berbasis React:
-- **Framework Utama:** [Next.js](https://nextjs.org/) (App Router) dengan TypeScript.
-- **Styling:** CSS Modules bawaan Next.js (`*.module.css`) dipadukan dengan variabel CSS global (`globals.css`).
-- **Animasi:** Kombinasi antara [Framer Motion](https://motion.dev/) (alias `motion/react`), [GSAP](https://gsap.com/) (ScrollTrigger), dan transisi CSS murni.
-
----
-
-## 🎨 Mengapa Menggunakan CSS Modules (`.module.css`)?
-
-Sering kali proyek modern menggunakan TailwindCSS atau Styled-Components. Namun, di proyek ini kita secara ketat menggunakan **CSS Modules Vanilla**. Berikut adalah alasan teknisnya:
-
-### 1. Isolasi Scope Mutlak (*Local Scoping*)
-Masalah terbesar di CSS tradisional adalah konflik nama (*class name collision*). Dengan CSS Modules, penamaan kelas seperti `.card` atau `.container` di- *hash* secara otomatis saat kompilasi (menjadi sesuatu seperti `page_card__3Xj9a`). 
-- **Keuntungan:** Developer bebas menggunakan nama `.title` di 10 file yang berbeda tanpa takut gayanya akan "bocor" (bleed) atau bertabrakan antar halaman.
-
-### 2. Kinerja Bebas Hambatan (*Zero-Runtime CSS*)
-Tidak seperti *CSS-in-JS* (misal: Styled-Components atau Emotion) yang membebankan peramban (*browser*) klien untuk menerjemahkan JS ke CSS secara *real-time*, CSS Modules di- *build* oleh Next.js menjadi file `.css` statis (murni).
-- **Keuntungan:** Performa sangat cepat (zero-runtime), mendukung penuh React Server Components (RSC), dan tidak memperbesar ukuran bundel *JavaScript*.
-
-### 3. Pemisahan Kode (*Code Splitting*) Otomatis
-Next.js secara otomatis hanya akan memuat file `.module.css` yang dibutuhkan pada halaman aktif.
-- **Keuntungan:** Jika pengguna hanya membuka `/journal`, maka CSS dari `/kategori` tidak akan diunduh. Hal ini mempercepat waktu buka halaman secara signifikan.
-
-### 4. Fleksibilitas Penuh untuk Animasi Kompleks
-Animasi seperti `GooeyNav` (efek cair) atau kalkulasi perspektif 3D pada `TiltedCard` sangat bergantung pada pseudoelemen (`::before`, `::after`), filter SVG kompleks (`url(#gooey)`), dan variabel kustom CSS. Menggunakan murni CSS Modules mempermudah manipulasi properti tingkat lanjut ini dibandingkan *utility classes* seperti Tailwind.
-
----
-
-## 🔄 Alur Teknis & Cara Kerja Website (*Technical Flows*)
-
-Berikut adalah diagram (Flowchart) dan penjelasan teknis tentang bagaimana roda gigi website ini bergerak:
-
-### Diagram Arsitektur (Flowchart)
-```mermaid
-graph TD
-    Root["Root Layout (app/layout)"]
-    Nav["NavBar (Client)"]
-    Footer["Footer (Server)"]
-    Gooey["GooeyNav (Canvas)"]
-    Home["Home (/)"]
-    Cat["Kategori (/kategori)"]
-    Jour["Jurnal (/journal)"]
-    Prof["Profil (/profile)"]
-    GSAP["CategoryGrid (GSAP)"]
-    Tilted["TiltedCard (Framer)"]
-    Tabs["Interactive Tabs"]
-
-    subgraph Persistent_UI ["Persistent UI"]
-        Nav
-        Footer
-    end
-    
-    Nav --> Gooey
-
-    subgraph Pages ["Next.js Pages (Server)"]
-        Home
-        Cat
-        Jour
-        Prof
-    end
-    
-    Root ==> Nav
-    Root ==> Home
-    Root ==> Cat
-    Root ==> Jour
-    Root ==> Prof
-    Root ==> Footer
-
-    subgraph Client_Interactivity ["Client Interactivity"]
-        GSAP
-        Tilted
-        Tabs
-    end
-
-    Cat -.->|Client Load| GSAP
-    Jour -.->|Client Load| Tilted
-    Prof -.->|Client Load| Tabs
-
-    %% Styling and layout configurations
-    classDef server fill:#0f172a,stroke:#334155,stroke-width:2px,color:#f8fafc;
-    classDef client fill:#047857,stroke:#065f46,stroke-width:2px,color:#ecfdf5;
-    classDef anim fill:#b45309,stroke:#92400e,stroke-width:2px,color:#fffbeb;
-
-    class Root,Footer,Home,Cat,Jour,Prof server;
-    class Nav,Tabs client;
-    class Gooey,GSAP,Tilted anim;
-```
-
-### 1. Alur Render & Layout (App Router Flow)
-Website ini sepenuhnya menggunakan arsitektur **App Router (`app/`)** Next.js.
-- **`app/layout.tsx`**: Bertindak sebagai pembungkus (cangkang) aplikasi. Komponen `<NavBar />` dan `<Footer />` dipanggil di sini.
-- **Kenapa ini penting?** Saat pengguna berpindah halaman dari `/` ke `/kategori` menggunakan `<Link>`, React hanya mengganti komponen utama (halaman). Komponen `<NavBar />` tidak dihancurkan (*unmounted*) dan dirender ulang, melainkan **tetap persisten di memori**. Itulah sebabnya animasi efek cair (*gooey*) pada navigasi tidak terputus dan bisa bergerak mulus antar *tab*.
-
-### 2. Alur Animasi Hibrida (*Animation Flow*)
-Situs ini menerapkan "Progressive Enhancement" pada animasinya, memadukan berbagai alat beda spesialisasi:
-- **GSAP (GreenSock):** Digunakan pada halaman *Kategori* untuk menganimasikan kartu-*kartu bento* secara bergelombang (*stagger*) saat pengguna melakukan *scroll* (`ScrollTrigger`). GSAP sangat unggul untuk animasi terkoordinasi berskala besar berbasis gulir.
-- **Framer Motion (`motion`):** Digunakan pada *TiltedCard* di halaman *Jurnal*. Komponen ini melacak kordinat sentuhan *mouse* secara lokal menggunakan `useMotionValue` dan `useSpring`, untuk menghasilkan efek interaktif berbobot fisika secara halus.
-- **Kanvas CSS/SVG (`GooeyNav`):** Menggunakan injeksi dinamis dari `document.createElement` (JavaScript mentah) yang dikombinasikan dengan `<filter id="gooey">`. Setiap kali menu diklik, ia menembakkan "partikel" secara radial menggunakan fungsi matematika Kosinus & Sinus (`getXY`).
-
-### 3. Alur Komponen Server vs Klien (*RSC vs Client Boundaries*)
-Secara *default*, semua file di *App Router* adalah **Server Components**.
-- **Server:** Halaman-halaman dibiarkan menjadi Server Component, artinya mereka dirakit di sisi *server* dan dikirim ke klien (browser) sebagai HTML statis murni.
-- **Client:** Jika sebuah komponen membutuhkan interaktivitas (seperti melacak *mouse*, menggunakan `useState`, atau efek animasi saat *scroll*), kita memisahkannya ke dalam komponen spesifik (misal: `NavBar.tsx`, `CategoryGrid.tsx`, `TiltedCard.jsx`) dan memberinya label pembuka `'use client';`.
-- **Hasil:** Aplikasi terasa sangat interaktif, tetapi *bundle* JavaScript yang harus diunduh *browser* tetap sangat ramping.
-
-### 4. Alur Mode Responsif (*Mobile Flow*)
-Website dirancang dengan prinsip desain fleksibel:
-- Menggunakan `clamp()` pada CSS (contoh: `font-size: clamp(2rem, 5vw, 3.5rem);`) yang membuat ukuran teks otomatis menyusut mengikuti ukuran layar tanpa perlu ratusan *Media Queries*.
-- Grid dirancang menggunakan `grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))` sehingga kartu resep otomatis tumpah ke bawah membentuk 1 kolom saat layar mengecil ke ukuran ponsel.
-- Di layar *mobile*, efek interaktif berat (seperti GooeyNav) disembunyikan menggunakan `@media`, digantikan oleh *Hamburger Menu* berbasis state React (`mobileMenuOpen`) untuk mempercepat kinerja perenderan pada ponsel.
-
----
-
-> [!TIP]
-> **Praktik Terbaik Pemeliharaan (Maintenance)**  
-> Jika Anda di masa depan ingin menambahkan halaman baru, cukup buat *folder* baru di dalam direktori `app/` (contoh: `app/tentang-kami/page.tsx`). Jangan lupa untuk menambahkan tautan rute barunya ke parameter `NAV_ITEMS` di `app/components/NavBar.tsx` agar langsung terintegrasi dengan animasi navigasi!
+> [!NOTE]
+> **Tambah Kategori**  
+> Tambah objek ke `CATEGORIES[]` di `data/categories.ts`. URL otomatis jadi `/kategori/[id]`.
