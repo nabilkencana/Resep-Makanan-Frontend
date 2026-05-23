@@ -24,7 +24,7 @@ export default function PageLoader() {
     <div className={`${styles.overlay} ${hidden ? styles.hidden : ''}`} aria-hidden="true">
       <div className={styles.lottieContainer}>
         <DotLottieReact
-          src="https://lottie.host/e27fd9a9-b2a6-473d-a9a8-37d37292f8ab/YMJDdySQ9h.lottie"
+          src="https://lottie.host/21195970-ce13-43b0-92f8-ac5581ff5465/wK3O3EWzfO.lottie"
           loop
           autoplay
         />
