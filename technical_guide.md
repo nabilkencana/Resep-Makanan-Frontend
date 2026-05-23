@@ -11,7 +11,7 @@ Panduan lengkap berdasarkan kode asli proyek. Mencakup semua halaman, komponen, 
 | **Framework** | Next.js 16 (App Router) | Rendering, routing, SEO |
 | **Bahasa** | TypeScript + JSX | Type-safety dan komponen interaktif |
 | **Styling** | CSS Modules + Global CSS | Isolasi gaya per komponen |
-| **Animasi** | Framer Motion, GSAP, CSS | Animasi fisika dan scroll |
+| **Animasi** | Framer Motion, GSAP, Lottie | Animasi fisika dan loading screen |
 | **Font** | Inter via `next/font/google` | Tipografi modern |
 | **Build Tool** | Turbopack (Next.js 16) | Kompilasi lebih cepat |
 | **Data** | Static TypeScript files | Tidak ada backend/DB |
@@ -28,6 +28,8 @@ frontend-resep/
     ├── page.tsx                ← Beranda (/)
     │
     ├── components/             ← Semua komponen UI
+    │   ├── PageLoader.tsx      ← Loading screen awal (Lottie)
+    │   ├── PageLoader.module.css
     │   ├── NavBar.tsx          ← Navigasi + hamburger mobile
     │   ├── NavBar.module.css
     │   ├── GooeyNav.jsx        ← Efek partikel cair + routing
@@ -233,6 +235,7 @@ graph TD
     end
 
     subgraph ClientComp ["Komponen Client"]
+        Loader["PageLoader (Lottie)"]
         HeroSec["HeroSection"]
         RecSec["RecipesSection"]
         CatGrid["CategoryGrid GSAP"]
@@ -242,6 +245,7 @@ graph TD
     end
 
     Browser --> Layout
+    Layout --> Loader
     Layout --> NavBar
     Layout --> Pages
     Layout --> Footer
@@ -298,6 +302,10 @@ graph TD
 
 ```mermaid
 graph TD
+    subgraph Root ["Global (layout.tsx)"]
+        PL["PageLoader - Lottie animation saat awal muat"]
+    end
+
     subgraph Nav ["NavBar - Desktop dan Mobile"]
         GDesktop["GooeyNav horizontal - Desktop"]
         HBurger["Hamburger Button - Mobile"]
@@ -338,6 +346,7 @@ graph TD
     end
 
     subgraph Client ["CLIENT - JS dijalankan di browser"]
+        PL["PageLoader use client"]
         NB["NavBar use client"]
         HS["HeroSection use client"]
         CG["CategoryGrid use client"]
@@ -348,6 +357,7 @@ graph TD
     end
 
     Server -->|Hydration| Client
+    L --> PL
     L --> NB
     PH --> HS
     PK --> CG

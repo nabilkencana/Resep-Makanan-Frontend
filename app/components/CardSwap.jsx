@@ -42,6 +42,7 @@ const CardSwap = ({
   skewAmount = 6,
   easing = 'elastic',
   children,
+  startWhen = true,
 }) => {
   const config =
     easing === 'elastic'
@@ -113,10 +114,12 @@ const CardSwap = ({
       tl.call(() => { order.current = [...rest, front]; });
     };
 
-    swap();
-    intervalRef.current = window.setInterval(swap, delay);
+    if (startWhen) {
+      swap();
+      intervalRef.current = window.setInterval(swap, delay);
+    }
 
-    if (pauseOnHover) {
+    if (pauseOnHover && startWhen) {
       const node = container.current;
       const pause = () => {
         tlRef.current?.pause();
@@ -136,7 +139,7 @@ const CardSwap = ({
     }
     return () => clearInterval(intervalRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing]);
+  }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing, startWhen]);
 
   const rendered = childArr.map((child, i) =>
     isValidElement(child)

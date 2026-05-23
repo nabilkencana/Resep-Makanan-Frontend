@@ -5,6 +5,8 @@ import type { ReactNode, CSSProperties } from 'react';
 import styles from './HeroSection.module.css';
 import CountUp from './CountUp';
 
+import { useEffect, useState } from 'react';
+
 // ── Type for Card so dynamic() doesn't erase its props ──
 interface CardProps {
   children?: ReactNode;
@@ -28,6 +30,7 @@ interface BlurTextProps {
   easing?: (t: number) => number;
   onAnimationComplete?: () => void;
   stepDuration?: number;
+  startWhen?: boolean;
 }
 
 // ── Type for CardSwap – mirroring what the JS component actually accepts ──
@@ -42,6 +45,7 @@ interface CardSwapProps {
   onCardClick?: (idx: number) => void;
   skewAmount?: number;
   easing?: string;
+  startWhen?: boolean;
 }
 
 // Dynamically import CardSwap (GSAP needs browser)
@@ -72,6 +76,14 @@ const RECIPE_CARDS = [
 ];
 
 export default function HeroSection() {
+  const [appReady, setAppReady] = useState(false);
+
+  useEffect(() => {
+    // Wait for the loader's 3.5s delay to finish before triggering animations
+    const timer = setTimeout(() => setAppReady(true), 3500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <section className={styles.hero} aria-label="Hero section">
 
@@ -101,6 +113,7 @@ export default function HeroSection() {
               direction="top"
               stepDuration={0.4}
               className={styles.headlineBlur}
+              startWhen={appReady}
             />
           </h1>
           <div id="hero-subline">
@@ -111,6 +124,7 @@ export default function HeroSection() {
               direction="bottom"
               stepDuration={0.3}
               className={styles.sublineBlur}
+              startWhen={appReady}
             />
           </div>
 
@@ -140,21 +154,21 @@ export default function HeroSection() {
           <div className={styles.stats} aria-label="Statistik resep">
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={2400} separator="." duration={2} className={styles.statCountUp} onStart={undefined} onEnd={undefined} />
+                <CountUp from={0} to={2400} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
                 <span>+</span>
               </span>
               <span className={styles.statLabel}>Resep</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={98} duration={1.5} className={styles.statCountUp} onStart={undefined} onEnd={undefined} />
+                <CountUp from={0} to={98} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
                 <span>%</span>
               </span>
               <span className={styles.statLabel}>Kepuasan</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={12.4} duration={2} className={styles.statCountUp} onStart={undefined} onEnd={undefined} />
+                <CountUp from={0} to={12.4} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
                 <span>k</span>
               </span>
               <span className={styles.statLabel}>Pengguna</span>
@@ -173,6 +187,7 @@ export default function HeroSection() {
             pauseOnHover
             skewAmount={5}
             easing="elastic"
+            startWhen={appReady}
           >
             {RECIPE_CARDS.map((r) => (
               <Card key={r.src} customClass={styles.recipeCard}>

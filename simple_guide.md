@@ -11,7 +11,7 @@
 | **Framework** | Next.js 16 App Router |
 | **Bahasa** | TypeScript + JSX |
 | **Styling** | CSS Modules (`.module.css`) — tidak ada Tailwind |
-| **Animasi** | Framer Motion + GSAP + CSS murni |
+| **Animasi** | Framer Motion + GSAP + Lottie + CSS murni |
 | **Data** | File TypeScript statis — tidak ada backend/DB |
 | **Deploy** | Vercel (lokal: `npm run dev`) |
 
@@ -39,7 +39,9 @@ app/
 ├── journal/          ← /journal: perencana makan
 ├── profile/          ← /profile: 3 tab + Icons.tsx SVG custom
 ├── recipe/[id]/      ← /recipe/[id]: detail resep dinamis + not-found.tsx
-├── components/       ← Semua komponen UI (26 file)
+├── components/       ← Semua komponen UI (28 file)
+│   ├── PageLoader.tsx  ← Loading screen animasi Lottie
+│   └── ...
 └── data/
     ├── recipes.ts    ← 5 resep (tambah di sini)
     └── categories.ts ← 8 kategori (tambah di sini)
@@ -83,6 +85,7 @@ Aturan simpel:
 
 | Halaman | Komponen Animasi | Library |
 |---|---|---|
+| Semua (layout) | PageLoader (loading screen) | @lottiefiles/dotlottie-react |
 | NavBar | GooeyNav (partikel cair) | CSS + DOM injection |
 | Beranda | BlurText, CardSwap, CountUp | Framer Motion |
 | Kategori | RotatingText, CategoryGrid | GSAP ScrollTrigger |
