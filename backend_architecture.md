@@ -707,7 +707,7 @@ erDiagram
 
     TUTORIAL {
         string id PK
-        string recipeId FK UK
+        string recipeId FK "unique - 1 tutorial per resep"
         string title
         string videoUrl
         int duration
@@ -731,7 +731,7 @@ erDiagram
         string id PK
         string userId FK
         string tutorialId FK
-        string transactionId FK UK
+        string transactionId FK "unique"
         datetime grantedAt
         datetime expiresAt
     }
@@ -1030,7 +1030,7 @@ stateDiagram-v2
 
 ```mermaid
 graph TD
-    subgraph TutMod["\ud83c� TutorialsModule"]
+    subgraph TutMod["TutorialsModule"]
         TC["TutorialsController\n@Controller('tutorials')"]
         TS["TutorialsService\n@Injectable()"]
         TAG["TutorialAccessGuard\nimplements CanActivate"]
