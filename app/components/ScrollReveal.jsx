@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const ScrollReveal = ({
   children,
-  scrollContainerRef,
+  scrollContainerRef = null,
   enableBlur = true,
   baseOpacity = 0.1,
   baseRotation = 3,
