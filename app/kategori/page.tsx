@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES as FALLBACK_CATEGORIES } from '../data/categories';
 import styles from './page.module.css';
 import NewsletterForm from './NewsletterForm';
 import HeroStats from './HeroStats';
@@ -20,9 +20,34 @@ const POPULAR_TAGS = [
   '🥩 Daging', '🐟 Seafood', '🍰 Dessert', '🧁 Kue', '🥗 Salad', '🍛 Nusantara',
 ];
 
-const TOTAL_CATEGORIES = CATEGORIES.length;
+async function getCategories() {
+  try {
+    const res = await fetch('http://localhost:3000/api/categories', { cache: 'no-store' });
+    if (!res.ok) return FALLBACK_CATEGORIES;
+    const data = await res.json();
+    
+    // Map backend categories to frontend format if needed
+    const backendCategories = data.categories?.map((cat: any, i: number) => ({
+      id: cat.id.toString(),
+      name: cat.name,
+      description: cat.description,
+      icon: cat.icon || '🍽️',
+      color: cat.color || '#F0FDF4', // default green
+      slug: cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      count: cat._count?.recipes || Math.floor(Math.random() * 50) + 10, // fallback count if not populated
+      href: `/?category=${encodeURIComponent(cat.name)}`
+    }));
 
-export default function KategoriPage() {
+    return (backendCategories && backendCategories.length > 0) ? backendCategories : FALLBACK_CATEGORIES;
+  } catch (e) {
+    return FALLBACK_CATEGORIES;
+  }
+}
+
+export default async function KategoriPage() {
+  const categories = await getCategories();
+  const totalCategories = categories.length;
+
   return (
     <div className={styles.page}>
 
@@ -58,7 +83,7 @@ export default function KategoriPage() {
             </div>
             <HeroTitle />
             <HeroSubtitle />
-            <HeroStats totalCategories={TOTAL_CATEGORIES} />
+            <HeroStats totalCategories={totalCategories} />
           </div>
         </div>
 
@@ -91,11 +116,11 @@ export default function KategoriPage() {
             <h2 className={styles.sectionTitle}>
               Semua <span>Kategori</span>
             </h2>
-            <span className={styles.sectionCount}>{TOTAL_CATEGORIES} kategori tersedia</span>
+            <span className={styles.sectionCount}>{totalCategories} kategori tersedia</span>
           </div>
 
           {/* Category Grid — Anti-Gravity Animation */}
-          <CategoryGrid categories={CATEGORIES} />
+          <CategoryGrid categories={categories} />
 
           {/* ── Popular Tags ── */}
           <section className={styles.tagsSection} aria-label="Tag populer">

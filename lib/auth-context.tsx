@@ -7,6 +7,7 @@ interface User {
   email: string;
   username: string;
   role: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -33,6 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token) {
         try {
           const res = await api.getProfile();
+          if (res.user && !res.user.username && res.user.email) {
+            res.user.username = res.user.email.split('@')[0];
+          }
           setUser(res.user);
         } catch (error) {
           console.error('Failed to fetch profile:', error);

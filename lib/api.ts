@@ -37,4 +37,27 @@ export const api = {
   login: (data: any) => fetchApi('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: any) => fetchApi('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   getProfile: () => fetchApi('/auth/me'),
+
+  // Categories
+  getCategories: () => fetchApi('/categories'),
+
+  // Favorites
+  getFavorites: () => fetchApi('/users/me/favorites'),
+  addFavorite: (recipeId: string) => fetchApi(`/users/me/favorites/${recipeId}`, { method: 'POST' }),
+  removeFavorite: (recipeId: string) => fetchApi(`/users/me/favorites/${recipeId}`, { method: 'DELETE' }),
+
+  // Reviews
+  getReviews: (recipeId: string) => fetchApi(`/recipes/${recipeId}/reviews`),
+  addReview: (recipeId: string, data: any) => fetchApi(`/recipes/${recipeId}/reviews`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteReview: (recipeId: string) => fetchApi(`/recipes/${recipeId}/reviews`, { method: 'DELETE' }),
+
+  // Journal
+  getMyJournals: () => fetchApi('/journals/me'),
+  createJournal: (data: any) => fetchApi('/journals', { method: 'POST', body: JSON.stringify(data) }),
+  addJournalEntry: (journalId: string, data: any) => fetchApi(`/journals/${journalId}/entries`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteJournalEntry: (entryId: string) => fetchApi(`/journals/entries/${entryId}`, { method: 'DELETE' }),
+  getShoppingList: () => fetchApi('/journals/shopping-list'),
+
+  // Newsletter
+  subscribeNewsletter: (data: { email: string }) => fetchApi('/newsletter', { method: 'POST', body: JSON.stringify(data) }),
 };

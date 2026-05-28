@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import FavoriteButton from '../../components/FavoriteButton';
 import styles from './page.module.css';
 
 interface Props {
@@ -12,11 +13,22 @@ async function getRecipeById(id: string) {
     const res = await fetch(`http://localhost:3000/api/recipes/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
+    
+    // Fetch reviews
+    let totalReviews = 0;
+    try {
+      const reviewRes = await fetch(`http://localhost:3000/api/recipes/${id}/reviews`, { cache: 'no-store' });
+      if (reviewRes.ok) {
+        const reviewData = await reviewRes.json();
+        totalReviews = reviewData.totalReviews || 0;
+      }
+    } catch (e) { console.error('Failed to fetch reviews', e); }
+
     if (data.recipe) {
       return {
         ...data.recipe,
         tags: [data.recipe.category],
-        reviews: 0, // Belum ada data ulasan dari backend di seed
+        reviews: totalReviews,
         heroSrc: data.recipe.imageUrl || '/recipe-chicken.jpg',
         ingredients: typeof data.recipe.ingredients === 'string' ? JSON.parse(data.recipe.ingredients) : data.recipe.ingredients,
         steps: typeof data.recipe.steps === 'string' ? JSON.parse(data.recipe.steps) : data.recipe.steps,
@@ -79,13 +91,7 @@ export default async function RecipePage({ params }: Props) {
 
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{recipe.title}</h1>
-          <button className={styles.saveBtn} id="btn-save-recipe">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-            </svg>
-            Simpan
-          </button>
+          <FavoriteButton recipeId={id} />
         </div>
 
         <p className={styles.description}>{recipe.description}</p>

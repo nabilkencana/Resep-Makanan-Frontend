@@ -12,85 +12,7 @@ import {
   IconHistory, IconRestaurant
 } from './Icons';
 
-const SAVED_RECIPES = [
-  {
-    id: '1',
-    title: 'Pizza Tomat Pusaka',
-    badge: 'VEGETARIAN',
-    rating: 4.9,
-    time: '25 min',
-    image: '/recipe-pizza.png'
-  },
-  {
-    id: '2',
-    title: 'Roti Sourdough',
-    badge: 'MEMANGGANG',
-    rating: 5.0,
-    time: '12 hrs',
-    image: '/recipe-bread.png'
-  },
-  {
-    id: '3',
-    title: 'Garden Harvest Salad',
-    badge: 'VEGAN',
-    rating: 4.8,
-    time: '15 min',
-    image: '/recipe-salad.png'
-  }
-];
-
-type Activity = {
-  id: number;
-  type: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
-  label: string;
-  title: string;
-  subtitle?: string;
-  quote?: string;
-  time?: string;
-  image?: string;
-  rightIcon?: React.ReactNode;
-  badgeIcon?: React.ReactNode;
-  stars?: number;
-};
-
-const ACTIVITIES: Activity[] = [
-  {
-    id: 1,
-    type: 'RECIPE_SAVED',
-    icon: <IconBookmark />,
-    iconBg: '#4ade80',
-    iconColor: '#fff',
-    label: 'RESEP DISIMPAN',
-    title: 'Pizza Tomat Pusaka',
-    subtitle: "Disimpan ke folder 'Klasik Italia' Anda untuk inspirasi nanti.",
-    time: '2 jam yang lalu',
-    image: '/recipe-pizza.png'
-  },
-  {
-    id: 2,
-    type: 'COMMENT_POSTED',
-    icon: <IconComment />,
-    iconBg: '#e8e8ea',
-    iconColor: '#5f5e60',
-    label: 'KOMENTAR DIKIRIM',
-    title: "Pada Jurnal: 'Seni Membuat Sourdough'",
-    quote: "Tips tentang tingkat hidrasi benar-benar mengubah hasil panggangan akhir pekan saya! Terima kasih atas penjelasannya yang detail.",
-    time: '5 jam yang lalu'
-  },
-  {
-    id: 3,
-    type: 'CATEGORY_FOLLOWED',
-    icon: <IconLeaf />,
-    iconBg: '#e8e8ea',
-    iconColor: '#006d36',
-    label: 'KATEGORI DIIKUTI',
-    title: 'Berbasis Tanaman',
-    rightIcon: <IconCheckCircle />
-  }
-];
+// ACTIVITIES fallback will be dynamically generated from Journal data
 
 const IconEdit = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -126,6 +48,9 @@ const IconTime = () => (
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'RECIPES' | 'ACTIVITY' | 'SETTINGS'>('ACTIVITY');
+  const [savedRecipes, setSavedRecipes] = useState<any[]>([]);
+  const [journals, setJournals] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const { user, loading, logout } = useAuth();
   const router = useRouter();
 
@@ -134,6 +59,34 @@ export default function ProfilePage() {
       router.push('/auth');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user) {
+      import('../../lib/api').then(({ api }) => {
+        Promise.all([
+          api.getFavorites().catch(() => ({ favorites: [] })),
+          api.getMyJournals().catch(() => ({ journals: [] }))
+        ]).then(([favRes, journalRes]) => {
+          setSavedRecipes(favRes.favorites || []);
+          setJournals(journalRes.journals || []);
+          
+          // Map journals to activities
+          const mappedActivities = (journalRes.journals || []).map((j: any) => ({
+            id: j.id,
+            type: 'JOURNAL_CREATED',
+            icon: <IconCollection />,
+            iconBg: '#e8e8ea',
+            iconColor: '#5f5e60',
+            label: 'JURNAL MINGGUAN',
+            title: `Jurnal Mulai: ${new Date(j.weekStart).toLocaleDateString('id-ID')}`,
+            subtitle: `${j.entries?.length || 0} entri resep tersimpan di jurnal ini.`,
+            time: new Date(j.createdAt).toLocaleDateString('id-ID')
+          }));
+          setActivities(mappedActivities);
+        });
+      });
+    }
+  }, [user]);
 
   if (loading || !user) {
     return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Memuat profil...</div>;
@@ -168,15 +121,15 @@ export default function ProfilePage() {
                 
                 <div className={styles.profileStats}>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>12</span>
+                    <span className={styles.statNumber}>{savedRecipes.length}</span>
                     <span className={styles.statLabel}>RESEP DISIMPAN</span>
                   </div>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>5</span>
-                    <span className={styles.statLabel}>KOMENTAR JURNAL</span>
+                    <span className={styles.statNumber}>{journals.length}</span>
+                    <span className={styles.statLabel}>JURNAL MINGGUAN</span>
                   </div>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>2023</span>
+                    <span className={styles.statNumber}>{new Date(user.createdAt || Date.now()).getFullYear()}</span>
                     <span className={styles.statLabel}>ANGGOTA SEJAK</span>
                   </div>
                 </div>
@@ -226,28 +179,34 @@ export default function ProfilePage() {
                 </div>
 
                 <div className={styles.recipeGrid}>
-                  {SAVED_RECIPES.map(recipe => (
-                    <div key={recipe.id} className={styles.recipeCard}>
-                      <Image src={recipe.image} alt={recipe.title} fill className={styles.recipeImage} />
-                      <div className={styles.recipeOverlay}></div>
-                      
-                      <div className={styles.recipeContent}>
-                        <span className={styles.recipeBadge}>{recipe.badge}</span>
-                        <h3 className={styles.recipeTitle}>{recipe.title}</h3>
+                  {savedRecipes.length === 0 ? (
+                    <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666', padding: '2rem' }}>
+                      Belum ada resep yang disimpan.
+                    </p>
+                  ) : (
+                    savedRecipes.map(fav => (
+                      <div key={fav.id} className={styles.recipeCard} onClick={() => router.push(`/recipe/${fav.recipe.id}`)} style={{ cursor: 'pointer' }}>
+                        <Image src={fav.recipe.imageUrl || '/recipe-chicken.jpg'} alt={fav.recipe.title} fill className={styles.recipeImage} />
+                        <div className={styles.recipeOverlay}></div>
                         
-                        <div className={styles.recipeMeta}>
-                          <span className={styles.metaItem}>
-                            <IconStar />
-                            {recipe.rating}
-                          </span>
-                          <span className={styles.metaItem}>
-                            <IconTime />
-                            {recipe.time}
-                          </span>
+                        <div className={styles.recipeContent}>
+                          <span className={styles.recipeBadge}>{fav.recipe.category}</span>
+                          <h3 className={styles.recipeTitle}>{fav.recipe.title}</h3>
+                          
+                          <div className={styles.recipeMeta}>
+                            <span className={styles.metaItem}>
+                              <IconStar />
+                              {fav.recipe.rating}
+                            </span>
+                            <span className={styles.metaItem}>
+                              <IconTime />
+                              {fav.recipe.cookTime}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
 
                 <div className={styles.loadMoreWrap}>
@@ -265,64 +224,68 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className={styles.activityFeed}>
-                  {ACTIVITIES.map(activity => (
-                    <div key={activity.id} className={styles.activityItem}>
-                      
-                      <div 
-                        className={styles.activityIconWrap} 
-                        style={{ backgroundColor: activity.iconBg, color: activity.iconColor }}
-                      >
-                        {activity.icon}
-                      </div>
-
-                      <div className={styles.activityCard}>
-                        <div className={styles.activityCardHeader}>
-                          {activity.label}
-                        </div>
+                  {activities.length === 0 ? (
+                    <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>Belum ada jurnal mingguan.</p>
+                  ) : (
+                    activities.map(activity => (
+                      <div key={activity.id} className={styles.activityItem}>
                         
-                        <div className={styles.activityCardContent}>
-                          {activity.badgeIcon && (
-                            <div className={styles.activityCardBadgeWrap}>
-                              {activity.badgeIcon}
-                            </div>
-                          )}
+                        <div 
+                          className={styles.activityIconWrap} 
+                          style={{ backgroundColor: activity.iconBg, color: activity.iconColor }}
+                        >
+                          {activity.icon}
+                        </div>
 
-                          <div className={styles.activityCardMain}>
-                            <h3 className={styles.activityCardTitle}>{activity.title}</h3>
-                            {activity.subtitle && <p className={styles.activityCardSubtitle}>{activity.subtitle}</p>}
-                            {activity.quote && <blockquote className={styles.activityCardQuote}>"{activity.quote}"</blockquote>}
-                            
-                            {activity.stars && (
-                              <div className={styles.activityCardStars}>
-                                {[...Array(5)].map((_, i) => (
-                                  <IconStarFull key={i} />
-                                ))}
+                        <div className={styles.activityCard}>
+                          <div className={styles.activityCardHeader}>
+                            {activity.label}
+                          </div>
+                          
+                          <div className={styles.activityCardContent}>
+                            {activity.badgeIcon && (
+                              <div className={styles.activityCardBadgeWrap}>
+                                {activity.badgeIcon}
                               </div>
                             )}
 
-                            {activity.time && <span className={styles.activityCardTime}>{activity.time}</span>}
-                          </div>
+                            <div className={styles.activityCardMain}>
+                              <h3 className={styles.activityCardTitle}>{activity.title}</h3>
+                              {activity.subtitle && <p className={styles.activityCardSubtitle}>{activity.subtitle}</p>}
+                              {activity.quote && <blockquote className={styles.activityCardQuote}>"{activity.quote}"</blockquote>}
+                              
+                              {activity.stars && (
+                                <div className={styles.activityCardStars}>
+                                  {[...Array(5)].map((_, i) => (
+                                    <IconStarFull key={i} />
+                                  ))}
+                                </div>
+                              )}
 
-                          {activity.image && (
-                            <Image 
-                              src={activity.image} 
-                              alt={activity.title} 
-                              width={140} 
-                              height={90} 
-                              className={styles.activityCardImage} 
-                            />
-                          )}
-
-                          {activity.rightIcon && (
-                            <div className={styles.activityCardRightIcon}>
-                              {activity.rightIcon}
+                              {activity.time && <span className={styles.activityCardTime}>{activity.time}</span>}
                             </div>
-                          )}
-                        </div>
-                      </div>
 
-                    </div>
-                  ))}
+                            {activity.image && (
+                              <Image 
+                                src={activity.image} 
+                                alt={activity.title} 
+                                width={140} 
+                                height={90} 
+                                className={styles.activityCardImage} 
+                              />
+                            )}
+
+                            {activity.rightIcon && (
+                              <div className={styles.activityCardRightIcon}>
+                                {activity.rightIcon}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                      </div>
+                    ))
+                  )}
                 </div>
               </>
             )}

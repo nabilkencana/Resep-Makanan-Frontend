@@ -30,7 +30,7 @@ export default function AuthPage() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          role: 'USER',
+          role: 'CUSTOMER',
         });
         alert('Registrasi berhasil! Silakan masuk.');
         setIsLogin(true);

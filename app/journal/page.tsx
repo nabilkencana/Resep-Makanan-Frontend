@@ -4,11 +4,7 @@ import styles from './page.module.css';
 import Image from 'next/image';
 import TiltedCard from '../components/TiltedCard';
 
-const RECIPES = [
-  { id: '1', title: 'Avocado Smash Toast', time: '15 min', image: '/images/avocado_toast.png' },
-  { id: '2', title: 'Sup Tomat Panggang', time: '45 min', image: '/images/roasted_tomato_soup.png' },
-  { id: '3', title: 'Nourish Bowl', time: '25 min', image: '/images/nourish_bowl.png' },
-];
+// Recipes will be dynamically fetched
 
 type Meal = { title: string; image: string };
 type DaySchedule = {
@@ -62,7 +58,19 @@ const IconDrag = () => (
   </svg>
 );
 
-export default function JournalPage() {
+async function getTrendingRecipes() {
+  try {
+    const res = await fetch('http://localhost:3000/api/recipes/trending', { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.recipes || [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function JournalPage() {
+  const trendingRecipes = await getTrendingRecipes();
   return (
     <main className={styles.main}>
       <div className={styles.container}>
@@ -172,20 +180,24 @@ export default function JournalPage() {
             <p className={styles.sidebarHint}>Tarik resep ini ke perencana untuk menyusun jadwal mingguan Anda.</p>
             
             <div className={styles.recipeList}>
-              {RECIPES.map((recipe) => (
-                <div key={recipe.id} className={styles.recipeItem}>
-                  <div className={styles.recipeItemImage}>
-                    <Image src={recipe.image} alt={recipe.title} width={60} height={60} style={{ objectFit: 'cover' }} />
+              {trendingRecipes.length === 0 ? (
+                <p style={{ color: '#666', fontSize: '0.9rem' }}>Belum ada rekomendasi saat ini.</p>
+              ) : (
+                trendingRecipes.slice(0, 5).map((recipe: any) => (
+                  <div key={recipe.id} className={styles.recipeItem}>
+                    <div className={styles.recipeItemImage}>
+                      <Image src={recipe.imageUrl || '/recipe-chicken.jpg'} alt={recipe.title} width={60} height={60} style={{ objectFit: 'cover' }} />
+                    </div>
+                    <div className={styles.recipeItemInfo}>
+                      <h3>{recipe.title}</h3>
+                      <span className={styles.recipeTime}>{recipe.cookTime}</span>
+                    </div>
+                    <button className={styles.dragHandle} aria-label="Drag to reorder">
+                      <IconDrag />
+                    </button>
                   </div>
-                  <div className={styles.recipeItemInfo}>
-                    <h3>{recipe.title}</h3>
-                    <span className={styles.recipeTime}>{recipe.time}</span>
-                  </div>
-                  <button className={styles.dragHandle} aria-label="Drag to reorder">
-                    <IconDrag />
-                  </button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
