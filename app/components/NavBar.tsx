@@ -2,8 +2,9 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import styles from './NavBar.module.css';
+import { useAuth } from '../../lib/auth-context';
 
 const GooeyNav    = dynamic(() => import('./GooeyNav'),    { ssr: false });
 const TextPressure = dynamic(() => import('./TextPressure'), { ssr: false });
@@ -38,6 +39,8 @@ export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
 
   // focus the input whenever the search panel opens
   useEffect(() => {
@@ -48,6 +51,13 @@ export default function NavBar() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && e.currentTarget.value) {
+      router.push(`/?search=${encodeURIComponent(e.currentTarget.value)}`);
+      setSearchOpen(false);
+    }
+  };
 
   return (
     <header className={styles.header} role="banner">
@@ -108,14 +118,22 @@ export default function NavBar() {
                 aria-label="Cari resep"
                 id="nav-search"
                 onBlur={() => setSearchOpen(false)}
+                onKeyDown={handleSearch}
               />
             </div>
           </div>
 
           {/* Profile – icon only */}
-          <Link href="/profile" className={styles.profileBtn} id="nav-profile" aria-label="Profil">
-            <IconPerson />
-          </Link>
+          {user ? (
+            <Link href="/profile" className={styles.profileBtn} id="nav-profile" aria-label="Profil" style={{ width: 'auto', padding: '0 12px', gap: '8px' }}>
+              <IconPerson />
+              <span className="hidden md:inline" style={{ fontSize: '14px', fontWeight: 600 }}>{user.username || 'User'}</span>
+            </Link>
+          ) : (
+            <Link href="/auth" className={styles.profileBtn} id="nav-profile" aria-label="Masuk">
+              <IconPerson />
+            </Link>
+          )}
 
           {/* Hamburger Menu (Mobile Only) */}
           <button 

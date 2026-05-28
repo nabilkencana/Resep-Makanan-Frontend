@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import PageLoader from "./components/PageLoader";
+import { AuthProvider } from "../lib/auth-context";
 
 export default function RootLayout({
   children,
@@ -30,10 +31,12 @@ export default function RootLayout({
   return (
     <html lang="id" className={inter.variable}>
       <body>
-        <PageLoader />
-        <NavBar />
-        {children}
-        <Footer />
+        <AuthProvider>
+          <PageLoader />
+          <NavBar />
+          {children}
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

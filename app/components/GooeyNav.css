@@ -56,7 +56,6 @@
   color: inherit;
   text-decoration: none;
   line-height: 1;
-  pointer-events: none; /* li's onClick handles it */
   white-space: nowrap;
   position: relative;
   z-index: 2;

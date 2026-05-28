@@ -1,6 +1,7 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import './GooeyNav.css';
 
 
@@ -106,7 +107,8 @@ const GooeyNav = ({
   };
 
   const handleClick = (e, index) => {
-    const liEl = e.currentTarget;
+    const liEl = e.currentTarget.closest('li');
+    if (!liEl) return;
     setActiveIndex(index);
     updateEffectPosition(liEl);
 
@@ -120,10 +122,12 @@ const GooeyNav = ({
     }
     if (filterRef.current) makeParticles(filterRef.current);
 
-    // Navigate to the item's href if it's a real route
+    // Let the browser paint the animation first
     const href = items[index]?.href;
     if (href && href !== '#') {
-      router.push(href);
+      setTimeout(() => {
+        router.push(href);
+      }, 400); // Wait 400ms for the animation to play before routing
     }
   };
 
@@ -141,6 +145,15 @@ const GooeyNav = ({
     setActiveIndex(idx);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  // Prefetch all routes to eliminate loading delay
+  useEffect(() => {
+    items.forEach((item) => {
+      if (item.href && item.href !== '#') {
+        router.prefetch(item.href);
+      }
+    });
+  }, [items, router]);
 
   useEffect(() => {
     if (!navRef.current || !containerRef.current) return;
@@ -165,12 +178,13 @@ const GooeyNav = ({
             <li
               key={index}
               className={activeIndex === index ? 'active' : ''}
-              onClick={(e) => handleClick(e, index)}
             >
               <a
-                href={item.href}
-                tabIndex={-1}
-                aria-hidden="true"
+                href={item.href || '#'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleClick(e, index);
+                }}
               >
                 {item.label}
               </a>

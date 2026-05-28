@@ -1,5 +1,8 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../lib/auth-context';
 import styles from './page.module.css';
 import Image from 'next/image';
 import { 
@@ -16,7 +19,7 @@ const SAVED_RECIPES = [
     badge: 'VEGETARIAN',
     rating: 4.9,
     time: '25 min',
-    image: '/images/tomato_pizza.png'
+    image: '/recipe-pizza.png'
   },
   {
     id: '2',
@@ -24,19 +27,36 @@ const SAVED_RECIPES = [
     badge: 'MEMANGGANG',
     rating: 5.0,
     time: '12 hrs',
-    image: '/images/artisan_sourdough.png'
+    image: '/recipe-bread.png'
   },
   {
     id: '3',
-    title: 'Mangkuk Sayur Hijau',
+    title: 'Garden Harvest Salad',
     badge: 'VEGAN',
     rating: 4.8,
     time: '15 min',
-    image: '/images/spring_green_bowl.png'
+    image: '/recipe-salad.png'
   }
 ];
 
-const ACTIVITIES = [
+type Activity = {
+  id: number;
+  type: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  title: string;
+  subtitle?: string;
+  quote?: string;
+  time?: string;
+  image?: string;
+  rightIcon?: React.ReactNode;
+  badgeIcon?: React.ReactNode;
+  stars?: number;
+};
+
+const ACTIVITIES: Activity[] = [
   {
     id: 1,
     type: 'RECIPE_SAVED',
@@ -47,7 +67,7 @@ const ACTIVITIES = [
     title: 'Pizza Tomat Pusaka',
     subtitle: "Disimpan ke folder 'Klasik Italia' Anda untuk inspirasi nanti.",
     time: '2 jam yang lalu',
-    image: '/images/tomato_pizza.png'
+    image: '/recipe-pizza.png'
   },
   {
     id: 2,
@@ -69,47 +89,6 @@ const ACTIVITIES = [
     label: 'KATEGORI DIIKUTI',
     title: 'Berbasis Tanaman',
     rightIcon: <IconCheckCircle />
-  },
-  {
-    id: 4,
-    type: 'ACHIEVEMENT_UNLOCKED',
-    icon: <IconTrophy />,
-    iconBg: '#ffb74d',
-    iconColor: '#fff',
-    label: 'PENCAPAIAN TERBUKA',
-    title: 'Ahli Rempah',
-    subtitle: 'Anda telah menyimpan 10 resep yang menampilkan berbagai campuran rempah!',
-    badgeIcon: <IconPan />
-  },
-  {
-    id: 5,
-    type: 'ADDED_TO_COLLECTION',
-    icon: <IconCollection />,
-    iconBg: '#e8e8ea',
-    iconColor: '#5f5e60',
-    label: 'DITAMBAHKAN KE KOLEKSI',
-    title: "Menambahkan 'Mangkuk Sayur Hijau' ke Koleksi 'Makan Malam Cepat'",
-    time: 'Kemarin'
-  },
-  {
-    id: 6,
-    type: 'RATED_RECIPE',
-    icon: <IconStarFull />,
-    iconBg: '#e8e8ea',
-    iconColor: '#4ade80',
-    label: 'MENILAI RESEP',
-    title: "Menilai 'Roti Sourdough'",
-    stars: 5
-  },
-  {
-    id: 7,
-    type: 'SHARED_POST',
-    icon: <IconShare />,
-    iconBg: '#e8e8ea',
-    iconColor: '#5f5e60',
-    label: 'MEMBAGIKAN POS JURNAL',
-    title: "Membagikan 'Teknik Memasak Sadar' ke Pinterest",
-    time: '2 hari yang lalu'
   }
 ];
 
@@ -147,6 +126,23 @@ const IconTime = () => (
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'RECIPES' | 'ACTIVITY' | 'SETTINGS'>('ACTIVITY');
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Memuat profil...</div>;
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   return (
     <main className={styles.main}>
@@ -154,16 +150,15 @@ export default function ProfilePage() {
       <section className={styles.profileSection}>
           <div className={styles.container}>
             <div className={styles.profileHeader}>
-              <div className={styles.profileImageWrap}>
-                <Image src="/images/profile_picture.png" alt="Eleanor Shellstrop" fill className={styles.profileImage} />
+              <div className={styles.profileImageWrap} style={{ background: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#666' }}>
+                {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
               </div>
               
               <div className={styles.profileInfo}>
                 <div className={styles.profileTitleRow}>
-                  <h1 className={styles.profileName}>Rina Maharani</h1>
-                  <button className={styles.editBtn}>
-                    <IconEdit />
-                    Edit Profil
+                  <h1 className={styles.profileName}>{user.username || 'User'}</h1>
+                  <button className={styles.editBtn} onClick={handleLogout} style={{ background: '#fee2e2', color: '#b91c1c', border: 'none' }}>
+                    Keluar
                   </button>
                 </div>
                 
@@ -346,11 +341,11 @@ export default function ProfilePage() {
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Nama Tampilan</label>
-                        <input type="text" className={styles.formInput} defaultValue="RinaM" />
+                        <input type="text" className={styles.formInput} defaultValue={user.username || ''} />
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Alamat Email</label>
-                        <input type="email" className={styles.formInput} defaultValue="rina.m@example.com" />
+                        <input type="email" className={styles.formInput} defaultValue={user.email || ''} />
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Nomor Telepon</label>

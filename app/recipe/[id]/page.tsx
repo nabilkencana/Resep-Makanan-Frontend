@@ -1,16 +1,36 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getRecipeById } from '../../data/recipes';
 import styles from './page.module.css';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
+async function getRecipeById(id: string) {
+  try {
+    const res = await fetch(`http://localhost:3000/api/recipes/${id}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.recipe) {
+      return {
+        ...data.recipe,
+        tags: [data.recipe.category],
+        reviews: 0, // Belum ada data ulasan dari backend di seed
+        heroSrc: data.recipe.imageUrl || '/recipe-chicken.jpg',
+        ingredients: typeof data.recipe.ingredients === 'string' ? JSON.parse(data.recipe.ingredients) : data.recipe.ingredients,
+        steps: typeof data.recipe.steps === 'string' ? JSON.parse(data.recipe.steps) : data.recipe.steps,
+      };
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  return null;
+}
+
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const recipe = getRecipeById(id);
+  const recipe = await getRecipeById(id);
   if (!recipe) return { title: 'Resep Tidak Ditemukan' };
   return {
     title: `${recipe.title} — Dapur Nusantara`,
@@ -20,7 +40,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function RecipePage({ params }: Props) {
   const { id } = await params;
-  const recipe = getRecipeById(id);
+  const recipe = await getRecipeById(id);
   if (!recipe) notFound();
 
   return (
@@ -52,7 +72,7 @@ export default async function RecipePage({ params }: Props) {
       <section className={styles.headerCard}>
 
         <div className={styles.tagRow}>
-          {recipe.tags.map(t => (
+          {recipe.tags.map((t: string) => (
             <span key={t} className={styles.tag}>{t}</span>
           ))}
         </div>
@@ -109,7 +129,7 @@ export default async function RecipePage({ params }: Props) {
             </div>
 
             <ul className={styles.ingredientList}>
-              {recipe.ingredients.map((ing, i) => (
+              {recipe.ingredients.map((ing: { amount: string; name: string; note?: string }, i: number) => (
                 <li key={i} className={styles.ingredientItem}>
                   <label className={styles.checkLabel} htmlFor={`ing-${i}`}>
                     <input
@@ -150,7 +170,7 @@ export default async function RecipePage({ params }: Props) {
           <h2 className={styles.colTitle}>Cara Membuat</h2>
 
           <ol className={styles.stepList}>
-            {recipe.steps.map(s => (
+            {recipe.steps.map((s: { step: number; title: string; text: string; icon: string }) => (
               <li key={s.step} className={styles.stepCard} id={`step-${s.step}`}>
                 <div className={styles.stepAccent} aria-hidden="true" />
                 <div className={styles.stepLeft}>
