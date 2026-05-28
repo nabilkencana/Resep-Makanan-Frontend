@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import FavoriteButton from '../../components/FavoriteButton';
 import styles from './page.module.css';
+import TutorialButton from './TutorialButton';
+import RecipeReviews from './RecipeReviews';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -10,30 +12,37 @@ interface Props {
 
 async function getRecipeById(id: string) {
   try {
-    const res = await fetch(`http://localhost:3000/api/recipes/${id}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = await res.json();
-    
-    // Fetch reviews
+    // GET /recipes/:id requires JWT, so we fetch from the public list and filter by ID
+    const listRes = await fetch(`http://localhost:3000/recipes`, { cache: 'no-store' });
+    if (!listRes.ok) return null;
+    const listData = await listRes.json();
+    const recipe = (listData.recipes || []).find((r: any) => String(r.id) === String(id));
+    if (!recipe) return null;
+
+    // Fetch reviews (public endpoint)
     let totalReviews = 0;
     try {
-      const reviewRes = await fetch(`http://localhost:3000/api/recipes/${id}/reviews`, { cache: 'no-store' });
+      const reviewRes = await fetch(`http://localhost:3000/recipes/${id}/reviews`, { cache: 'no-store' });
       if (reviewRes.ok) {
         const reviewData = await reviewRes.json();
         totalReviews = reviewData.totalReviews || 0;
       }
     } catch (e) { console.error('Failed to fetch reviews', e); }
 
-    if (data.recipe) {
-      return {
-        ...data.recipe,
-        tags: [data.recipe.category],
-        reviews: totalReviews,
-        heroSrc: data.recipe.imageUrl || '/recipe-chicken.jpg',
-        ingredients: typeof data.recipe.ingredients === 'string' ? JSON.parse(data.recipe.ingredients) : data.recipe.ingredients,
-        steps: typeof data.recipe.steps === 'string' ? JSON.parse(data.recipe.steps) : data.recipe.steps,
-      };
+    // Handle dummy image URL from example.com to avoid 404
+    let validImageUrl = recipe.imageUrl || '/recipe-chicken.jpg';
+    if (validImageUrl.includes('example.com')) {
+      validImageUrl = '/recipe-chicken.jpg';
     }
+
+    return {
+      ...recipe,
+      tags: [recipe.category],
+      reviews: totalReviews,
+      heroSrc: validImageUrl,
+      ingredients: typeof recipe.ingredients === 'string' ? JSON.parse(recipe.ingredients) : (recipe.ingredients || []),
+      steps: typeof recipe.steps === 'string' ? JSON.parse(recipe.steps) : (recipe.steps || []),
+    };
   } catch (err) {
     console.error(err);
   }
@@ -135,39 +144,34 @@ export default async function RecipePage({ params }: Props) {
             </div>
 
             <ul className={styles.ingredientList}>
-              {recipe.ingredients.map((ing: { amount: string; name: string; note?: string }, i: number) => (
-                <li key={i} className={styles.ingredientItem}>
-                  <label className={styles.checkLabel} htmlFor={`ing-${i}`}>
-                    <input
-                      type="checkbox"
-                      id={`ing-${i}`}
-                      className={styles.checkInput}
-                    />
-                    <span className={styles.checkBox} aria-hidden="true">
-                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none"
-                        stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                        <polyline points="2,6 5,9 10,3"/>
-                      </svg>
-                    </span>
-                    <span className={styles.ingBody}>
-                      <span className={styles.ingText}>
-                        <strong className={styles.ingAmount}>{ing.amount}</strong> {ing.name}
+              {recipe.ingredients.map((ing: any, i: number) => {
+                const ingText = typeof ing === 'string' ? ing : `${ing.amount || ''} ${ing.name || ''}`.trim();
+                const ingNote = typeof ing === 'object' ? ing.note : null;
+                return (
+                  <li key={i} className={styles.ingredientItem}>
+                    <label className={styles.checkLabel} htmlFor={`ing-${i}`}>
+                      <input
+                        type="checkbox"
+                        id={`ing-${i}`}
+                        className={styles.checkInput}
+                      />
+                      <span className={styles.checkBox} aria-hidden="true">
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none"
+                          stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                          <polyline points="2,6 5,9 10,3"/>
+                        </svg>
                       </span>
-                      {ing.note && <span className={styles.ingNote}>{ing.note}</span>}
-                    </span>
-                  </label>
-                </li>
-              ))}
+                      <span className={styles.ingBody}>
+                        <span className={styles.ingText}>{ingText}</span>
+                        {ingNote && <span className={styles.ingNote}>{ingNote}</span>}
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
 
-            <button className={styles.groceryBtn} id="btn-video-tutorial">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/>
-                <polygon points="10 8 16 12 10 16 10 8"/>
-              </svg>
-              Tonton Video Tutorial
-            </button>
+            <TutorialButton recipeId={recipe.id} />
           </div>
         </aside>
 
@@ -176,22 +180,31 @@ export default async function RecipePage({ params }: Props) {
           <h2 className={styles.colTitle}>Cara Membuat</h2>
 
           <ol className={styles.stepList}>
-            {recipe.steps.map((s: { step: number; title: string; text: string; icon: string }) => (
-              <li key={s.step} className={styles.stepCard} id={`step-${s.step}`}>
-                <div className={styles.stepAccent} aria-hidden="true" />
-                <div className={styles.stepLeft}>
-                  <div className={styles.stepNum}>{s.step}</div>
-                  <span className={styles.stepIcon}>{s.icon}</span>
-                </div>
-                <div className={styles.stepBody}>
-                  <h3 className={styles.stepTitle}>{s.title}</h3>
-                  <p className={styles.stepText}>{s.text}</p>
-                </div>
-              </li>
-            ))}
+            {recipe.steps.map((s: any, index: number) => {
+              const stepNum = typeof s === 'object' && s.stepNumber ? s.stepNumber : index + 1;
+              const stepText = typeof s === 'string' ? s : (s.description || s.text || s.title || String(s));
+              const stepTitle = typeof s === 'string' ? `Langkah ${stepNum}` : (s.title || `Langkah ${stepNum}`);
+              const stepIcon = typeof s === 'object' ? s.icon : null;
+              return (
+                <li key={stepNum} className={styles.stepCard} id={`step-${stepNum}`}>
+                  <div className={styles.stepAccent} aria-hidden="true" />
+                  <div className={styles.stepLeft}>
+                    <div className={styles.stepNum}>{stepNum}</div>
+                    {stepIcon && <span className={styles.stepIcon}>{stepIcon}</span>}
+                  </div>
+                  <div className={styles.stepBody}>
+                    <h3 className={styles.stepTitle}>{stepTitle}</h3>
+                    <p className={styles.stepText}>{stepText}</p>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </div>
       </section>
+
+      {/* ── Reviews Section ── */}
+      <RecipeReviews recipeId={recipe.id} />
 
     </div>
   );

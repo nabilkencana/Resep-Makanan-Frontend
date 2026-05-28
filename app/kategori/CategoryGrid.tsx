@@ -12,14 +12,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ── Curated Unsplash food photos per category ── */
 const CATEGORY_PHOTOS: Record<string, string> = {
-  'sarapan':     'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80',
+  'sarapan': 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=900&q=80',
   'makan-siang': 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80',
   'makan-malam': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80',
-  'cemilan':     'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=900&q=80',
-  'vegan':       'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=80',
-  'minuman':     'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=900&q=80',
-  'roti-kue':    'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80',
-  'italia':      'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?auto=format&fit=crop&w=900&q=80',
+  'cemilan': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=900&q=80',
+  'vegan': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=80',
+  'minuman': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=900&q=80',
+  'roti-kue': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80',
+  'italia': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?auto=format&fit=crop&w=900&q=80',
 };
 
 /* ── Bento grid: which positions are "large" (span 2 cols) ── */
@@ -38,8 +38,8 @@ export default function CategoryGrid({ categories }: Props) {
 
     // ── Initial hidden state ─────────────────────────────────────────────
     gsap.set(cards, {
-      opacity:  0,
-      y:        100,
+      opacity: 0,
+      y: 100,
       rotation: () => gsap.utils.random(-10, 10),
       transformOrigin: 'center center',
     });
@@ -49,30 +49,30 @@ export default function CategoryGrid({ categories }: Props) {
     function startFloating(card: HTMLElement) {
       if (floatingTweens.has(card)) return;
       const tween = gsap.to(card, {
-        y:        gsap.utils.random(5, 12),
+        y: gsap.utils.random(5, 12),
         rotation: gsap.utils.random(0.5, 2),
         duration: gsap.utils.random(2.5, 4.5),
-        ease:     'sine.inOut',
-        yoyo:     true,
-        repeat:   -1,
-        delay:    gsap.utils.random(0, 2),
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        delay: gsap.utils.random(0, 2),
       });
       floatingTweens.set(card, tween);
     }
 
     // ── ScrollTrigger entrance ───────────────────────────────────────────
     ScrollTrigger.batch('.cat-card', {
-      start:    'top 88%',
+      start: 'top 88%',
       interval: 0.1,
-      batchMax:  3,
+      batchMax: 3,
       onEnter: (batch) => {
         gsap.to(batch as HTMLElement[], {
-          opacity:  1,
-          y:        0,
+          opacity: 1,
+          y: 0,
           rotation: 0,
           duration: 1.4,
-          ease:     'power2.out',
-          stagger:  0.1,
+          ease: 'power2.out',
+          stagger: 0.1,
           onComplete() {
             (batch as HTMLElement[]).forEach(c => startFloating(c));
           },
@@ -102,7 +102,7 @@ export default function CategoryGrid({ categories }: Props) {
     >
       {categories.map((cat, idx) => {
         const isLarge = LARGE_POSITIONS.has(idx);
-        const photo   = CATEGORY_PHOTOS[cat.id];
+        const photo = CATEGORY_PHOTOS[cat.id];
 
         return (
           <Link
@@ -152,7 +152,7 @@ export default function CategoryGrid({ categories }: Props) {
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
             strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 6h18M3 12h18M3 18h18"/>
+            <path d="M3 6h18M3 12h18M3 18h18" />
           </svg>
           <span className={styles.cardMoreTitle}>Segera Hadir</span>
           <span className={styles.cardMoreSub}>Kategori baru dan koleksi musiman.</span>

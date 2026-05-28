@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -57,6 +57,9 @@ export const api = {
   addJournalEntry: (journalId: string, data: any) => fetchApi(`/journals/${journalId}/entries`, { method: 'POST', body: JSON.stringify(data) }),
   deleteJournalEntry: (entryId: string) => fetchApi(`/journals/entries/${entryId}`, { method: 'DELETE' }),
   getShoppingList: () => fetchApi('/journals/shopping-list'),
+
+  // Users Activity
+  getMyReviews: () => fetchApi('/users/me/reviews'),
 
   // Newsletter
   subscribeNewsletter: (data: { email: string }) => fetchApi('/newsletter', { method: 'POST', body: JSON.stringify(data) }),

@@ -37,6 +37,8 @@ const IconPerson = () => (
 export default function NavBar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -52,15 +54,27 @@ export default function NavBar() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && e.currentTarget.value) {
-      router.push(`/?search=${encodeURIComponent(e.currentTarget.value)}`);
+    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+      router.push(`/kategori?search=${encodeURIComponent(e.currentTarget.value.trim())}`);
       setSearchOpen(false);
     }
   };
 
+  if (pathname === '/auth') {
+    return null;
+  }
+
   return (
-    <header className={styles.header} role="banner">
+    <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`} role="banner">
       <div className={styles.inner}>
 
         {/* Logo – TextPressure interactive variable font */}

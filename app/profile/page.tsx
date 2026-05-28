@@ -49,10 +49,17 @@ const IconTime = () => (
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'RECIPES' | 'ACTIVITY' | 'SETTINGS'>('ACTIVITY');
   const [savedRecipes, setSavedRecipes] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [journals, setJournals] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+
+  const sortedRecipes = [...savedRecipes].sort((a, b) => {
+    const timeA = new Date(a.savedAt || Date.now()).getTime();
+    const timeB = new Date(b.savedAt || Date.now()).getTime();
+    return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -65,24 +72,71 @@ export default function ProfilePage() {
       import('../../lib/api').then(({ api }) => {
         Promise.all([
           api.getFavorites().catch(() => ({ favorites: [] })),
-          api.getMyJournals().catch(() => ({ journals: [] }))
-        ]).then(([favRes, journalRes]) => {
-          setSavedRecipes(favRes.favorites || []);
-          setJournals(journalRes.journals || []);
+          api.getMyJournals().catch(() => ({ journals: [] })),
+          api.getMyReviews().catch(() => ({ reviews: [] }))
+        ]).then(([favRes, journalRes, reviewRes]) => {
+          const favs = favRes.favorites || [];
+          const journals = journalRes.journals || [];
+          const reviews = reviewRes.reviews || [];
           
-          // Map journals to activities
-          const mappedActivities = (journalRes.journals || []).map((j: any) => ({
-            id: j.id,
-            type: 'JOURNAL_CREATED',
-            icon: <IconCollection />,
-            iconBg: '#e8e8ea',
-            iconColor: '#5f5e60',
-            label: 'JURNAL MINGGUAN',
-            title: `Jurnal Mulai: ${new Date(j.weekStart).toLocaleDateString('id-ID')}`,
-            subtitle: `${j.entries?.length || 0} entri resep tersimpan di jurnal ini.`,
-            time: new Date(j.createdAt).toLocaleDateString('id-ID')
-          }));
-          setActivities(mappedActivities);
+          setSavedRecipes(favs);
+          setJournals(journals);
+          
+          let allActivities: any[] = [];
+          
+          // Map journals
+          journals.forEach((j: any) => {
+            allActivities.push({
+              uid: `journal-${j.id}`,
+              type: 'JOURNAL_CREATED',
+              iconName: 'collection',
+              iconBg: '#e8e8ea',
+              iconColor: '#5f5e60',
+              label: 'JURNAL MINGGUAN',
+              title: `Jurnal Mulai: ${new Date(j.weekStart).toLocaleDateString('id-ID')}`,
+              subtitle: `${j.entries?.length || 0} entri resep tersimpan di jurnal ini.`,
+              time: new Date(j.createdAt).toLocaleDateString('id-ID'),
+              timestamp: new Date(j.createdAt).getTime()
+            });
+          });
+
+          // Map favorites
+          favs.forEach((f: any) => {
+            allActivities.push({
+              uid: `fav-${f.recipeId}`,
+              type: 'FAVORITE_ADDED',
+              iconName: 'bookmark',
+              iconBg: '#fce7f3',
+              iconColor: '#db2777',
+              label: 'RESEP DISIMPAN',
+              title: `Menyimpan resep "${f.recipe.title}"`,
+              time: new Date(f.savedAt || Date.now()).toLocaleDateString('id-ID'),
+              timestamp: new Date(f.savedAt || Date.now()).getTime(),
+              image: f.recipe.imageUrl
+            });
+          });
+
+          // Map reviews
+          reviews.forEach((r: any) => {
+            allActivities.push({
+              uid: `review-${r.id}`,
+              type: 'REVIEW_ADDED',
+              iconName: 'comment',
+              iconBg: '#fef3c7',
+              iconColor: '#d97706',
+              label: 'ULASAN & RATING',
+              title: `Memberikan ${r.rating} bintang untuk "${r.recipe.title}"`,
+              quote: r.comment,
+              stars: r.rating,
+              time: new Date(r.createdAt).toLocaleDateString('id-ID'),
+              timestamp: new Date(r.createdAt).getTime(),
+              image: r.recipe.imageUrl
+            });
+          });
+
+          // Sort descending by timestamp
+          allActivities.sort((a, b) => b.timestamp - a.timestamp);
+          setActivities(allActivities);
         });
       });
     }
@@ -172,21 +226,24 @@ export default function ProfilePage() {
               <>
                 <div className={styles.contentHeader}>
                   <h2>Resep Tersimpan</h2>
-                  <button className={styles.sortBtn}>
+                  <button 
+                    className={styles.sortBtn}
+                    onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+                  >
                     <IconSort />
-                    Urutkan: Terbaru
+                    Urutkan: {sortOrder === 'newest' ? 'Terbaru' : 'Terlama'}
                   </button>
                 </div>
 
                 <div className={styles.recipeGrid}>
-                  {savedRecipes.length === 0 ? (
+                  {sortedRecipes.length === 0 ? (
                     <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666', padding: '2rem' }}>
                       Belum ada resep yang disimpan.
                     </p>
                   ) : (
-                    savedRecipes.map(fav => (
-                      <div key={fav.id} className={styles.recipeCard} onClick={() => router.push(`/recipe/${fav.recipe.id}`)} style={{ cursor: 'pointer' }}>
-                        <Image src={fav.recipe.imageUrl || '/recipe-chicken.jpg'} alt={fav.recipe.title} fill className={styles.recipeImage} />
+                    sortedRecipes.map(fav => (
+                      <div key={fav.recipeId} className={styles.recipeCard} onClick={() => router.push(`/recipe/${fav.recipe.id}`)} style={{ cursor: 'pointer' }}>
+                        <Image src={(fav.recipe.imageUrl?.includes('example.com') ? null : fav.recipe.imageUrl) || '/recipe-chicken.jpg'} alt={fav.recipe.title} fill className={styles.recipeImage} />
                         <div className={styles.recipeOverlay}></div>
                         
                         <div className={styles.recipeContent}>
@@ -210,7 +267,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className={styles.loadMoreWrap}>
-                  <button className={styles.loadMoreBtn}>
+                  <button className={styles.loadMoreBtn} onClick={() => router.push('/kategori')}>
                     Jelajahi Lebih Banyak Resep
                   </button>
                 </div>
@@ -225,16 +282,18 @@ export default function ProfilePage() {
                 
                 <div className={styles.activityFeed}>
                   {activities.length === 0 ? (
-                    <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>Belum ada jurnal mingguan.</p>
+                    <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>Belum ada aktivitas.</p>
                   ) : (
                     activities.map(activity => (
-                      <div key={activity.id} className={styles.activityItem}>
+                      <div key={activity.uid} className={styles.activityItem}>
                         
                         <div 
                           className={styles.activityIconWrap} 
                           style={{ backgroundColor: activity.iconBg, color: activity.iconColor }}
                         >
-                          {activity.icon}
+                          {activity.iconName === 'collection' && <IconCollection />}
+                          {activity.iconName === 'bookmark' && <IconBookmark />}
+                          {activity.iconName === 'comment' && <IconComment />}
                         </div>
 
                         <div className={styles.activityCard}>

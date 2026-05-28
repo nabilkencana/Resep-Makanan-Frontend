@@ -9,7 +9,7 @@ const ASPECTS: Record<string, string> = {
 export default async function RecipesSection({ search }: { search?: string }) {
   let recipes: any[] = [];
   try {
-    const url = new URL('http://localhost:3000/api/recipes');
+    const url = new URL('http://localhost:3000/recipes');
     if (search) url.searchParams.set('search', search);
     const res = await fetch(url.toString(), { cache: 'no-store' });
     const data = await res.json();
@@ -47,7 +47,7 @@ export default async function RecipesSection({ search }: { search?: string }) {
                   aspectRatio: (r.title.toLowerCase().includes('bowl') || r.title.toLowerCase().includes('bread')) ? '1/1' : '4/5' 
                 }}>
                   <Image
-                    src={r.imageUrl || '/recipe-chicken.jpg'}
+                    src={(r.imageUrl?.includes('example.com') ? null : r.imageUrl) || '/recipe-chicken.jpg'}
                     alt={r.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"

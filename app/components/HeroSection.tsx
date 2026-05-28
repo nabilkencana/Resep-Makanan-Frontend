@@ -75,7 +75,7 @@ const RECIPE_CARDS = [
   { src: '/recipe-bread.png', title: 'Traditional Sourdough', tag: 'Roti',        rating: '5.0', time: '3 jam'  },
 ];
 
-export default function HeroSection() {
+export default function HeroSection({ stats }: { stats?: any }) {
   const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
@@ -83,6 +83,14 @@ export default function HeroSection() {
     const timer = setTimeout(() => setAppReady(true), 3500);
     return () => clearTimeout(timer);
   }, []);
+
+  const totalRecipes = stats?.totalRecipes || 2400;
+  // If we don't have satisfaction score, we'll use a high default like 98%
+  const satisfaction = 98;
+  const totalUsers = stats?.totalUsers || 12400;
+  
+  const penggunaVal = totalUsers >= 1000 ? parseFloat((totalUsers / 1000).toFixed(1)) : totalUsers;
+  const penggunaUnit = totalUsers >= 1000 ? 'k' : '';
 
   return (
     <section className={styles.hero} aria-label="Hero section">
@@ -143,9 +151,23 @@ export default function HeroSection() {
                 placeholder="Mau masak apa hari ini?"
                 aria-label="Cari resep"
                 id="hero-search-input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const query = e.currentTarget.value;
+                    if (query.trim()) window.location.href = `/kategori?search=${encodeURIComponent(query)}`;
+                  }
+                }}
               />
             </div>
-            <button className={styles.searchBtn} id="hero-search-btn">
+            <button 
+              className={styles.searchBtn} 
+              id="hero-search-btn"
+              onClick={() => {
+                const input = document.getElementById('hero-search-input') as HTMLInputElement;
+                const query = input?.value;
+                if (query?.trim()) window.location.href = `/kategori?search=${encodeURIComponent(query)}`;
+              }}
+            >
               Cari Resep
             </button>
           </div>
@@ -154,22 +176,22 @@ export default function HeroSection() {
           <div className={styles.stats} aria-label="Statistik resep">
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={2400} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                <CountUp from={0} to={totalRecipes} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
                 <span>+</span>
               </span>
               <span className={styles.statLabel}>Resep</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={98} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                <CountUp from={0} to={satisfaction} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
                 <span>%</span>
               </span>
               <span className={styles.statLabel}>Kepuasan</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={12.4} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
-                <span>k</span>
+                <CountUp from={0} to={penggunaVal} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                <span>{penggunaUnit}</span>
               </span>
               <span className={styles.statLabel}>Pengguna</span>
             </div>
