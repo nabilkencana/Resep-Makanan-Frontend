@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '../../../../lib/api';
 import styles from './recipes.module.css';
 
@@ -76,6 +77,7 @@ const StarRating = ({ rating }: { rating: number }) => {
 };
 
 export default function AdminRecipes() {
+  const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,12 +150,7 @@ export default function AdminRecipes() {
   const handleDelete = async (id: number) => {
     setDeleting(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/recipes/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      await api.deleteRecipe(id.toString());
       setRecipes((prev) => prev.filter((r) => r.id !== id));
       setDeleteConfirmId(null);
     } catch (err) {
@@ -186,7 +183,7 @@ export default function AdminRecipes() {
             {loading ? 'Loading...' : `${filteredRecipes.length} recipes — ${premiumCount} premium`}
           </p>
         </div>
-        <button className={styles.addBtn}>
+        <button className={styles.addBtn} onClick={() => router.push('/admin/recipes/new')}>
           <span className="material-symbols-outlined">add</span>
           Add New Recipe
         </button>
@@ -352,7 +349,7 @@ export default function AdminRecipes() {
                           : 'Start by adding the first recipe to your library.'}
                       </p>
                       {!searchQuery && !selectedCategory && (
-                        <button className={styles.addBtn} style={{ width: 'auto' }}>
+                        <button className={styles.addBtn} style={{ width: 'auto' }} onClick={() => router.push('/admin/recipes/new')}>
                           <span className="material-symbols-outlined">add</span>
                           Add First Recipe
                         </button>
@@ -459,10 +456,10 @@ export default function AdminRecipes() {
                       {/* Actions */}
                       <td>
                         <div className={styles.actionCell}>
-                          <button className={styles.iconBtn} title="View">
+                          <button className={styles.iconBtn} title="View" onClick={() => router.push(`/recipe/${recipe.id}`)}>
                             <span className="material-symbols-outlined">open_in_new</span>
                           </button>
-                          <button className={styles.iconBtn} title="Edit">
+                          <button className={styles.iconBtn} title="Edit" onClick={() => router.push(`/admin/recipes/${recipe.id}/edit`)}>
                             <span className="material-symbols-outlined">edit</span>
                           </button>
                           <button

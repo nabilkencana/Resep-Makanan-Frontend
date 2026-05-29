@@ -2,11 +2,18 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const headers = {
-    'Content-Type': 'application/json',
+  const headers: any = {
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
+
+  // Only set Content-Type to application/json if we are not sending FormData
+  if (options.body && typeof FormData !== 'undefined' && options.body instanceof FormData) {
+    // Let browser set the correct Content-Type with boundary for FormData
+    delete headers['Content-Type'];
+  } else if (!headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -32,6 +39,10 @@ export const api = {
     return fetchApi(`/recipes${qs ? `?${qs}` : ''}`);
   },
   getRecipeById: (id: string) => fetchApi(`/recipes/${id}`),
+  createRecipe: (data: any) => fetchApi('/recipes', { method: 'POST', body: JSON.stringify(data) }),
+  updateRecipe: (id: string, data: any) => fetchApi(`/recipes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteRecipe: (id: string) => fetchApi(`/recipes/${id}`, { method: 'DELETE' }),
+  uploadRecipeImage: (formData: FormData) => fetchApi('/recipes/upload', { method: 'POST', body: formData }),
 
   // Auth
   login: (data: any) => fetchApi('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
@@ -40,6 +51,9 @@ export const api = {
 
   // Categories
   getCategories: () => fetchApi('/categories'),
+  
+  // Users
+  getUsers: () => fetchApi('/users'),
 
   // Favorites
   getFavorites: () => fetchApi('/users/me/favorites'),

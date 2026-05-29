@@ -8,7 +8,7 @@ import styles from './admin.module.css';
 const menuItems = [
   { name: 'Dashboard', path: '/admin', icon: 'dashboard' },
   { name: 'Recipes', path: '/admin/recipes', icon: 'menu_book', badge: null },
-  { name: 'Users', path: '#', icon: 'group' },
+  { name: 'Users', path: '/admin/users', icon: 'group' },
   { name: 'Analytics', path: '#', icon: 'analytics' },
   { name: 'Settings', path: '#', icon: 'settings' },
 ];
@@ -120,7 +120,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Footer */}
         <div className={styles.sidebarFooter}>
-          <button className={styles.addBtn}>
+          <button className={styles.addBtn} onClick={() => router.push('/admin/recipes/new')}>
             <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: "'FILL' 1" }}>add_circle</span>
             Add New Recipe
           </button>

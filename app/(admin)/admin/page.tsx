@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '../../../lib/api';
 import styles from '../admin.module.css';
 
@@ -53,6 +54,7 @@ const buildMetricSpark = (value: number, seed: number): number[] => {
 // ── Component ─────────────────────────────────────────────────
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalRecipes: 0,
@@ -100,18 +102,48 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  const handleDownloadReport = () => {
+    // Basic CSV generation
+    const csvContent = [
+      ["Metric", "Value"],
+      ["Total Recipes", stats.totalRecipes],
+      ["Total Users", stats.totalUsers],
+      ["Total Reviews", stats.totalReviews],
+      ["Total Favorites", stats.totalFavorites],
+      ["Traffic (Week 1-4)", stats.trafficData.join(" | ")],
+      [],
+      ["Recent Recipes"],
+      ["Title", "Category", "Rating", "Cook Time"],
+      ...recentRecipes.map(r => [
+        `"${r.title}"`, 
+        `"${r.category || 'Uncategorized'}"`, 
+        r.rating || 0, 
+        `"${r.cookTime || '-'}"`
+      ])
+    ].map(e => e.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `DapurNusantara_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // ── Animated counting for metric values ──
   const AnimatedNumber = ({ target, loading }: { target: number; loading: boolean }) => {
     const [display, setDisplay] = useState(0);
     useEffect(() => {
       if (loading || target === 0) { setDisplay(0); return; }
       let start = 0;
-      const step = Math.ceil(target / 20);
+      const step = Math.ceil(target / 10);
       const timer = setInterval(() => {
         start += step;
         if (start >= target) { setDisplay(target); clearInterval(timer); }
         else setDisplay(start);
-      }, 40);
+      }, 15);
       return () => clearInterval(timer);
     }, [target, loading]);
     return <>{loading ? '—' : display}</>;
@@ -120,20 +152,29 @@ export default function AdminDashboard() {
   // ── Main chart ──
   const generateChartPath = (data: number[]) => {
     if (!data || data.every(v => v === 0))
-      return 'M0 250 Q 150 200 300 120 T 600 100 T 900 60 T 1200 80';
+      return { path: 'M0 250 Q 150 200 300 120 T 600 100 T 900 60 T 1200 80', pts: [] };
     const maxVal = Math.max(...data, 1);
     const scaleY = 240 / maxVal;
     const pts = data.map((v, i) => [i * (1200 / (data.length - 1)), 280 - v * scaleY] as [number, number]);
     let path = `M ${pts[0][0]} ${pts[0][1]}`;
     for (let i = 1; i < pts.length; i++) {
-      const cx = (pts[i - 1][0] + pts[i][0]) / 2;
-      path += ` C ${cx} ${pts[i - 1][1]}, ${cx} ${pts[i][1]}, ${pts[i][0]} ${pts[i][1]}`;
+      path += ` L ${pts[i][0]} ${pts[i][1]}`;
+    }
+    return { path, pts };
+  };
+
+  const chartData = generateChartPath(stats.trafficData);
+
+  const buildSparkPath = (values: number[]) => {
+    if (!values || values.length === 0) return 'M0 20 L100 20';
+    const maxVal = Math.max(...values, 1);
+    const pts = values.map((v, i) => [i * (100 / (values.length - 1)), 40 - (v / maxVal) * 36]);
+    let path = `M ${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) {
+      path += ` L ${pts[i][0]} ${pts[i][1]}`;
     }
     return path;
   };
-
-  const chartPath = generateChartPath(stats.trafficData);
-  const chartAreaPath = `${chartPath} L 1200 300 L 0 300 Z`;
 
   const Sparkline = ({ values, color = 'var(--clr-primary)' }: { values: number[]; color?: string }) => (
     <svg viewBox="0 0 100 40" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
@@ -168,7 +209,7 @@ export default function AdminDashboard() {
           <p className={styles.pageDesc}>Real-time performance and recipe management metrics.</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.secondaryBtn}>
+          <button className={styles.secondaryBtn} onClick={handleDownloadReport}>
             <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>download</span>
             Download Report
           </button>
@@ -236,43 +277,37 @@ export default function AdminDashboard() {
           </div>
 
           <div style={{ height: '220px', position: 'relative', width: '100%' }}>
-            {/* Y-axis grid lines */}
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} style={{ borderTop: `1px dashed rgba(0,0,0,0.06)`, width: '100%' }} />
+            <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="none">
+              {/* Grid lines */}
+              {[50, 100, 150, 200, 250].map(y => (
+                <line key={y} x1="0" y1={y} x2="1200" y2={y} stroke="rgba(188, 202, 187, 0.3)" strokeWidth="1" strokeDasharray="4 4" />
               ))}
-            </div>
-
-            {/* SVG chart */}
-            <svg
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}
-              preserveAspectRatio="none"
-              viewBox="0 0 1200 300"
-            >
-              <defs>
-                <linearGradient id="trafficGradient" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="var(--clr-primary)" stopOpacity="0.18" />
-                  <stop offset="100%" stopColor="var(--clr-primary)" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d={chartAreaPath} fill="url(#trafficGradient)" />
-              <path
-                d={chartPath}
-                fill="none"
-                stroke="var(--clr-primary)"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="3"
+              
+              {/* The Line */}
+              <path 
+                d={chartData.path} 
+                fill="none" 
+                stroke="var(--clr-primary)" 
+                strokeWidth="4" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={styles.animatedPath}
               />
-              {/* Data point dots */}
-              {stats.trafficData.map((v, i) => {
-                const maxVal = Math.max(...stats.trafficData, 1);
-                const x = i * (1200 / (stats.trafficData.length - 1));
-                const y = 280 - (v / maxVal) * 240;
-                return (
-                  <circle key={i} cx={x} cy={y} r="8" fill="white" stroke="var(--clr-primary)" strokeWidth="3" />
-                );
-              })}
+              
+              {/* Data Points */}
+              {chartData.pts && chartData.pts.map((pt, i) => (
+                <circle 
+                  key={i} 
+                  cx={pt[0]} 
+                  cy={pt[1]} 
+                  r="6" 
+                  fill="white" 
+                  stroke="var(--clr-primary)" 
+                  strokeWidth="3"
+                  className={styles.animatedCircle}
+                  style={{ animationDelay: `${i * 0.15}s`, transformOrigin: `${pt[0]}px ${pt[1]}px` }}
+                />
+              ))}
             </svg>
 
             {/* Week labels */}
@@ -347,8 +382,12 @@ export default function AdminDashboard() {
                   <span>🍽 {topRecipe.servings} servings</span>
                   <span>🔥 {topRecipe.calories} cal</span>
                 </div>
-                <button className={styles.secondaryBtn} style={{ width: '100%', textAlign: 'center' }}>
-                  View Analytics
+                <button 
+                  className={styles.secondaryBtn} 
+                  style={{ width: '100%', textAlign: 'center' }}
+                  onClick={() => router.push(`/recipe/${topRecipe.id}`)}
+                >
+                  View Recipe
                 </button>
               </>
             ) : (
@@ -459,10 +498,10 @@ export default function AdminDashboard() {
                       </td>
                       <td>
                         <div className={styles.actionCell}>
-                          <button className={styles.iconBtn} title="Edit">
+                          <button className={styles.iconBtn} title="Edit" onClick={() => router.push('/admin/recipes')}>
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
                           </button>
-                          <button className={styles.iconBtn} title="View">
+                          <button className={styles.iconBtn} title="View" onClick={() => router.push(`/recipe/${recipe.id}`)}>
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
                           </button>
                         </div>
