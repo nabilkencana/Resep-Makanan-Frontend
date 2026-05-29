@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import SplitTextRaw from '../components/SplitText';
+import SplitTextRaw from '../../components/SplitText';
 import styles from './page.module.css';
 
 interface SplitTextProps {

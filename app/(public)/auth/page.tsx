@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { api } from '../../lib/api';
-import { useAuth } from '../../lib/auth-context';
+import { api } from '../../../lib/api';
+import { useAuth } from '../../../lib/auth-context';
 import styles from './AuthPage.module.css';
 
 export default function AuthPage() {
@@ -24,7 +24,11 @@ export default function AuthPage() {
       if (isLogin) {
         const res = await api.login({ email: formData.email, password: formData.password });
         login(res.access_token, res.user);
-        router.push('/');
+        if (res.user.role === 'ADMIN') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
       } else {
         await api.register({
           username: formData.username,

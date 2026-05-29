@@ -2,7 +2,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import styles from '../recipe/[id]/page.module.css';
+import styles from '../(public)/recipe/[id]/page.module.css';
 
 export default function FavoriteButton({ recipeId }: { recipeId: string }) {
   const { user } = useAuth();

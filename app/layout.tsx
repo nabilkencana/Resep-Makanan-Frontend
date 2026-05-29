@@ -20,9 +20,6 @@ export const metadata: Metadata = {
   },
 };
 
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
-import PageLoader from "./components/PageLoader";
 import { AuthProvider } from "../lib/auth-context";
 
 export default function RootLayout({
@@ -30,12 +27,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id" className={inter.variable}>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" rel="stylesheet" />
+      </head>
       <body>
         <AuthProvider>
-          <PageLoader />
-          <NavBar />
           {children}
-          <Footer />
         </AuthProvider>
       </body>
     </html>

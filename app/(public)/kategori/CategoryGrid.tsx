@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import type { CategoryData } from '../data/categories';
+import type { CategoryData } from '../../data/categories';
 import styles from './page.module.css';
 
 gsap.registerPlugin(ScrollTrigger);

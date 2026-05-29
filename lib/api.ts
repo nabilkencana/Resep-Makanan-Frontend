@@ -63,4 +63,7 @@ export const api = {
 
   // Newsletter
   subscribeNewsletter: (data: { email: string }) => fetchApi('/newsletter', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Dashboard
+  getDashboardStats: () => fetchApi('/dashboard/stats'),
 };

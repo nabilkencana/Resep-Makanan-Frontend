@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './page.module.css';
-import TiltedCard from '../components/TiltedCard';
+import TiltedCard from '../../components/TiltedCard';
 import { fetchApi } from '@/lib/api';
 
 const IconList = () => (

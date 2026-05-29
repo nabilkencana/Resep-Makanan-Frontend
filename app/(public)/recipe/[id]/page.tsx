@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import FavoriteButton from '../../components/FavoriteButton';
+import FavoriteButton from '../../../components/FavoriteButton';
 import styles from './page.module.css';
 import TutorialButton from './TutorialButton';
 import RecipeReviews from './RecipeReviews';

@@ -1,8 +1,8 @@
-import NavBar from './components/NavBar';
-import HeroSection from './components/HeroSection';
-import RecipesSection from './components/RecipesSection';
-import QuoteSection from './components/QuoteSection';
-import Footer from './components/Footer';
+import NavBar from '../components/NavBar';
+import HeroSection from '../components/HeroSection';
+import RecipesSection from '../components/RecipesSection';
+import QuoteSection from '../components/QuoteSection';
+import Footer from '../components/Footer';
 
 async function getDashboardStats() {
   try {

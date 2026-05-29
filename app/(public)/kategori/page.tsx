@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import RecipesWithFilter from './RecipesWithFilter';
-import { CATEGORIES as FALLBACK_CATEGORIES } from '../data/categories';
+import { CATEGORIES as FALLBACK_CATEGORIES } from '../../data/categories';
 import styles from './page.module.css';
 import NewsletterForm from './NewsletterForm';
 import HeroStats from './HeroStats';

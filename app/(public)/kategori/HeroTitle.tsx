@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import RotatingTextRaw from '../components/RotatingText';
+import RotatingTextRaw from '../../components/RotatingText';
 import styles from './page.module.css';
 
 interface RotatingTextProps {

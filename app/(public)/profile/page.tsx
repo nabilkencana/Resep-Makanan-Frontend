@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../lib/auth-context';
+import { useAuth } from '../../../lib/auth-context';
 import styles from './page.module.css';
 import Image from 'next/image';
 import { 
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
-      import('../../lib/api').then(({ api }) => {
+      import('../../../lib/api').then(({ api }) => {
         Promise.all([
           api.getFavorites().catch(() => ({ favorites: [] })),
           api.getMyJournals().catch(() => ({ journals: [] })),
