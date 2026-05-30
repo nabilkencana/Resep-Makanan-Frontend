@@ -86,6 +86,7 @@ export default function ProfilePage() {
           
           // Map journals
           journals.forEach((j: any) => {
+            // Activity for Journal creation
             allActivities.push({
               uid: `journal-${j.id}`,
               type: 'JOURNAL_CREATED',
@@ -98,6 +99,34 @@ export default function ProfilePage() {
               time: new Date(j.createdAt).toLocaleDateString('id-ID'),
               timestamp: new Date(j.createdAt).getTime()
             });
+
+            // Activity for each entry added/moved
+            if (j.entries && j.entries.length > 0) {
+              const days = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+              const mealMap: Record<string, string> = { 'BREAKFAST': 'Sarapan', 'LUNCH': 'Makan Siang', 'DINNER': 'Makan Malam' };
+              
+              j.entries.forEach((entry: any) => {
+                const dayName = days[entry.dayOfWeek] || 'Suatu hari';
+                const mealName = mealMap[entry.mealType] || entry.mealType;
+                
+                // Approximate time using journal creation + entry ID to maintain relative order
+                const approximateTime = new Date(j.createdAt).getTime() + (entry.id * 1000);
+
+                allActivities.push({
+                  uid: `entry-${entry.id}`,
+                  type: 'JOURNAL_ENTRY_ADDED',
+                  iconName: 'collection',
+                  iconBg: '#dcfce7',
+                  iconColor: '#166534',
+                  label: 'RESEP DIJADWALKAN',
+                  title: `Menjadwalkan "${entry.recipe?.title || 'Resep'}"`,
+                  subtitle: `Untuk ${mealName} di hari ${dayName}`,
+                  time: new Date(approximateTime).toLocaleDateString('id-ID'),
+                  timestamp: approximateTime,
+                  image: entry.recipe?.imageUrl
+                });
+              });
+            }
           });
 
           // Map favorites
@@ -179,8 +208,8 @@ export default function ProfilePage() {
                     <span className={styles.statLabel}>RESEP DISIMPAN</span>
                   </div>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>{journals.length}</span>
-                    <span className={styles.statLabel}>JURNAL MINGGUAN</span>
+                    <span className={styles.statNumber}>{journals.reduce((sum, j) => sum + (j.entries?.length || 0), 0)}</span>
+                    <span className={styles.statLabel}>RESEP DI JURNAL</span>
                   </div>
                   <div className={styles.statItem}>
                     <span className={styles.statNumber}>{new Date(user.createdAt || Date.now()).getFullYear()}</span>

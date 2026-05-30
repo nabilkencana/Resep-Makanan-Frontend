@@ -125,24 +125,45 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, recipe: any) => {
+  const handleDragStart = (e: React.DragEvent, recipe: any, entryId?: number | string) => {
     e.dataTransfer.setData('recipeId', recipe.id.toString());
+    if (entryId) {
+      e.dataTransfer.setData('entryId', entryId.toString());
+    }
     setDraggedRecipe(recipe);
   };
 
   const handleDrop = async (e: React.DragEvent, dayOfWeek: number, mealType: string) => {
     e.preventDefault();
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.borderColor = 'transparent';
+      e.currentTarget.style.background = 'transparent';
+    }
     if (!journal) return;
     
     const recipeIdStr = e.dataTransfer.getData('recipeId');
+    const entryIdStr = e.dataTransfer.getData('entryId');
+    
     if (!recipeIdStr) return;
     const recipeId = parseInt(recipeIdStr, 10);
-    const recipeObj = recipes.find(r => r.id === recipeId);
+    const recipeObj = recipes.find(r => r.id === recipeId) || (entryIdStr ? journal.entries.find((ent:any)=>ent.id===parseInt(entryIdStr,10))?.recipe : null);
+    
+    // Check if dropping in the exact same spot
+    if (entryIdStr) {
+       const existingEntry = journal.entries.find((ent:any)=>ent.id===parseInt(entryIdStr,10));
+       if (existingEntry && existingEntry.dayOfWeek === dayOfWeek && existingEntry.mealType === mealType) {
+         setDraggedRecipe(null);
+         return;
+       }
+    }
     
     // Optimistic Update UI
     if (recipeObj) {
       setJournal((prev: any) => {
-        const newEntries = prev.entries ? prev.entries.filter((ent: any) => !(ent.dayOfWeek === dayOfWeek && ent.mealType === mealType)) : [];
+        let newEntries = prev.entries ? prev.entries.filter((ent: any) => !(ent.dayOfWeek === dayOfWeek && ent.mealType === mealType)) : [];
+        if (entryIdStr) {
+          newEntries = newEntries.filter((ent: any) => ent.id !== parseInt(entryIdStr, 10));
+        }
         return {
           ...prev,
           entries: [...newEntries, { id: 'temp-' + Date.now(), dayOfWeek, mealType, recipe: recipeObj }]
@@ -151,6 +172,9 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
     }
     
     try {
+      if (entryIdStr && !entryIdStr.startsWith('temp-')) {
+         await fetchApi(`/journals/entries/${entryIdStr}`, { method: 'DELETE' });
+      }
       await fetchApi(`/journals/${journal.id}/entries`, {
         method: 'POST',
         body: JSON.stringify({ recipeId, dayOfWeek, mealType })
@@ -268,10 +292,21 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
                         style={{ position: 'relative' }}
                       >
                         {entry && entry.recipe ? (
-                          <div className={styles.mealCard}>
+                          <div 
+                            className={styles.mealCard}
+                            draggable={!String(entry.id).startsWith('temp-')}
+                            onDragStart={(e) => {
+                              if (String(entry.id).startsWith('temp-')) {
+                                e.preventDefault();
+                                return;
+                              }
+                              handleDragStart(e, entry.recipe, entry.id);
+                            }}
+                            style={{ cursor: String(entry.id).startsWith('temp-') ? 'wait' : 'grab', position: 'relative' }}
+                          >
                             <button 
                               onClick={() => handleDeleteEntry(entry.id)}
-                              style={{ position: 'absolute', top: 4, right: 4, background: 'red', color: 'white', borderRadius: '50%', width: 20, height: 20, border: 'none', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}
+                              style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: 'white', borderRadius: '50%', width: 22, height: 22, border: 'none', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}
                             >
                               ✕
                             </button>
@@ -294,12 +329,21 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
                             <p className={styles.mealTitle} style={{ fontSize: '0.75rem', marginTop: '0.5rem', textAlign: 'center', lineHeight: '1.2' }}>{entry.recipe.title}</p>
                           </div>
                         ) : (
-                          <div style={{ width: '100%', height: '100%', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed transparent', borderRadius: '12px', transition: 'border 0.2s' }} 
-                               onDragEnter={(e) => (e.currentTarget.style.borderColor = '#006d36')}
-                               onDragLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}
-                               onDrop={(e) => (e.currentTarget.style.borderColor = 'transparent')}
+                          <div style={{ width: '100%', height: '100%', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed transparent', borderRadius: '12px', transition: 'all 0.2s' }} 
+                               onDragEnter={(e) => {
+                                 e.currentTarget.style.borderColor = '#006d36';
+                                 e.currentTarget.style.background = 'rgba(0,109,54,0.05)';
+                               }}
+                               onDragLeave={(e) => {
+                                 e.currentTarget.style.borderColor = 'transparent';
+                                 e.currentTarget.style.background = 'transparent';
+                               }}
+                               onDrop={(e) => {
+                                 e.currentTarget.style.borderColor = 'transparent';
+                                 e.currentTarget.style.background = 'transparent';
+                               }}
                           >
-                            <span style={{ color: '#bccabb', fontSize: '0.8rem' }}>+ Drop di sini</span>
+                            <span style={{ color: '#bccabb', fontSize: '0.8rem', pointerEvents: 'none' }}>+ Drop di sini</span>
                           </div>
                         )}
                       </div>
