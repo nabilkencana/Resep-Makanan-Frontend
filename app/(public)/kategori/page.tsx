@@ -19,33 +19,11 @@ const POPULAR_TAGS = [
   '🥩 Daging', '🐟 Seafood', '🍰 Dessert', '🧁 Kue', '🥗 Salad', '🍛 Nusantara',
 ];
 
-async function getCategories() {
-  try {
-    const res = await fetch('http://localhost:3000/api/categories', { cache: 'no-store' });
-    if (!res.ok) return FALLBACK_CATEGORIES;
-    const data = await res.json();
-    
-    // Map backend categories to frontend format if needed
-    const backendCategories = data.categories?.map((cat: any, i: number) => ({
-      id: cat.id.toString(),
-      name: cat.name,
-      description: cat.description,
-      icon: cat.icon || '🍽️',
-      color: cat.color || '#F0FDF4', // default green
-      slug: cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      count: cat._count?.recipes || Math.floor(Math.random() * 50) + 10, // fallback count if not populated
-      href: `/?category=${encodeURIComponent(cat.name)}`
-    }));
 
-    return (backendCategories && backendCategories.length > 0) ? backendCategories : FALLBACK_CATEGORIES;
-  } catch (e) {
-    return FALLBACK_CATEGORIES;
-  }
-}
 
 async function getRecipes() {
   try {
-    const res = await fetch('http://localhost:3000/recipes?limit=100', { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/recipes?limit=100`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return data.recipes || [];
@@ -54,8 +32,30 @@ async function getRecipes() {
   }
 }
 
+async function getTags() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/recipes/tags`, { cache: 'no-store' });
+    if (!res.ok) return POPULAR_TAGS;
+    const data = await res.json();
+    if (data.success && data.tags) {
+      return data.tags.map((t: any) => t.name).slice(0, 15);
+    }
+    return POPULAR_TAGS;
+  } catch (e) {
+    return POPULAR_TAGS;
+  }
+}
+
 export default async function KategoriPage() {
-  const [categories, recipes] = await Promise.all([getCategories(), getRecipes()]);
+  const [recipes, tags] = await Promise.all([getRecipes(), getTags()]);
+  
+  // Get unique categories currently active in recipes
+  const uniqueCategoryNames = Array.from(new Set(recipes.map((r: any) => r.category))).filter(Boolean);
+  const categories = uniqueCategoryNames.map((name: any, i: number) => ({
+    id: `cat-${i}`,
+    name: name as string
+  }));
+
   const totalCategories = categories.length;
   const totalRecipes = recipes.length;
   const avgRating = totalRecipes > 0 
@@ -134,23 +134,23 @@ export default async function KategoriPage() {
         </div>
 
         {/* ── Filter & Recipe Grid ── */}
-        <RecipesWithFilter recipes={recipes} categories={categories} />
+        <RecipesWithFilter recipes={recipes} categories={categories} tags={tags} />
 
-        {/* ── Popular Tags ── */}
-        <section className={styles.tagsSection} aria-label="Tag populer">
+        {/* ── Popular Tags (Server Rendered Fallback if JS Disabled) ── */}
+        <section className={styles.tagsSection} aria-label="Tag populer" style={{ display: 'none' }}>
           <div className={styles.tagsSectionHeader}>
             <h2 className={styles.sectionTitle}>Tag <span>Populer</span></h2>
           </div>
           <div className={styles.tagsGrid} role="list">
-            {POPULAR_TAGS.map((tag) => (
+            {tags.map((tag: string) => (
               <a
                 key={tag}
-                href="#"
+                href={`/?tag=${encodeURIComponent(tag)}`}
                 className={`${styles.tagChip} ${styles.tagChipDefault}`}
                 id={`tag-${tag.replace(/[^a-z]/gi, '').toLowerCase()}`}
                 role="listitem"
               >
-                {tag}
+                #{tag}
               </a>
             ))}
           </div>

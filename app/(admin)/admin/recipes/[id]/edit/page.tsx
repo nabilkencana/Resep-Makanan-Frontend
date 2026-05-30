@@ -203,7 +203,7 @@ export default function EditRecipePage() {
   if (initialLoading) {
     return (
       <div className={styles.container} style={{ alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
-        <p style={{ color: 'var(--clr-on-surface-variant)' }}>Loading recipe data...</p>
+        <p style={{ color: 'var(--clr-on-surface-variant)' }}>Memuat data resep...</p>
       </div>
     );
   }
@@ -215,12 +215,12 @@ export default function EditRecipePage() {
       <div className={styles.pageHeader}>
         <div>
           <nav className={styles.breadcrumb}>
-            <span onClick={() => router.push('/admin/recipes')} style={{ cursor: 'pointer', color: 'var(--clr-on-surface-variant)' }}>Recipes</span>
+            <span onClick={() => router.push('/admin/recipes')} style={{ cursor: 'pointer', color: 'var(--clr-on-surface-variant)' }}>Resep</span>
             <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>
-            <span className={styles.breadcrumbActive}>Edit Recipe</span>
+            <span className={styles.breadcrumbActive}>Edit Resep</span>
           </nav>
-          <h2 className={styles.pageTitle}>Edit Recipe</h2>
-          <p className={styles.pageSubtitle}>Update the details for this recipe.</p>
+          <h2 className={styles.pageTitle}>Edit Resep</h2>
+          <p className={styles.pageSubtitle}>Perbarui detail untuk resep ini.</p>
         </div>
       </div>
 
@@ -237,7 +237,7 @@ export default function EditRecipePage() {
           
           {/* IMAGE UPLOAD */}
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Recipe Image</label>
+            <label className={styles.formLabel}>Gambar Resep</label>
             <div 
               className={styles.uploadArea} 
               onClick={() => fileInputRef.current?.click()}
@@ -252,13 +252,13 @@ export default function EditRecipePage() {
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" />
-                  <p style={{ marginTop: '1rem', color: 'var(--clr-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Change Image</p>
+                  <p style={{ marginTop: '1rem', color: 'var(--clr-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Ganti Gambar</p>
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--clr-outline)' }}>add_photo_alternate</span>
-                  <p style={{ marginTop: '1rem', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Click to browse or drag and drop</p>
-                  <p style={{ fontSize: '12px', color: 'var(--clr-outline)' }}>PNG, JPG up to 5MB</p>
+                  <p style={{ marginTop: '1rem', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Klik untuk mencari atau seret dan lepas</p>
+                  <p style={{ fontSize: '12px', color: 'var(--clr-outline)' }}>PNG, JPG hingga 5MB</p>
                 </>
               )}
             </div>
@@ -266,11 +266,11 @@ export default function EditRecipePage() {
 
           {/* BASIC INFO */}
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Recipe Title <span style={{ color: 'var(--clr-error)' }}>*</span></label>
+            <label className={styles.formLabel}>Judul Resep <span style={{ color: 'var(--clr-error)' }}>*</span></label>
             <input 
               type="text" 
               className={styles.formInput} 
-              placeholder="e.g. Nasi Goreng Spesial"
+              placeholder="mis. Nasi Goreng Spesial"
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
@@ -278,10 +278,10 @@ export default function EditRecipePage() {
           </div>
 
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Description <span style={{ color: 'var(--clr-error)' }}>*</span></label>
+            <label className={styles.formLabel}>Deskripsi <span style={{ color: 'var(--clr-error)' }}>*</span></label>
             <textarea 
               className={styles.formTextarea} 
-              placeholder="Write a short engaging description about this recipe..."
+              placeholder="Tulis deskripsi singkat yang menarik tentang resep ini..."
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
@@ -289,42 +289,42 @@ export default function EditRecipePage() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Category</label>
+            <label className={styles.formLabel}>Kategori</label>
             <select className={styles.formSelect} value={category} onChange={e => setCategory(e.target.value)}>
-              <option value="Indonesian">Indonesian</option>
-              <option value="Western">Western</option>
-              <option value="Japanese">Japanese</option>
-              <option value="Chinese">Chinese</option>
-              <option value="Dessert">Dessert</option>
-              <option value="Beverage">Beverage</option>
+              <option value="Indonesian">Indonesia</option>
+              <option value="Western">Barat</option>
+              <option value="Japanese">Jepang</option>
+              <option value="Chinese">Tiongkok</option>
+              <option value="Dessert">Penutup</option>
+              <option value="Beverage">Minuman</option>
             </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Premium Access</label>
+            <label className={styles.formLabel}>Akses Premium</label>
             <select className={styles.formSelect} value={isPremium ? 'true' : 'false'} onChange={e => setIsPremium(e.target.value === 'true')}>
-              <option value="false">Free (Available to all)</option>
-              <option value="true">Premium (Subscribers only)</option>
+              <option value="false">Gratis (Tersedia untuk semua)</option>
+              <option value="true">Premium (Hanya pelanggan)</option>
             </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Prep Time</label>
-            <input type="text" className={styles.formInput} placeholder="e.g. 15 mins" value={prepTime} onChange={e => setPrepTime(e.target.value)} required />
+            <label className={styles.formLabel}>Waktu Persiapan</label>
+            <input type="text" className={styles.formInput} placeholder="mis. 15 mnt" value={prepTime} onChange={e => setPrepTime(e.target.value)} required />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Cook Time</label>
-            <input type="text" className={styles.formInput} placeholder="e.g. 30 mins" value={cookTime} onChange={e => setCookTime(e.target.value)} required />
+            <label className={styles.formLabel}>Waktu Masak</label>
+            <input type="text" className={styles.formInput} placeholder="mis. 30 mnt" value={cookTime} onChange={e => setCookTime(e.target.value)} required />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Servings</label>
+            <label className={styles.formLabel}>Porsi</label>
             <input type="number" className={styles.formInput} min="1" value={servings} onChange={e => setServings(Number(e.target.value))} required />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Calories (per serving)</label>
+            <label className={styles.formLabel}>Kalori (per porsi)</label>
             <input type="number" className={styles.formInput} min="0" value={calories} onChange={e => setCalories(Number(e.target.value))} required />
           </div>
 
@@ -373,14 +373,14 @@ export default function EditRecipePage() {
 
           {/* INGREDIENTS */}
           <div className={styles.formGroupFull} style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-outline-variant)' }}>
-            <label className={styles.formLabel}>Ingredients</label>
+            <label className={styles.formLabel}>Bahan-bahan</label>
             <div className={styles.dynamicList}>
               {ingredients.map((ing, idx) => (
                 <div key={idx} className={styles.dynamicListItem}>
                   <input 
                     type="text" 
                     className={styles.formInput} 
-                    placeholder="Ingredient name (e.g. Bawang Merah)" 
+                    placeholder="Nama bahan (mis. Bawang Merah)" 
                     value={ing.name}
                     onChange={e => handleIngredientChange(idx, 'name', e.target.value)}
                     style={{ flex: 2 }}
@@ -389,7 +389,7 @@ export default function EditRecipePage() {
                   <input 
                     type="text" 
                     className={styles.formInput} 
-                    placeholder="Amount (e.g. 3 siung)" 
+                    placeholder="Jumlah (mis. 3 siung)" 
                     value={ing.amount}
                     onChange={e => handleIngredientChange(idx, 'amount', e.target.value)}
                     style={{ flex: 1 }}
@@ -400,21 +400,21 @@ export default function EditRecipePage() {
                 </div>
               ))}
               <button type="button" className={styles.dynamicListBtn} onClick={addIngredient}>
-                <span className="material-symbols-outlined">add</span> Add Ingredient
+                <span className="material-symbols-outlined">add</span> Tambah Bahan
               </button>
             </div>
           </div>
 
           {/* STEPS */}
           <div className={styles.formGroupFull} style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-outline-variant)' }}>
-            <label className={styles.formLabel}>Cooking Steps</label>
+            <label className={styles.formLabel}>Langkah Memasak</label>
             <div className={styles.dynamicList}>
               {steps.map((step, idx) => (
                 <div key={idx} className={styles.dynamicListItem}>
                   <div style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--clr-primary)' }}>{step.stepNumber}.</div>
                   <textarea 
                     className={styles.formTextarea} 
-                    placeholder="Describe this step..." 
+                    placeholder="Jelaskan langkah ini..." 
                     value={step.description}
                     onChange={e => handleStepChange(idx, e.target.value)}
                     style={{ flex: 1, minHeight: '60px' }}
@@ -426,7 +426,7 @@ export default function EditRecipePage() {
                 </div>
               ))}
               <button type="button" className={styles.dynamicListBtn} onClick={addStep}>
-                <span className="material-symbols-outlined">add</span> Add Step
+                <span className="material-symbols-outlined">add</span> Tambah Langkah
               </button>
             </div>
           </div>
@@ -442,7 +442,7 @@ export default function EditRecipePage() {
             onClick={() => router.push('/admin/recipes')}
             disabled={loading}
           >
-            Cancel
+            Batal
           </button>
           <button type="submit" className={styles.saveBtn} disabled={loading}>
             {loading ? (
@@ -450,7 +450,7 @@ export default function EditRecipePage() {
             ) : (
               <span className="material-symbols-outlined">save</span>
             )}
-            {loading ? 'Updating...' : 'Update Recipe'}
+            {loading ? 'Memperbarui...' : 'Perbarui Resep'}
           </button>
         </div>
       </form>

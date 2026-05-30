@@ -567,7 +567,7 @@
 
 .newsletter {
   margin-top: 4rem;
-  border-radius: 32px;
+  border-radius: 24px;
   background: linear-gradient(135deg, #014323 0%, #006d36 50%, #059669 100%);
   padding: 4rem 2rem;
   display: flex;
@@ -920,7 +920,7 @@
   background-color: #fff;
   color: #006d36;
   padding: 1rem 2rem;
-  border-radius: var(--radius-full, 9999px);
+  border-radius: var(--radius-lg, 9999px);
   font-weight: 800;
   font-size: 1.1rem;
   text-decoration: none;

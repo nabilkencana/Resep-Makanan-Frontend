@@ -205,17 +205,17 @@ export default function AdminDashboard() {
       {/* ── Page Header ── */}
       <div className={styles.pageHeader}>
         <div>
-          <h2 className={styles.pageTitle}>Kitchen Overview</h2>
-          <p className={styles.pageDesc}>Real-time performance and recipe management metrics.</p>
+          <h2 className={styles.pageTitle}>Ringkasan Dapur</h2>
+          <p className={styles.pageDesc}>Kinerja real-time dan metrik manajemen resep.</p>
         </div>
         <div className={styles.headerActions}>
           <button className={styles.secondaryBtn} onClick={handleDownloadReport}>
             <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>download</span>
-            Download Report
+            Unduh Laporan
           </button>
           <button className={styles.primaryBtn} onClick={() => window.location.reload()}>
             <span className="material-symbols-outlined" style={{ fontSize: '16px', fontVariationSettings: "'FILL' 1" }}>refresh</span>
-            Refresh Data
+            Perbarui Data
           </button>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
       {/* ── Metric Cards ── */}
       <div className={styles.metricsGrid}>
         <MetricCard
-          title="Total Recipes"
+          title="Total Resep"
           value={<AnimatedNumber target={stats.totalRecipes} loading={loading} />}
           icon="restaurant_menu"
           sparkValues={buildMetricSpark(stats.totalRecipes, 2)}
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
           color="var(--clr-primary)"
         />
         <MetricCard
-          title="Total Users"
+          title="Total Pengguna"
           value={<AnimatedNumber target={stats.totalUsers} loading={loading} />}
           icon="group"
           sparkValues={buildMetricSpark(stats.totalUsers, 3)}
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
           color="#6366f1"
         />
         <MetricCard
-          title="Total Reviews"
+          title="Total Ulasan"
           value={<AnimatedNumber target={stats.totalReviews} loading={loading} />}
           icon="rate_review"
           sparkValues={buildMetricSpark(stats.totalReviews, 5)}
@@ -247,7 +247,7 @@ export default function AdminDashboard() {
           color="#f59e0b"
         />
         <MetricCard
-          title="Total Favorites"
+          title="Total Favorit"
           value={<AnimatedNumber target={stats.totalFavorites} loading={loading} />}
           icon="favorite"
           sparkValues={buildMetricSpark(stats.totalFavorites, 4)}
@@ -263,15 +263,15 @@ export default function AdminDashboard() {
         <div className={styles.chartArea}>
           <div className={styles.pageHeader} style={{ marginBottom: '1.5rem' }}>
             <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.01em' }}>User Registration Traffic</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.01em' }}>Trafik Pendaftaran Pengguna</h3>
               <p className={styles.pageDesc} style={{ fontSize: '0.8125rem', marginTop: '2px' }}>
-                New users per week for the past 4 weeks
+                Pengguna baru per minggu selama 4 minggu terakhir
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--clr-primary)' }} />
-                Registrations
+                Pendaftaran
               </div>
             </div>
           </div>
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
               display: 'flex', justifyContent: 'space-between',
               fontSize: '11px', color: 'var(--clr-on-surface-variant)', fontWeight: 600,
             }}>
-              {['Week 1', 'Week 2', 'Week 3', 'Week 4'].map((w) => (
+              {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((w) => (
                 <span key={w}>{w}</span>
               ))}
             </div>
@@ -328,9 +328,9 @@ export default function AdminDashboard() {
             borderTop: '1px solid var(--clr-outline-variant)', paddingTop: '1.25rem',
           }}>
             {[
-              { label: 'Peak Week', value: `Week ${stats.trafficData.indexOf(Math.max(...stats.trafficData)) + 1}` },
-              { label: 'Total New Users', value: stats.trafficData.reduce((a, b) => a + b, 0) },
-              { label: 'Avg / Week', value: Math.round(stats.trafficData.reduce((a, b) => a + b, 0) / 4) },
+              { label: 'Minggu Puncak', value: `Minggu ${stats.trafficData.indexOf(Math.max(...stats.trafficData)) + 1}` },
+              { label: 'Total Pengguna Baru', value: stats.trafficData.reduce((a, b) => a + b, 0) },
+              { label: 'Rata-rata / Minggu', value: Math.round(stats.trafficData.reduce((a, b) => a + b, 0) / 4) },
             ].map(({ label, value }) => (
               <div key={label}>
                 <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--clr-on-surface-variant)' }}>{label}</div>
@@ -369,7 +369,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--clr-primary)', marginBottom: '4px' }}>
-                  Top Rated Recipe
+                  Resep Nilai Tertinggi
                 </div>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.375rem', letterSpacing: '-0.01em' }}>{topRecipe.title}</h3>
                 <p style={{ fontSize: '0.8125rem', color: 'var(--clr-on-surface-variant)', marginBottom: '1rem', lineHeight: 1.5 }}>
@@ -379,19 +379,19 @@ export default function AdminDashboard() {
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', fontSize: '12px', color: 'var(--clr-on-surface-variant)', marginBottom: '1rem', fontWeight: 500 }}>
                   <span>⏱ {topRecipe.cookTime}</span>
-                  <span>🍽 {topRecipe.servings} servings</span>
-                  <span>🔥 {topRecipe.calories} cal</span>
+                  <span>🍽 {topRecipe.servings} porsi</span>
+                  <span>🔥 {topRecipe.calories} kalori</span>
                 </div>
                 <button 
                   className={styles.secondaryBtn} 
                   style={{ width: '100%', textAlign: 'center' }}
                   onClick={() => router.push(`/recipe/${topRecipe.id}`)}
                 >
-                  View Recipe
+                  Lihat Resep
                 </button>
               </>
             ) : (
-              <p style={{ color: 'var(--clr-on-surface-variant)', fontSize: '0.875rem' }}>No recipes yet.</p>
+              <p style={{ color: 'var(--clr-on-surface-variant)', fontSize: '0.875rem' }}>Belum ada resep.</p>
             )}
           </div>
         </div>
@@ -400,13 +400,13 @@ export default function AdminDashboard() {
         <div className={styles.tableArea}>
           <div className={styles.tableHeader}>
             <div>
-              <h3 style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Recent Recipe Submissions</h3>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--clr-on-surface-variant)', marginTop: '2px' }}>Review and manage newly uploaded content</p>
+              <h3 style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>Resep Baru Ditambahkan</h3>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--clr-on-surface-variant)', marginTop: '2px' }}>Tinjau dan kelola resep yang baru diunggah</p>
             </div>
             <button style={{ color: 'var(--clr-primary)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               onClick={() => window.location.href = '/admin/recipes'}
             >
-              View All
+              Lihat Semua
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
             </button>
           </div>
@@ -415,12 +415,12 @@ export default function AdminDashboard() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Recipe Name</th>
-                  <th>Category</th>
-                  <th>Cook Time</th>
+                  <th>Nama Resep</th>
+                  <th>Kategori</th>
+                  <th>Waktu Masak</th>
                   <th>Rating</th>
-                  <th>Added</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th>Ditambahkan</th>
+                  <th style={{ textAlign: 'right' }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -444,7 +444,7 @@ export default function AdminDashboard() {
                     <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '40px', color: 'var(--clr-outline)' }}>menu_book</span>
-                        <span style={{ color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>No recipes yet. Add your first recipe!</span>
+                        <span style={{ color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Belum ada resep. Tambahkan resep pertama Anda!</span>
                       </div>
                     </td>
                   </tr>
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
                           padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 500,
                           background: 'var(--clr-surface-container-high)', color: 'var(--clr-on-surface-variant)',
                         }}>
-                          {recipe.category || 'Uncategorized'}
+                          {recipe.category || 'Tanpa Kategori'}
                         </span>
                       </td>
                       <td style={{ fontSize: '13px', fontWeight: 500, color: 'var(--clr-on-surface-variant)' }}>
@@ -490,7 +490,7 @@ export default function AdminDashboard() {
                             {recipe.rating.toFixed(1)}
                           </div>
                         ) : (
-                          <span style={{ color: 'var(--clr-outline)', fontSize: '13px' }}>No rating</span>
+                          <span style={{ color: 'var(--clr-outline)', fontSize: '13px' }}>Belum ada rating</span>
                         )}
                       </td>
                       <td style={{ fontSize: '12px', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>

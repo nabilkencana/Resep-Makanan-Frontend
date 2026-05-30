@@ -29,12 +29,11 @@ interface Recipe {
 
 const DIFFICULTIES: Record<number, { label: string; level: number }> = {};
 const getDifficulty = (recipe: Recipe) => {
-  // Use real cookTime to estimate difficulty
   const timeStr = recipe.cookTime || recipe.prepTime || '30';
   const minutes = parseInt(timeStr.replace(/\D/g, '')) || 30;
-  if (minutes <= 20) return { label: 'Quick', level: 1 };
-  if (minutes <= 45) return { label: 'Medium', level: 2 };
-  return { label: 'Advanced', level: 3 };
+  if (minutes <= 20) return { label: 'Cepat', level: 1 };
+  if (minutes <= 45) return { label: 'Sedang', level: 2 };
+  return { label: 'Sulit', level: 3 };
 };
 
 const getCategoryBadgeClass = (category: string, stylesObj: any) => {
@@ -54,11 +53,11 @@ const timeAgo = (dateStr: string) => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week(s) ago`;
-  return `${Math.floor(diffDays / 30)} month(s) ago`;
+  if (diffDays === 0) return 'Hari ini';
+  if (diffDays === 1) return 'Kemarin';
+  if (diffDays < 7) return `${diffDays} hari yang lalu`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} minggu yang lalu`;
+  return `${Math.floor(diffDays / 30)} bulan yang lalu`;
 };
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -206,18 +205,18 @@ export default function AdminRecipes() {
       <div className={styles.pageHeader}>
         <div>
           <nav className={styles.breadcrumb}>
-            <span>Management</span>
+            <span>Manajemen</span>
             <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>
-            <span className={styles.breadcrumbActive}>Recipes</span>
+            <span className={styles.breadcrumbActive}>Resep</span>
           </nav>
-          <h2 className={styles.pageTitle}>Recipe Library</h2>
+          <h2 className={styles.pageTitle}>Perpustakaan Resep</h2>
           <p className={styles.pageSubtitle}>
-            {loading ? 'Loading...' : `${filteredRecipes.length} recipes — ${premiumCount} premium`}
+            {loading ? 'Memuat...' : `${filteredRecipes.length} resep — ${premiumCount} premium`}
           </p>
         </div>
         <button className={styles.addBtn} onClick={() => router.push('/admin/recipes/new')}>
           <span className="material-symbols-outlined">add</span>
-          Add New Recipe
+          Tambah Resep Baru
         </button>
       </div>
 
@@ -228,7 +227,7 @@ export default function AdminRecipes() {
             <span className="material-symbols-outlined" style={{ color: 'var(--clr-primary)', fontSize: '20px' }}>menu_book</span>
             <div>
               <div className={styles.quickStatValue}>{recipes.length}</div>
-              <div className={styles.quickStatLabel}>Total Recipes</div>
+              <div className={styles.quickStatLabel}>Total Resep</div>
             </div>
           </div>
           <div className={styles.quickStatItem}>
@@ -237,7 +236,7 @@ export default function AdminRecipes() {
               <div className={styles.quickStatValue}>
                 {recipes.length > 0 ? (recipes.reduce((s, r) => s + r.rating, 0) / recipes.length).toFixed(1) : '-'}
               </div>
-              <div className={styles.quickStatLabel}>Avg. Rating</div>
+              <div className={styles.quickStatLabel}>Rata-rata Rating</div>
             </div>
           </div>
           <div className={styles.quickStatItem}>
@@ -251,21 +250,21 @@ export default function AdminRecipes() {
             <span className="material-symbols-outlined" style={{ color: '#ef4444', fontSize: '20px' }}>favorite</span>
             <div>
               <div className={styles.quickStatValue}>{recipes.reduce((s, r) => s + (r._count?.favorites || 0), 0)}</div>
-              <div className={styles.quickStatLabel}>Total Favorites</div>
+              <div className={styles.quickStatLabel}>Total Favorit</div>
             </div>
           </div>
           <div className={styles.quickStatItem}>
             <span className="material-symbols-outlined" style={{ color: '#06b6d4', fontSize: '20px' }}>rate_review</span>
             <div>
               <div className={styles.quickStatValue}>{recipes.reduce((s, r) => s + (r._count?.reviews || 0), 0)}</div>
-              <div className={styles.quickStatLabel}>Total Reviews</div>
+              <div className={styles.quickStatLabel}>Total Ulasan</div>
             </div>
           </div>
           <div className={styles.quickStatItem}>
             <span className="material-symbols-outlined" style={{ color: '#10b981', fontSize: '20px' }}>category</span>
             <div>
               <div className={styles.quickStatValue}>{categories.length}</div>
-              <div className={styles.quickStatLabel}>Categories</div>
+              <div className={styles.quickStatLabel}>Kategori</div>
             </div>
           </div>
         </div>
@@ -277,7 +276,7 @@ export default function AdminRecipes() {
           <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--clr-on-surface-variant)' }}>search</span>
           <input
             type="text"
-            placeholder="Search recipes..."
+            placeholder="Cari resep..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.filterSearchInput}
@@ -287,9 +286,9 @@ export default function AdminRecipes() {
         <div className={styles.filterDivider} />
 
         <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Category</label>
+          <label className={styles.filterLabel}>Kategori</label>
           <select className={styles.filterSelect} value={selectedCategory} onChange={(e) => handleCategoryChange(e.target.value)}>
-            <option value="">All Categories</option>
+            <option value="">Semua Kategori</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
@@ -299,23 +298,23 @@ export default function AdminRecipes() {
         <div className={styles.filterDivider} />
 
         <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Cook Time</label>
+          <label className={styles.filterLabel}>Waktu Masak</label>
           <select className={styles.filterSelect} value={selectedDifficulty} onChange={(e) => { setSelectedDifficulty(e.target.value); setCurrentPage(1); }}>
-            <option value="">Any</option>
-            <option value="quick">Quick (≤20 min)</option>
-            <option value="medium">Medium (≤45 min)</option>
-            <option value="advanced">Long ({'>'} 45 min)</option>
+            <option value="">Semua</option>
+            <option value="quick">Cepat (≤20 mnt)</option>
+            <option value="medium">Sedang (≤45 mnt)</option>
+            <option value="advanced">Lama ({'>'} 45 mnt)</option>
           </select>
         </div>
 
         <div className={styles.filterDivider} />
 
         <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Type</label>
+          <label className={styles.filterLabel}>Tipe</label>
           <select className={styles.filterSelect} value={selectedStatus} onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}>
-            <option value="">All</option>
+            <option value="">Semua</option>
             <option value="premium">Premium</option>
-            <option value="free">Free</option>
+            <option value="free">Gratis</option>
           </select>
         </div>
 
@@ -332,7 +331,7 @@ export default function AdminRecipes() {
         </div>
 
         {(searchQuery || selectedCategory || selectedDifficulty || selectedStatus || selectedStatusFilter) && (
-          <button onClick={handleClear} className={styles.clearBtn}>Clear All</button>
+          <button onClick={handleClear} className={styles.clearBtn}>Hapus Filter</button>
         )}
       </div>
 
@@ -351,14 +350,14 @@ export default function AdminRecipes() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th style={{ width: '35%' }}>Recipe</th>
-                <th>Category</th>
-                <th style={{ textAlign: 'center' }}>Cook Time</th>
-                <th style={{ textAlign: 'right' }}>Engagement</th>
+                <th style={{ width: '35%' }}>Resep</th>
+                <th>Kategori</th>
+                <th style={{ textAlign: 'center' }}>Waktu Masak</th>
+                <th style={{ textAlign: 'right' }}>Keterlibatan</th>
                 <th style={{ textAlign: 'center' }}>Rating</th>
-                <th style={{ textAlign: 'center' }}>Type</th>
+                <th style={{ textAlign: 'center' }}>Tipe</th>
                 <th style={{ textAlign: 'center' }}>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th style={{ textAlign: 'right' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -388,16 +387,16 @@ export default function AdminRecipes() {
                   <td colSpan={7}>
                     <div className={styles.emptyState}>
                       <span className="material-symbols-outlined" style={{ fontSize: '56px', color: 'var(--clr-outline)' }}>menu_book</span>
-                      <h3>No recipes found</h3>
+                      <h3>Resep tidak ditemukan</h3>
                       <p>
                         {searchQuery || selectedCategory
-                          ? 'Try adjusting your search or filters.'
-                          : 'Start by adding the first recipe to your library.'}
+                          ? 'Coba sesuaikan pencarian atau filter Anda.'
+                          : 'Mulailah dengan menambahkan resep pertama ke perpustakaan Anda.'}
                       </p>
                       {!searchQuery && !selectedCategory && (
                         <button className={styles.addBtn} style={{ width: 'auto' }} onClick={() => router.push('/admin/recipes/new')}>
                           <span className="material-symbols-outlined">add</span>
-                          Add First Recipe
+                          Tambah Resep Pertama
                         </button>
                       )}
                     </div>
@@ -432,7 +431,7 @@ export default function AdminRecipes() {
                           <div className={styles.recipeInfo}>
                             <div className={styles.recipeName}>{recipe.title}</div>
                             <div className={styles.recipeMeta}>
-                              {recipe.author && <span>by {recipe.author.username}</span>}
+                              {recipe.author && <span>oleh {recipe.author.username}</span>}
                               {recipe.author && <span className={styles.metaDot}>·</span>}
                               <span>{timeAgo(recipe.updatedAt)}</span>
                             </div>
@@ -450,7 +449,7 @@ export default function AdminRecipes() {
                       {/* Category */}
                       <td>
                         <span className={`${styles.badge} ${getCategoryBadgeClass(recipe.category, styles)}`}>
-                          {recipe.category || 'Uncategorized'}
+                          {recipe.category || 'Tanpa Kategori'}
                         </span>
                       </td>
 
@@ -480,7 +479,7 @@ export default function AdminRecipes() {
                           </div>
                           <div className={styles.calorieBadge}>
                             <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>local_fire_department</span>
-                            {recipe.calories} cal
+                            {recipe.calories} kalori
                           </div>
                         </div>
                       </td>
@@ -495,20 +494,20 @@ export default function AdminRecipes() {
                         <span className={recipe.isPremium ? styles.premiumChip : styles.freeChip}>
                           {recipe.isPremium ? (
                             <><span className="material-symbols-outlined" style={{ fontSize: '13px', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span> Premium</>
-                          ) : 'Free'}
+                          ) : 'Gratis'}
                         </span>
                       </td>
 
                       {/* Status */}
                       <td style={{ textAlign: 'center' }}>
                         {recipe.status === 'PENDING' && (
-                          <span className={styles.badge} style={{ background: '#FEF3C7', color: '#B45309' }}>Pending</span>
+                          <span className={styles.badge} style={{ background: '#FEF3C7', color: '#B45309' }}>Menunggu</span>
                         )}
                         {recipe.status === 'APPROVED' && (
-                          <span className={styles.badge} style={{ background: '#D1FAE5', color: '#047857' }}>Approved</span>
+                          <span className={styles.badge} style={{ background: '#D1FAE5', color: '#047857' }}>Disetujui</span>
                         )}
                         {recipe.status === 'REJECTED' && (
-                          <span className={styles.badge} style={{ background: '#FEE2E2', color: '#B91C1C' }}>Rejected</span>
+                          <span className={styles.badge} style={{ background: '#FEE2E2', color: '#B91C1C' }}>Ditolak</span>
                         )}
                       </td>
 
@@ -563,9 +562,9 @@ export default function AdminRecipes() {
         {!loading && filteredRecipes.length > recipesPerPage && (
           <div className={styles.pagination}>
             <div className={styles.paginationText}>
-              Showing <strong style={{ color: 'var(--clr-on-surface)' }}>
+              Menampilkan <strong style={{ color: 'var(--clr-on-surface)' }}>
                 {(currentPage - 1) * recipesPerPage + 1}–{Math.min(currentPage * recipesPerPage, filteredRecipes.length)}
-              </strong> of <strong style={{ color: 'var(--clr-on-surface)' }}>{filteredRecipes.length}</strong> recipes
+              </strong> dari <strong style={{ color: 'var(--clr-on-surface)' }}>{filteredRecipes.length}</strong> resep
             </div>
             <div className={styles.paginationControls}>
               <button className={styles.pageBtn} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}>
@@ -600,10 +599,10 @@ export default function AdminRecipes() {
             <div className={`${styles.insightIconBox} ${styles.iconBox1}`}>
               <span className="material-symbols-outlined">favorite</span>
             </div>
-            <span className={styles.insightLabel}>Most Favorited</span>
+            <span className={styles.insightLabel}>Paling Disukai</span>
           </div>
           <h4 className={styles.insightTitle}>{mostFavorited?.title || 'N/A'}</h4>
-          <p className={styles.insightDesc}>{mostFavorited ? `${mostFavorited._count?.favorites || 0} saves · ${mostFavorited._count?.reviews || 0} reviews · ${mostFavorited.category}` : 'No data yet.'}</p>
+          <p className={styles.insightDesc}>{mostFavorited ? `${mostFavorited._count?.favorites || 0} simpan · ${mostFavorited._count?.reviews || 0} ulasan · ${mostFavorited.category}` : 'Belum ada data.'}</p>
         </div>
 
         <div className={styles.insightCard}>
@@ -611,10 +610,10 @@ export default function AdminRecipes() {
             <div className={`${styles.insightIconBox} ${styles.iconBox2}`}>
               <span className="material-symbols-outlined">star</span>
             </div>
-            <span className={styles.insightLabel}>Top Rated</span>
+            <span className={styles.insightLabel}>Rating Tertinggi</span>
           </div>
           <h4 className={styles.insightTitle}>{topRated?.title || 'N/A'}</h4>
-          <p className={styles.insightDesc}>{topRated ? `⭐ ${topRated.rating.toFixed(1)} · ${topRated.category}` : 'No ratings yet.'}</p>
+          <p className={styles.insightDesc}>{topRated ? `⭐ ${topRated.rating.toFixed(1)} · ${topRated.category}` : 'Belum ada rating.'}</p>
         </div>
 
         <div className={styles.insightCard}>
@@ -622,10 +621,10 @@ export default function AdminRecipes() {
             <div className={`${styles.insightIconBox} ${styles.iconBox3}`}>
               <span className="material-symbols-outlined">rate_review</span>
             </div>
-            <span className={styles.insightLabel}>Most Reviewed</span>
+            <span className={styles.insightLabel}>Paling Banyak Diulas</span>
           </div>
           <h4 className={styles.insightTitle}>{mostReviewed?.title || 'N/A'}</h4>
-          <p className={styles.insightDesc}>{mostReviewed ? `${mostReviewed._count?.reviews || 0} reviews · ${mostReviewed.category}` : 'No reviews yet.'}</p>
+          <p className={styles.insightDesc}>{mostReviewed ? `${mostReviewed._count?.reviews || 0} ulasan · ${mostReviewed.category}` : 'Belum ada ulasan.'}</p>
         </div>
       </div>
 
@@ -636,16 +635,16 @@ export default function AdminRecipes() {
             <div className={styles.modalIcon}>
               <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--clr-error)', fontVariationSettings: "'FILL' 1" }}>delete_forever</span>
             </div>
-            <h3 className={styles.modalTitle}>Delete Recipe?</h3>
+            <h3 className={styles.modalTitle}>Hapus Resep?</h3>
             <p className={styles.modalDesc}>
-              Recipe <strong>"{recipes.find((r) => r.id === deleteConfirmId)?.title}"</strong> will be permanently removed. This action cannot be undone.
+              Resep <strong>"{recipes.find((r) => r.id === deleteConfirmId)?.title}"</strong> akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className={styles.modalActions}>
               <button className={styles.cancelBtn} onClick={() => setDeleteConfirmId(null)} disabled={deleting}>
-                Cancel
+                Batal
               </button>
               <button className={styles.deleteBtn} onClick={() => handleDelete(deleteConfirmId!)} disabled={deleting}>
-                {deleting ? 'Deleting...' : 'Yes, Delete'}
+                {deleting ? 'Menghapus...' : 'Ya, Hapus'}
               </button>
             </div>
           </div>

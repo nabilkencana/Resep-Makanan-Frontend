@@ -88,7 +88,7 @@ export default function UsersPage() {
 
     const chartXAxis = sampleIndices.map(i => {
       const d = new Date(trendData[i].day);
-      return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase();
+      return d.toLocaleDateString('id-ID', { month: 'short', day: '2-digit' }).toUpperCase();
     });
 
     const maxVal = Math.max(...trendData.map(t => t.value), 1);
@@ -116,17 +116,17 @@ export default function UsersPage() {
       {/* === HEADER === */}
       <div className={styles.pageHeader}>
         <div>
-          <h2 className={styles.pageTitle}>User Management</h2>
-          <p className={styles.pageSubtitle}>Monitor growth and manage the culinary community.</p>
+          <h2 className={styles.pageTitle}>Manajemen Pengguna</h2>
+          <p className={styles.pageSubtitle}>Pantau pertumbuhan dan kelola komunitas kuliner.</p>
         </div>
         <div className={styles.headerActions}>
           <button className={styles.actionBtnOutline}>
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
-            Export CSV
+            Ekspor CSV
           </button>
           <button className={styles.actionBtnFilled}>
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-            Add Admin
+            Tambah Admin
           </button>
         </div>
       </div>
@@ -135,15 +135,15 @@ export default function UsersPage() {
       <div className={styles.chartCard}>
         <div className={styles.chartHeader}>
           <div>
-            <h3 className={styles.chartTitle}>User Growth Trends</h3>
-            <p className={styles.chartSubtitle}>LAST 30 DAYS (+12.5% INCREMENT)</p>
+            <h3 className={styles.chartTitle}>Tren Pertumbuhan Pengguna</h3>
+            <p className={styles.chartSubtitle}>30 HARI TERAKHIR (PENINGKATAN +12.5%)</p>
           </div>
           <div className={styles.chartLegends}>
             <div className={`${styles.legendBadge} ${styles.legendAdmin}`}>
-              <div className={styles.legendDot}></div> ADMINS
+              <div className={styles.legendDot}></div> ADMIN
             </div>
             <div className={`${styles.legendBadge} ${styles.legendUser}`}>
-              <div className={styles.legendDot}></div> USERS
+              <div className={styles.legendDot}></div> PENGGUNA
             </div>
           </div>
         </div>
@@ -192,10 +192,10 @@ export default function UsersPage() {
       {/* === TABLE CARD === */}
       <div className={styles.tableCard}>
         <div className={styles.tableHeader}>
-          <h3 className={styles.tableTitle}>Registered Users</h3>
+          <h3 className={styles.tableTitle}>Pengguna Terdaftar</h3>
           <button className={styles.filterBtn}>
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>filter_list</span>
-            Filter by Role
+            Filter Berdasarkan Peran
           </button>
         </div>
 
@@ -203,21 +203,21 @@ export default function UsersPage() {
           <table className={styles.usersTable}>
             <thead>
               <tr>
-                <th>USER</th>
+                <th>PENGGUNA</th>
                 <th>EMAIL</th>
-                <th>ROLE</th>
-                <th>DATE JOINED</th>
-                <th>ACTIONS</th>
+                <th>PERAN</th>
+                <th>TANGGAL BERGABUNG</th>
+                <th>AKSI</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Loading users...</td>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Memuat pengguna...</td>
                 </tr>
               ) : currentUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No users found.</td>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Pengguna tidak ditemukan.</td>
                 </tr>
               ) : (
                 currentUsers.map((user) => (
@@ -237,7 +237,7 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td>
-                      {new Date(user.createdAt).toLocaleDateString('en-US', {
+                      {new Date(user.createdAt).toLocaleDateString('id-ID', {
                         month: 'short', day: '2-digit', year: 'numeric'
                       })}
                     </td>
@@ -257,7 +257,7 @@ export default function UsersPage() {
         {!loading && users.length > 0 && (
           <div className={styles.pagination}>
             <span className={styles.paginationText}>
-              SHOWING {(currentPage - 1) * itemsPerPage + 1} TO {Math.min(currentPage * itemsPerPage, users.length)} OF {users.length} USERS
+              MENAMPILKAN {(currentPage - 1) * itemsPerPage + 1} HINGGA {Math.min(currentPage * itemsPerPage, users.length)} DARI {users.length} PENGGUNA
             </span>
             <div className={styles.paginationControls}>
               <button 

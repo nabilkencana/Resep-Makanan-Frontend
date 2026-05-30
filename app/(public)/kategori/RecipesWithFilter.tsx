@@ -15,6 +15,7 @@ interface Recipe {
   prepTime: string;
   cookTime: string;
   description?: string;
+  tags?: { id?: number; name: string }[];
 }
 
 interface Category {
@@ -25,27 +26,34 @@ interface Category {
 interface Props {
   recipes: Recipe[];
   categories: Category[];
+  tags: string[];
 }
 
-export default function RecipesWithFilter({ recipes, categories }: Props) {
+export default function RecipesWithFilter({ recipes, categories, tags }: Props) {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'Semua';
 
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [search, setSearch] = useState(initialSearch);
 
   useEffect(() => {
     const q = searchParams.get('search');
     const cat = searchParams.get('category');
+    const tag = searchParams.get('tag');
     if (q !== null) setSearch(q);
     if (cat !== null) setActiveCategory(cat);
+    if (tag !== null) setActiveTag(tag);
   }, [searchParams]);
 
   const filtered = useMemo(() => {
     let result = recipes;
     if (activeCategory !== 'Semua') {
       result = result.filter(r => r.category === activeCategory);
+    }
+    if (activeTag) {
+      result = result.filter(r => r.tags && r.tags.some(t => t.name === activeTag));
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -56,7 +64,7 @@ export default function RecipesWithFilter({ recipes, categories }: Props) {
       );
     }
     return result;
-  }, [recipes, activeCategory, search]);
+  }, [recipes, activeCategory, activeTag, search]);
 
   return (
     <div className={styles.recipePage}>
@@ -83,11 +91,31 @@ export default function RecipesWithFilter({ recipes, categories }: Props) {
         ))}
       </div>
 
+      {/* ── Popular Tags ── */}
+      {tags && tags.length > 0 && (
+        <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+          <div className={styles.tagsGrid} role="list" style={{ marginTop: 0 }}>
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                className={`${styles.tagChip} ${activeTag === tag ? styles.tagChipActive : styles.tagChipDefault}`}
+                role="listitem"
+                style={activeTag === tag ? { background: 'var(--clr-primary)', color: '#fff' } : {}}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Result count ── */}
       <div className={styles.resultMeta}>
         <span className={styles.resultCount}>
           {filtered.length} resep ditemukan
           {activeCategory !== 'Semua' && <> dalam <strong>{activeCategory}</strong></>}
+          {activeTag && <> dengan tag <strong>#{activeTag}</strong></>}
         </span>
       </div>
 
@@ -97,8 +125,8 @@ export default function RecipesWithFilter({ recipes, categories }: Props) {
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>🥣</div>
             <h3>Resep tidak ditemukan</h3>
-            <p>Coba kategori lain atau ubah kata pencarian kamu.</p>
-            <button className={styles.resetFilterBtn} onClick={() => { setActiveCategory('Semua'); setSearch(''); }}>
+            <p>Coba kategori atau tag lain, atau ubah kata pencarian kamu.</p>
+            <button className={styles.resetFilterBtn} onClick={() => { setActiveCategory('Semua'); setActiveTag(null); setSearch(''); }}>
               Reset Filter
             </button>
           </div>

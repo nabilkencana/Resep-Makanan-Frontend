@@ -14,10 +14,10 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: 'Dashboard', path: '/admin', icon: 'dashboard' },
-  { name: 'Recipes', path: '/admin/recipes', icon: 'menu_book', badge: null },
-  { name: 'Tutorials', path: '/admin/tutorials', icon: 'smart_display' },
-  { name: 'Transactions', path: '/admin/transactions', icon: 'receipt_long' },
-  { name: 'Users', path: '/admin/users', icon: 'group' },
+  { name: 'Resep', path: '/admin/recipes', icon: 'menu_book', badge: null },
+  { name: 'Tutorial', path: '/admin/tutorials', icon: 'smart_display' },
+  { name: 'Transaksi', path: '/admin/transactions', icon: 'receipt_long' },
+  { name: 'Pengguna', path: '/admin/users', icon: 'group' },
 ];
 
 
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <p style={{ color: 'var(--clr-on-surface-variant)', fontSize: '0.875rem', fontWeight: 500 }}>
-          Loading Admin Panel...
+          Memuat Panel Admin...
         </p>
       </div>
     );
@@ -91,13 +91,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div>
             <h1 className={styles.sidebarTitle}>DapurAdmin</h1>
-            <p className={styles.sidebarSubtitle}>Kitchen Management</p>
+            <p className={styles.sidebarSubtitle}>Manajemen Dapur</p>
           </div>
         </div>
 
         {/* Main Nav */}
         <div className={styles.navSection}>
-          <span className={styles.navSectionLabel}>Main Menu</span>
+          <span className={styles.navSectionLabel}>Menu Utama</span>
         </div>
 
         <nav className={styles.navMenu}>
@@ -130,12 +130,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className={styles.sidebarFooter}>
           <button className={styles.addBtn} onClick={() => router.push('/admin/recipes/new')}>
             <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: "'FILL' 1" }}>add_circle</span>
-            Add New Recipe
+            Tambah Resep Baru
           </button>
           <div className={styles.footerLinks}>
             <Link href="/" className={styles.navLink}>
               <span className={`material-symbols-outlined ${styles.navIcon}`}>public</span>
-              <span>Public Website</span>
+              <span>Situs Publik</span>
             </Link>
             <button
               onClick={() => { logout(); router.push('/auth'); }}
@@ -143,7 +143,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               style={{ width: '100%', border: 'none', background: 'none' }}
             >
               <span className={`material-symbols-outlined ${styles.navIcon}`}>logout</span>
-              <span>Sign Out</span>
+              <span>Keluar</span>
             </button>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className={`material-symbols-outlined ${styles.searchIcon}`}>search</span>
           <input
             type="text"
-            placeholder="Search recipes, users, or reports..."
+            placeholder="Cari resep, pengguna, atau laporan..."
             className={styles.searchInput}
           />
         </div>
@@ -169,7 +169,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className={styles.profileSection}>
             <div className={styles.profileInfo}>
               <p className={styles.profileName}>{user.username || 'Admin Console'}</p>
-              <p className={styles.profileRole}>System Administrator</p>
+              <p className={styles.profileRole}>Administrator Sistem</p>
             </div>
             <div className={styles.profileImg}>
               {(user.username || 'A').charAt(0).toUpperCase()}

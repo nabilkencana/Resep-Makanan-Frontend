@@ -265,6 +265,11 @@ export default function TambahResepPage() {
             <input type="text" className={styles.formInput} placeholder="Misal: 30 mins" value={cookTime} onChange={e => setCookTime(e.target.value)} required />
           </div>
 
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Kalori (per porsi)</label>
+            <input type="number" className={styles.formInput} min="0" value={calories} onChange={e => setCalories(Number(e.target.value))} required />
+          </div>
+
           {/* TAGS */}
           <div className={styles.formGroupFull}>
             <label className={styles.formLabel}>Tags Populer (Tekan Enter/Koma)</label>
