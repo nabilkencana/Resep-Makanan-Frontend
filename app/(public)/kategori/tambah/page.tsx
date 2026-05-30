@@ -117,7 +117,6 @@ export default function TambahResepPage() {
         cookTime,
         servings: Number(servings),
         calories: Number(calories),
-        isPremium: false,
         imageUrl: imageUrl || undefined,
         ingredients: validIngredients,
         steps: validSteps,

@@ -17,6 +17,7 @@ const menuItems: MenuItem[] = [
   { name: 'Resep', path: '/admin/recipes', icon: 'menu_book', badge: null },
   { name: 'Tutorial', path: '/admin/tutorials', icon: 'smart_display' },
   { name: 'Transaksi', path: '/admin/transactions', icon: 'receipt_long' },
+  { name: 'Newsletter', path: '/admin/newsletter', icon: 'mail' },
   { name: 'Pengguna', path: '/admin/users', icon: 'group' },
 ];
 
@@ -151,20 +152,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── TOP NAV ── */}
       <header className={styles.topNav}>
-        <div className={styles.searchBox}>
-          <span className={`material-symbols-outlined ${styles.searchIcon}`}>search</span>
-          <input
-            type="text"
-            placeholder="Cari resep, pengguna, atau laporan..."
-            className={styles.searchInput}
-          />
-        </div>
-
         <div className={styles.navRight}>
-          <button className={styles.notificationBtn}>
-            <span className="material-symbols-outlined">notifications</span>
-            <div className={styles.notifDot} />
-          </button>
 
           <div className={styles.profileSection}>
             <div className={styles.profileInfo}>

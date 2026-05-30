@@ -22,7 +22,6 @@ export default function EditRecipePage() {
   const [cookTime, setCookTime] = useState('');
   const [servings, setServings] = useState<number>(4);
   const [calories, setCalories] = useState<number>(450);
-  const [isPremium, setIsPremium] = useState(false);
   
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -46,7 +45,6 @@ export default function EditRecipePage() {
         setCookTime(recipe.cookTime || '');
         setServings(recipe.servings || 4);
         setCalories(recipe.calories || 450);
-        setIsPremium(recipe.isPremium || false);
         setImagePreview(recipe.imageUrl || null);
         
         if (recipe.tags && Array.isArray(recipe.tags)) {
@@ -180,7 +178,6 @@ export default function EditRecipePage() {
         cookTime,
         servings: Number(servings),
         calories: Number(calories),
-        isPremium,
         imageUrl: imageUrl || undefined,
         ingredients: validIngredients,
         steps: validSteps,
@@ -297,14 +294,6 @@ export default function EditRecipePage() {
               <option value="Chinese">Tiongkok</option>
               <option value="Dessert">Penutup</option>
               <option value="Beverage">Minuman</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Akses Premium</label>
-            <select className={styles.formSelect} value={isPremium ? 'true' : 'false'} onChange={e => setIsPremium(e.target.value === 'true')}>
-              <option value="false">Gratis (Tersedia untuk semua)</option>
-              <option value="true">Premium (Hanya pelanggan)</option>
             </select>
           </div>
 

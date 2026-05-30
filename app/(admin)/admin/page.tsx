@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '../../../lib/api';
+import MultiLineChart from './MultiLineChart';
 import styles from '../admin.module.css';
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -63,6 +64,8 @@ export default function AdminDashboard() {
     totalCategories: 0,
     totalNewsletterSubscribers: 0,
     trafficData: [0, 0, 0, 0] as number[],
+    reviewsData: [0, 0, 0, 0] as number[],
+    favoritesData: [0, 0, 0, 0] as number[],
   });
   const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
   const [topRecipe, setTopRecipe] = useState<any>(null);
@@ -163,6 +166,15 @@ export default function AdminDashboard() {
     return { path, pts };
   };
 
+  const formatMultiLineData = () => {
+    return [
+      { name: 'Minggu 1', penggunaBaru: stats.trafficData?.[0] || 0, ulasan: stats.reviewsData?.[0] || 0, favorit: stats.favoritesData?.[0] || 0 },
+      { name: 'Minggu 2', penggunaBaru: stats.trafficData?.[1] || 0, ulasan: stats.reviewsData?.[1] || 0, favorit: stats.favoritesData?.[1] || 0 },
+      { name: 'Minggu 3', penggunaBaru: stats.trafficData?.[2] || 0, ulasan: stats.reviewsData?.[2] || 0, favorit: stats.favoritesData?.[2] || 0 },
+      { name: 'Minggu 4', penggunaBaru: stats.trafficData?.[3] || 0, ulasan: stats.reviewsData?.[3] || 0, favorit: stats.favoritesData?.[3] || 0 },
+    ];
+  };
+
   const chartData = generateChartPath(stats.trafficData);
 
   const buildSparkPath = (values: number[]) => {
@@ -259,85 +271,9 @@ export default function AdminDashboard() {
       {/* ── Dashboard Grid ── */}
       <div className={styles.dashboardGrid}>
 
-        {/* Traffic Area Chart */}
-        <div className={styles.chartArea}>
-          <div className={styles.pageHeader} style={{ marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.01em' }}>Trafik Pendaftaran Pengguna</h3>
-              <p className={styles.pageDesc} style={{ fontSize: '0.8125rem', marginTop: '2px' }}>
-                Pengguna baru per minggu selama 4 minggu terakhir
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--clr-primary)' }} />
-                Pendaftaran
-              </div>
-            </div>
-          </div>
-
-          <div style={{ height: '220px', position: 'relative', width: '100%' }}>
-            <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="none">
-              {/* Grid lines */}
-              {[50, 100, 150, 200, 250].map(y => (
-                <line key={y} x1="0" y1={y} x2="1200" y2={y} stroke="rgba(188, 202, 187, 0.3)" strokeWidth="1" strokeDasharray="4 4" />
-              ))}
-              
-              {/* The Line */}
-              <path 
-                d={chartData.path} 
-                fill="none" 
-                stroke="var(--clr-primary)" 
-                strokeWidth="4" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={styles.animatedPath}
-              />
-              
-              {/* Data Points */}
-              {chartData.pts && chartData.pts.map((pt, i) => (
-                <circle 
-                  key={i} 
-                  cx={pt[0]} 
-                  cy={pt[1]} 
-                  r="6" 
-                  fill="white" 
-                  stroke="var(--clr-primary)" 
-                  strokeWidth="3"
-                  className={styles.animatedCircle}
-                  style={{ animationDelay: `${i * 0.15}s`, transformOrigin: `${pt[0]}px ${pt[1]}px` }}
-                />
-              ))}
-            </svg>
-
-            {/* Week labels */}
-            <div style={{
-              position: 'absolute', bottom: '-28px', left: 0, width: '100%',
-              display: 'flex', justifyContent: 'space-between',
-              fontSize: '11px', color: 'var(--clr-on-surface-variant)', fontWeight: 600,
-            }}>
-              {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((w) => (
-                <span key={w}>{w}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Stat summary below chart */}
-          <div style={{
-            display: 'flex', gap: '1.5rem', marginTop: '3rem',
-            borderTop: '1px solid var(--clr-outline-variant)', paddingTop: '1.25rem',
-          }}>
-            {[
-              { label: 'Minggu Puncak', value: `Minggu ${stats.trafficData.indexOf(Math.max(...stats.trafficData)) + 1}` },
-              { label: 'Total Pengguna Baru', value: stats.trafficData.reduce((a, b) => a + b, 0) },
-              { label: 'Rata-rata / Minggu', value: Math.round(stats.trafficData.reduce((a, b) => a + b, 0) / 4) },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--clr-on-surface-variant)' }}>{label}</div>
-                <div style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--clr-on-surface)' }}>{value}</div>
-              </div>
-            ))}
-          </div>
+        {/* Traffic Area Chart (Replaced with MultiLineChart) */}
+        <div className={styles.chartArea} style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none' }}>
+          <MultiLineChart data={formatMultiLineData()} />
         </div>
 
         {/* Featured Recipe Card — REAL DATA */}
@@ -499,7 +435,7 @@ export default function AdminDashboard() {
                       <td>
                         <div className={styles.actionCell}>
                           <button className={styles.iconBtn} title="Edit" onClick={() => router.push('/admin/recipes')}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+                            <p className={styles.recentRecipeCategory}>{recipe.category}</p>
                           </button>
                           <button className={styles.iconBtn} title="View" onClick={() => router.push(`/recipe/${recipe.id}`)}>
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>

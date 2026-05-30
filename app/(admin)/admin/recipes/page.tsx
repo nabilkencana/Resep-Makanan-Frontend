@@ -15,11 +15,10 @@ interface Recipe {
   servings: number;
   calories: number;
   rating: number;
-  isPremium: boolean;
   createdAt: string;
   updatedAt: string;
   tags: { id: number; name: string }[];
-  status?: string; // New field
+  status?: string;
   _count: {
     favorites: number;
     reviews: number;
@@ -86,7 +85,6 @@ export default function AdminRecipes() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState(''); // PENDING vs APPROVED
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [verifying, setVerifying] = useState<number | null>(null);
@@ -96,11 +94,6 @@ export default function AdminRecipes() {
     try {
       setLoading(true);
       setError(null);
-      // Fetch ALL recipes for admin dashboard
-      const res = await api.getRecipes(search, category) as any;
-      // In case we want to support passing status to getRecipes, we should update getRecipes in api.ts
-      // But actually, we just let it fetch, wait api.getRecipes doesn't support status query yet
-      // Let's manually fetch with status=ALL
       const url = new URL('http://localhost:3000/recipes');
       if (search) url.searchParams.append('search', search);
       if (category) url.searchParams.append('category', category);
@@ -129,15 +122,14 @@ export default function AdminRecipes() {
     fetchRecipes();
   }, [fetchRecipes]);
 
-  // Filter in frontend for difficulty and status (not supported by API)
   const filteredRecipes = recipes.filter((r) => {
     if (selectedDifficulty) {
       const { label } = getDifficulty(r);
       if (label.toLowerCase() !== selectedDifficulty.toLowerCase()) return false;
     }
-    if (selectedStatus === 'premium' && !r.isPremium) return false;
-    if (selectedStatus === 'free' && r.isPremium) return false;
-    if (selectedStatusFilter && r.status !== selectedStatusFilter) return false;
+    if (selectedStatus && selectedStatus !== 'ALL') {
+      if ((r.status || '').toLowerCase() !== selectedStatus.toLowerCase()) return false;
+    }
     return true;
   });
 
@@ -161,7 +153,6 @@ export default function AdminRecipes() {
     setSelectedCategory('');
     setSelectedDifficulty('');
     setSelectedStatus('');
-    setSelectedStatusFilter('');
     setCurrentPage(1);
     fetchRecipes('', '');
   };
@@ -191,17 +182,15 @@ export default function AdminRecipes() {
     }
   };
 
-  // Insights: computed from real data
   const mostFavorited = [...recipes].sort((a, b) => (b._count?.favorites || 0) - (a._count?.favorites || 0))[0];
   const mostReviewed = [...recipes].sort((a, b) => (b._count?.reviews || 0) - (a._count?.reviews || 0))[0];
   const topRated = [...recipes].sort((a, b) => b.rating - a.rating)[0];
-  const premiumCount = recipes.filter((r) => r.isPremium).length;
+  const premiumCount = 0;
   const categories = [...new Set(recipes.map((r) => r.category).filter(Boolean))];
 
   return (
     <div className={styles.container}>
 
-      {/* === HEADER === */}
       <div className={styles.pageHeader}>
         <div>
           <nav className={styles.breadcrumb}>
@@ -211,7 +200,7 @@ export default function AdminRecipes() {
           </nav>
           <h2 className={styles.pageTitle}>Perpustakaan Resep</h2>
           <p className={styles.pageSubtitle}>
-            {loading ? 'Memuat...' : `${filteredRecipes.length} resep — ${premiumCount} premium`}
+            {loading ? 'Memuat...' : `${filteredRecipes.length} resep`}
           </p>
         </div>
         <button className={styles.addBtn} onClick={() => router.push('/admin/recipes/new')}>
@@ -220,7 +209,6 @@ export default function AdminRecipes() {
         </button>
       </div>
 
-      {/* === QUICK STATS === */}
       {!loading && recipes.length > 0 && (
         <div className={styles.quickStats}>
           <div className={styles.quickStatItem}>
@@ -237,13 +225,6 @@ export default function AdminRecipes() {
                 {recipes.length > 0 ? (recipes.reduce((s, r) => s + r.rating, 0) / recipes.length).toFixed(1) : '-'}
               </div>
               <div className={styles.quickStatLabel}>Rata-rata Rating</div>
-            </div>
-          </div>
-          <div className={styles.quickStatItem}>
-            <span className="material-symbols-outlined" style={{ color: '#8b5cf6', fontSize: '20px' }}>workspace_premium</span>
-            <div>
-              <div className={styles.quickStatValue}>{premiumCount}</div>
-              <div className={styles.quickStatLabel}>Premium</div>
             </div>
           </div>
           <div className={styles.quickStatItem}>
@@ -270,7 +251,6 @@ export default function AdminRecipes() {
         </div>
       )}
 
-      {/* === FILTER BAR === */}
       <div className={styles.filterCard}>
         <form className={styles.searchBarInline} onSubmit={handleSearch}>
           <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--clr-on-surface-variant)' }}>search</span>
@@ -310,32 +290,20 @@ export default function AdminRecipes() {
         <div className={styles.filterDivider} />
 
         <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Tipe</label>
-          <select className={styles.filterSelect} value={selectedStatus} onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}>
-            <option value="">Semua</option>
-            <option value="premium">Premium</option>
-            <option value="free">Gratis</option>
-          </select>
-        </div>
-
-        <div className={styles.filterDivider} />
-
-        <div className={styles.filterGroup}>
           <label className={styles.filterLabel}>Status</label>
-          <select className={styles.filterSelect} value={selectedStatusFilter} onChange={(e) => { setSelectedStatusFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="">Semua Status</option>
-            <option value="PENDING">Menunggu Verifikasi</option>
+          <select className={styles.filterSelect} value={selectedStatus} onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}>
+            <option value="ALL">Semua Status</option>
+            <option value="PENDING">Menunggu (Pending)</option>
             <option value="APPROVED">Disetujui</option>
             <option value="REJECTED">Ditolak</option>
           </select>
         </div>
 
-        {(searchQuery || selectedCategory || selectedDifficulty || selectedStatus || selectedStatusFilter) && (
+        {(searchQuery || selectedCategory || selectedDifficulty || selectedStatus) && (
           <button onClick={handleClear} className={styles.clearBtn}>Hapus Filter</button>
         )}
       </div>
 
-      {/* === ERROR === */}
       {error && (
         <div className={styles.errorBanner}>
           <span className="material-symbols-outlined">error_outline</span>
@@ -344,7 +312,6 @@ export default function AdminRecipes() {
         </div>
       )}
 
-      {/* === TABLE === */}
       <div className={styles.tableCard}>
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
@@ -355,7 +322,6 @@ export default function AdminRecipes() {
                 <th style={{ textAlign: 'center' }}>Waktu Masak</th>
                 <th style={{ textAlign: 'right' }}>Keterlibatan</th>
                 <th style={{ textAlign: 'center' }}>Rating</th>
-                <th style={{ textAlign: 'center' }}>Tipe</th>
                 <th style={{ textAlign: 'center' }}>Status</th>
                 <th style={{ textAlign: 'right' }}>Aksi</th>
               </tr>
@@ -377,7 +343,6 @@ export default function AdminRecipes() {
                     <td><div className={styles.skeletonLine} style={{ width: '50px', margin: '0 auto' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '80px', marginLeft: 'auto' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '60px', margin: '0 auto' }} /></td>
-                    <td><div className={styles.skeletonLine} style={{ width: '55px', margin: '0 auto', borderRadius: '999px' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '60px', margin: '0 auto', borderRadius: '999px' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '60px', marginLeft: 'auto' }} /></td>
                   </tr>
@@ -388,17 +353,6 @@ export default function AdminRecipes() {
                     <div className={styles.emptyState}>
                       <span className="material-symbols-outlined" style={{ fontSize: '56px', color: 'var(--clr-outline)' }}>menu_book</span>
                       <h3>Resep tidak ditemukan</h3>
-                      <p>
-                        {searchQuery || selectedCategory
-                          ? 'Coba sesuaikan pencarian atau filter Anda.'
-                          : 'Mulailah dengan menambahkan resep pertama ke perpustakaan Anda.'}
-                      </p>
-                      {!searchQuery && !selectedCategory && (
-                        <button className={styles.addBtn} style={{ width: 'auto' }} onClick={() => router.push('/admin/recipes/new')}>
-                          <span className="material-symbols-outlined">add</span>
-                          Tambah Resep Pertama
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -410,7 +364,6 @@ export default function AdminRecipes() {
 
                   return (
                     <tr key={recipe.id} className={styles.tableRow}>
-                      {/* Recipe Info */}
                       <td>
                         <div className={styles.recipeCell}>
                           <div className={styles.recipeImgWrapper}>
@@ -418,15 +371,7 @@ export default function AdminRecipes() {
                               src={recipe.imageUrl || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=100`}
                               alt={recipe.title}
                               className={styles.recipeImg}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=100';
-                              }}
                             />
-                            {recipe.isPremium && (
-                              <span className={styles.premiumBadgeImg} title="Premium">
-                                <span className="material-symbols-outlined" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-                              </span>
-                            )}
                           </div>
                           <div className={styles.recipeInfo}>
                             <div className={styles.recipeName}>{recipe.title}</div>
@@ -435,25 +380,14 @@ export default function AdminRecipes() {
                               {recipe.author && <span className={styles.metaDot}>·</span>}
                               <span>{timeAgo(recipe.updatedAt)}</span>
                             </div>
-                            {recipe.tags?.length > 0 && (
-                              <div className={styles.tagRow}>
-                                {recipe.tags.slice(0, 3).map((tag) => (
-                                  <span key={tag.id} className={styles.tag}>{tag.name}</span>
-                                ))}
-                              </div>
-                            )}
                           </div>
                         </div>
                       </td>
-
-                      {/* Category */}
                       <td>
                         <span className={`${styles.badge} ${getCategoryBadgeClass(recipe.category, styles)}`}>
                           {recipe.category || 'Tanpa Kategori'}
                         </span>
                       </td>
-
-                      {/* Cook Time */}
                       <td style={{ textAlign: 'center' }}>
                         <div className={styles.cookTimeWrapper}>
                           <span className="material-symbols-outlined" style={{ fontSize: '14px', color: 'var(--clr-on-surface-variant)' }}>timer</span>
@@ -463,8 +397,6 @@ export default function AdminRecipes() {
                           {diff.label}
                         </span>
                       </td>
-
-                      {/* Engagement — real data */}
                       <td style={{ textAlign: 'right' }}>
                         <div className={styles.engagementWrapper}>
                           <div className={styles.engagementStats}>
@@ -477,28 +409,11 @@ export default function AdminRecipes() {
                               <span>{revCount.toLocaleString()}</span>
                             </div>
                           </div>
-                          <div className={styles.calorieBadge}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>local_fire_department</span>
-                            {recipe.calories} kalori
-                          </div>
                         </div>
                       </td>
-
-                      {/* Rating — real data */}
                       <td style={{ textAlign: 'center' }}>
                         <StarRating rating={recipe.rating} />
                       </td>
-
-                      {/* Type — real data */}
-                      <td style={{ textAlign: 'center' }}>
-                        <span className={recipe.isPremium ? styles.premiumChip : styles.freeChip}>
-                          {recipe.isPremium ? (
-                            <><span className="material-symbols-outlined" style={{ fontSize: '13px', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span> Premium</>
-                          ) : 'Gratis'}
-                        </span>
-                      </td>
-
-                      {/* Status */}
                       <td style={{ textAlign: 'center' }}>
                         {recipe.status === 'PENDING' && (
                           <span className={styles.badge} style={{ background: '#FEF3C7', color: '#B45309' }}>Menunggu</span>
@@ -510,8 +425,6 @@ export default function AdminRecipes() {
                           <span className={styles.badge} style={{ background: '#FEE2E2', color: '#B91C1C' }}>Ditolak</span>
                         )}
                       </td>
-
-                      {/* Actions */}
                       <td>
                         <div className={styles.actionCell}>
                           {recipe.status === 'PENDING' && (

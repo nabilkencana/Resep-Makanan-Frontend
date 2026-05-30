@@ -18,7 +18,6 @@ export default function NewRecipePage() {
   const [cookTime, setCookTime] = useState('30 mins');
   const [servings, setServings] = useState<number>(4);
   const [calories, setCalories] = useState<number>(450);
-  const [isPremium, setIsPremium] = useState(false);
   
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -118,7 +117,6 @@ export default function NewRecipePage() {
         cookTime,
         servings: Number(servings),
         calories: Number(calories),
-        isPremium,
         imageUrl: imageUrl || undefined,
         ingredients: validIngredients,
         steps: validSteps,
@@ -227,14 +225,6 @@ export default function NewRecipePage() {
               <option value="Chinese">Tiongkok</option>
               <option value="Dessert">Penutup</option>
               <option value="Beverage">Minuman</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Akses Premium</label>
-            <select className={styles.formSelect} value={isPremium ? 'true' : 'false'} onChange={e => setIsPremium(e.target.value === 'true')}>
-              <option value="false">Gratis (Tersedia untuk semua)</option>
-              <option value="true">Premium (Hanya pelanggan)</option>
             </select>
           </div>
 

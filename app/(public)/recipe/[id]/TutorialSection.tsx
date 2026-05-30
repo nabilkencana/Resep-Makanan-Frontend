@@ -16,7 +16,6 @@ interface Tutorial {
   price: number;
   isPublished: boolean;
   recipe?: {
-    isPremium: boolean;
     imageUrl?: string;
   };
 }
@@ -157,14 +156,6 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
           {/* Duration badge */}
           {tutorial.duration > 0 && (
             <span className={styles.durationBadge}>{formatDuration(tutorial.duration)}</span>
-          )}
-
-          {/* Premium badge */}
-          {!isFree && (
-            <span className={styles.premiumBadge}>
-              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>star</span>
-              Premium
-            </span>
           )}
         </div>
 

@@ -89,7 +89,8 @@ export const api = {
   verifyTransaction: (id: number) => fetchApi(`/transactions/${id}/verify`, { method: 'PATCH' }),
 
   // Newsletter
-  subscribeNewsletter: (data: { email: string }) => fetchApi('/newsletter', { method: 'POST', body: JSON.stringify(data) }),
+  getNewsletters: () => fetchApi('/newsletter'),
+  subscribeNewsletter: (data: { email: string }) => fetchApi('/newsletter/subscribe', { method: 'POST', body: JSON.stringify(data) }),
 
   // Dashboard
   getDashboardStats: () => fetchApi('/dashboard/stats'),
