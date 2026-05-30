@@ -2,6 +2,15 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../../lib/api';
 import styles from './users.module.css';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 
 interface User {
   id: number;
@@ -43,23 +52,23 @@ export default function UsersPage() {
     }
   };
 
-  // SVG Chart Path generation from REAL DATA
-  const { path, points, xAxis } = (() => {
-    if (users.length === 0) {
-      return { path: 'M 0 200 L 800 200', points: [], xAxis: [] };
-    }
-
+  // Recharts Data generation from REAL DATA
+  const chartData = (() => {
+    if (users.length === 0) return [];
+    
     // Sort users by date
     const sorted = [...users].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     
     // Group by Day
-    const countsByDay: { [key: string]: number } = {};
+    const countsByDay: { [key: string]: { admin: number, user: number } } = {};
     sorted.forEach(u => {
       const day = new Date(u.createdAt).toISOString().split('T')[0];
-      countsByDay[day] = (countsByDay[day] || 0) + 1;
+      if (!countsByDay[day]) countsByDay[day] = { admin: 0, user: 0 };
+      if (u.role === 'ADMIN') countsByDay[day].admin++;
+      else countsByDay[day].user++;
     });
 
-    const days = Object.keys(countsByDay).sort();
+    let days = Object.keys(countsByDay).sort();
     
     // If all users created on the same day, spread them out for visual effect
     if (days.length <= 1) {
@@ -68,45 +77,29 @@ export default function UsersPage() {
       for (let i = 4; i >= 0; i--) {
         const nd = new Date(d);
         nd.setDate(d.getDate() - i);
-        mockDays.push(nd.toISOString().split('T')[0]);
+        const dayStr = nd.toISOString().split('T')[0];
+        mockDays.push(dayStr);
+        if (!countsByDay[dayStr]) countsByDay[dayStr] = { admin: 0, user: 0 };
       }
-      days.splice(0, days.length, ...mockDays);
-      countsByDay[days[days.length - 1]] = users.length;
+      days = mockDays;
+      countsByDay[days[days.length - 1]] = {
+        admin: sorted.filter(u => u.role === 'ADMIN').length,
+        user: sorted.filter(u => u.role !== 'ADMIN').length,
+      };
     }
 
     // Cumulative sum
-    let cumSum = 0;
-    const trendData = days.map(day => {
-      cumSum += (countsByDay[day] || 0);
-      return { day, value: cumSum };
+    let cumAdmin = 0;
+    let cumUser = 0;
+    return days.map(day => {
+      cumAdmin += countsByDay[day].admin;
+      cumUser += countsByDay[day].user;
+      return {
+        name: new Date(day).toLocaleDateString('id-ID', { month: 'short', day: '2-digit' }).toUpperCase(),
+        Admin: cumAdmin,
+        Pengguna: cumUser
+      };
     });
-
-    // Ensure we have exactly 5 points for the X axis labels if possible
-    const sampleIndices = trendData.length >= 5 
-      ? [0, Math.floor(trendData.length * 0.25), Math.floor(trendData.length * 0.5), Math.floor(trendData.length * 0.75), trendData.length - 1]
-      : trendData.map((_, i) => i);
-
-    const chartXAxis = sampleIndices.map(i => {
-      const d = new Date(trendData[i].day);
-      return d.toLocaleDateString('id-ID', { month: 'short', day: '2-digit' }).toUpperCase();
-    });
-
-    const maxVal = Math.max(...trendData.map(t => t.value), 1);
-    const scaleY = 180 / maxVal;
-    const width = 800;
-
-    const dataPoints = trendData.map((d, i) => {
-      const x = trendData.length > 1 ? (i / (trendData.length - 1)) * width : width / 2;
-      const y = 220 - (d.value * scaleY);
-      return { x, y };
-    });
-
-    let dPath = `M ${dataPoints[0].x} ${dataPoints[0].y}`;
-    for (let i = 1; i < dataPoints.length; i++) {
-      dPath += ` L ${dataPoints[i].x} ${dataPoints[i].y}`;
-    }
-
-    return { path: dPath, points: dataPoints, xAxis: chartXAxis };
   })();
 
   return (
@@ -148,44 +141,47 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <div className={styles.chartArea}>
-          <svg width="100%" viewBox="0 0 800 250" preserveAspectRatio="none">
-            {/* Grid lines */}
-            {[50, 100, 150, 200].map(y => (
-              <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="rgba(188, 202, 187, 0.3)" strokeWidth="1" strokeDasharray="4 4" />
-            ))}
-            
-            {/* The Line */}
-            <path 
-              d={path} 
-              fill="none" 
-              stroke="var(--clr-primary)" 
-              strokeWidth="3" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              className={styles.animatedPath}
-            />
-            
-            {/* Data Points */}
-            {points.map((pt, i) => (
-              <circle 
-                key={i} 
-                cx={pt.x} 
-                cy={pt.y} 
-                r="4" 
-                fill="white" 
-                stroke="var(--clr-primary)" 
-                strokeWidth="2"
-                className={styles.animatedCircle}
-                style={{ animationDelay: `${i * 0.1}s`, transformOrigin: `${pt.x}px ${pt.y}px` }}
+        <div className={styles.chartArea} style={{ height: '300px', marginTop: '1rem' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 20, right: 20, left: -20, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 12, fill: '#6b7280' }} 
+                dy={10}
               />
-            ))}
-          </svg>
-          <div className={styles.chartXAxis}>
-            {xAxis.map((label, i) => (
-              <span key={i}>{label}</span>
-            ))}
-          </div>
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 12, fill: '#6b7280' }} 
+                dx={-10}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Pengguna" 
+                stroke="#006d36" 
+                strokeWidth={3}
+                dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Admin" 
+                stroke="#10b981" 
+                strokeWidth={3}
+                dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
