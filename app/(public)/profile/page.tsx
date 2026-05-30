@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { 
   IconBookmark, IconComment, IconLeaf, IconTrophy, 
   IconCollection, IconStarFull, IconShare, 
-  IconCheckCircle, IconPan, IconGoogle, IconFacebook, 
+  IconCheckCircle, IconPan, IconGoogle, 
   IconHistory, IconRestaurant
 } from './Icons';
 
@@ -446,10 +446,6 @@ export default function ProfilePage() {
                     <button className={styles.socialBtn}>
                       <IconGoogle />
                       Google Terhubung
-                    </button>
-                    <button className={styles.socialBtn}>
-                      <IconFacebook />
-                      Hubungkan Facebook
                     </button>
 
                     <h3 className={`${styles.sectionTitle} mt-4`}>Ubah Alamat Email</h3>
