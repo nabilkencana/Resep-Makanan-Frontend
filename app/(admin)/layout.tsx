@@ -5,13 +5,21 @@ import { useAuth } from '../../lib/auth-context';
 import { useEffect } from 'react';
 import styles from './admin.module.css';
 
-const menuItems = [
+interface MenuItem {
+  name: string;
+  path: string;
+  icon: string;
+  badge?: string | null;
+}
+
+const menuItems: MenuItem[] = [
   { name: 'Dashboard', path: '/admin', icon: 'dashboard' },
   { name: 'Recipes', path: '/admin/recipes', icon: 'menu_book', badge: null },
+  { name: 'Tutorials', path: '/admin/tutorials', icon: 'smart_display' },
+  { name: 'Transactions', path: '/admin/transactions', icon: 'receipt_long' },
   { name: 'Users', path: '/admin/users', icon: 'group' },
-  { name: 'Analytics', path: '#', icon: 'analytics' },
-  { name: 'Settings', path: '#', icon: 'settings' },
 ];
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

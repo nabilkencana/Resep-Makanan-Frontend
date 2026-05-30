@@ -30,6 +30,9 @@ export default function EditRecipePage() {
   const [ingredients, setIngredients] = useState([{ name: '', amount: '' }]);
   const [steps, setSteps] = useState([{ stepNumber: 1, description: '' }]);
 
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -46,6 +49,10 @@ export default function EditRecipePage() {
         setIsPremium(recipe.isPremium || false);
         setImagePreview(recipe.imageUrl || null);
         
+        if (recipe.tags && Array.isArray(recipe.tags)) {
+          setTags(recipe.tags.map((t: any) => t.name));
+        }
+
         let parsedIngredients = [];
         if (typeof recipe.ingredients === 'string') {
           try { parsedIngredients = JSON.parse(recipe.ingredients); } catch(e) {}
@@ -111,6 +118,21 @@ export default function EditRecipePage() {
     setSteps(newSteps.length ? newSteps : [{ stepNumber: 1, description: '' }]);
   };
 
+  // Handlers for Tags
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = tagInput.trim().toLowerCase();
+      if (newTag && !tags.includes(newTag)) {
+        setTags([...tags, newTag]);
+      }
+      setTagInput('');
+    }
+  };
+  const removeTag = (indexToRemove: number) => {
+    setTags(tags.filter((_, index) => index !== indexToRemove));
+  };
+
   // Image Upload Handler
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -162,6 +184,7 @@ export default function EditRecipePage() {
         imageUrl: imageUrl || undefined,
         ingredients: validIngredients,
         steps: validSteps,
+        tags: tags,
       };
 
       // 3. Update Recipe
@@ -303,6 +326,49 @@ export default function EditRecipePage() {
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Calories (per serving)</label>
             <input type="number" className={styles.formInput} min="0" value={calories} onChange={e => setCalories(Number(e.target.value))} required />
+          </div>
+
+          {/* TAGS */}
+          <div className={styles.formGroupFull}>
+            <label className={styles.formLabel}>Tags (Tekan Enter/Koma)</label>
+            <div 
+              style={{
+                display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center',
+                border: '1px solid var(--clr-outline)', padding: '0.5rem', borderRadius: '0.5rem',
+                minHeight: '48px'
+              }}
+            >
+              {tags.map((tag, idx) => (
+                <span 
+                  key={idx} 
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.25rem',
+                    background: 'rgba(0, 109, 54, 0.1)', color: 'var(--clr-primary)',
+                    padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600
+                  }}
+                >
+                  {tag}
+                  <button 
+                    type="button" 
+                    onClick={() => removeTag(idx)}
+                    style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', display: 'flex', padding: 0 }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                  </button>
+                </span>
+              ))}
+              <input 
+                type="text" 
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                placeholder={tags.length === 0 ? "Contoh: pedas, sarapan..." : "Tambah tag..."}
+                style={{
+                  border: 'none', outline: 'none', flex: 1, minWidth: '150px',
+                  background: 'transparent', fontSize: '0.95rem'
+                }}
+              />
+            </div>
           </div>
 
           {/* INGREDIENTS */}

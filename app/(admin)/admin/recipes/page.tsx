@@ -19,6 +19,7 @@ interface Recipe {
   createdAt: string;
   updatedAt: string;
   tags: { id: number; name: string }[];
+  status?: string; // New field
   _count: {
     favorites: number;
     reviews: number;
@@ -86,19 +87,36 @@ export default function AdminRecipes() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState(''); // PENDING vs APPROVED
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [verifying, setVerifying] = useState<number | null>(null);
   const recipesPerPage = 10;
 
   const fetchRecipes = useCallback(async (search?: string, category?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.getRecipes(search, category);
-      // API returns { success, totalRecipes, recipes: [...] }
-      const data: Recipe[] = Array.isArray(res)
-        ? res
-        : (res.recipes || res.data || []);
+      // Fetch ALL recipes for admin dashboard
+      const res = await api.getRecipes(search, category) as any;
+      // In case we want to support passing status to getRecipes, we should update getRecipes in api.ts
+      // But actually, we just let it fetch, wait api.getRecipes doesn't support status query yet
+      // Let's manually fetch with status=ALL
+      const url = new URL('http://localhost:3000/recipes');
+      if (search) url.searchParams.append('search', search);
+      if (category) url.searchParams.append('category', category);
+      url.searchParams.append('status', 'ALL');
+      url.searchParams.append('limit', '100');
+
+      const token = localStorage.getItem('token');
+      const apiRes = await fetch(url.toString(), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      const dataJson = await apiRes.json();
+      
+      const data: Recipe[] = Array.isArray(dataJson)
+        ? dataJson
+        : (dataJson.recipes || dataJson.data || []);
       setRecipes(data);
     } catch (err: any) {
       console.error('Failed to fetch recipes:', err);
@@ -120,6 +138,7 @@ export default function AdminRecipes() {
     }
     if (selectedStatus === 'premium' && !r.isPremium) return false;
     if (selectedStatus === 'free' && r.isPremium) return false;
+    if (selectedStatusFilter && r.status !== selectedStatusFilter) return false;
     return true;
   });
 
@@ -143,6 +162,7 @@ export default function AdminRecipes() {
     setSelectedCategory('');
     setSelectedDifficulty('');
     setSelectedStatus('');
+    setSelectedStatusFilter('');
     setCurrentPage(1);
     fetchRecipes('', '');
   };
@@ -157,6 +177,18 @@ export default function AdminRecipes() {
       alert('Gagal menghapus resep. Coba lagi.');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleVerify = async (id: number, status: string) => {
+    setVerifying(id);
+    try {
+      await api.verifyRecipe(id.toString(), status);
+      setRecipes((prev) => prev.map((r) => r.id === id ? { ...r, status } : r));
+    } catch (err) {
+      alert(`Gagal memverifikasi resep. Coba lagi.`);
+    } finally {
+      setVerifying(null);
     }
   };
 
@@ -287,7 +319,19 @@ export default function AdminRecipes() {
           </select>
         </div>
 
-        {(searchQuery || selectedCategory || selectedDifficulty || selectedStatus) && (
+        <div className={styles.filterDivider} />
+
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>Status</label>
+          <select className={styles.filterSelect} value={selectedStatusFilter} onChange={(e) => { setSelectedStatusFilter(e.target.value); setCurrentPage(1); }}>
+            <option value="">Semua Status</option>
+            <option value="PENDING">Menunggu Verifikasi</option>
+            <option value="APPROVED">Disetujui</option>
+            <option value="REJECTED">Ditolak</option>
+          </select>
+        </div>
+
+        {(searchQuery || selectedCategory || selectedDifficulty || selectedStatus || selectedStatusFilter) && (
           <button onClick={handleClear} className={styles.clearBtn}>Clear All</button>
         )}
       </div>
@@ -313,6 +357,7 @@ export default function AdminRecipes() {
                 <th style={{ textAlign: 'right' }}>Engagement</th>
                 <th style={{ textAlign: 'center' }}>Rating</th>
                 <th style={{ textAlign: 'center' }}>Type</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -334,6 +379,7 @@ export default function AdminRecipes() {
                     <td><div className={styles.skeletonLine} style={{ width: '80px', marginLeft: 'auto' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '60px', margin: '0 auto' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '55px', margin: '0 auto', borderRadius: '999px' }} /></td>
+                    <td><div className={styles.skeletonLine} style={{ width: '60px', margin: '0 auto', borderRadius: '999px' }} /></td>
                     <td><div className={styles.skeletonLine} style={{ width: '60px', marginLeft: 'auto' }} /></td>
                   </tr>
                 ))
@@ -453,9 +499,43 @@ export default function AdminRecipes() {
                         </span>
                       </td>
 
+                      {/* Status */}
+                      <td style={{ textAlign: 'center' }}>
+                        {recipe.status === 'PENDING' && (
+                          <span className={styles.badge} style={{ background: '#FEF3C7', color: '#B45309' }}>Pending</span>
+                        )}
+                        {recipe.status === 'APPROVED' && (
+                          <span className={styles.badge} style={{ background: '#D1FAE5', color: '#047857' }}>Approved</span>
+                        )}
+                        {recipe.status === 'REJECTED' && (
+                          <span className={styles.badge} style={{ background: '#FEE2E2', color: '#B91C1C' }}>Rejected</span>
+                        )}
+                      </td>
+
                       {/* Actions */}
                       <td>
                         <div className={styles.actionCell}>
+                          {recipe.status === 'PENDING' && (
+                            <>
+                              <button 
+                                className={styles.iconBtn} 
+                                style={{ color: '#10B981', background: '#D1FAE5' }}
+                                title="Approve" 
+                                onClick={() => handleVerify(recipe.id, 'APPROVED')}
+                                disabled={verifying === recipe.id}
+                              >
+                                <span className="material-symbols-outlined">check</span>
+                              </button>
+                              <button 
+                                className={styles.iconBtnDanger} 
+                                title="Reject" 
+                                onClick={() => handleVerify(recipe.id, 'REJECTED')}
+                                disabled={verifying === recipe.id}
+                              >
+                                <span className="material-symbols-outlined">close</span>
+                              </button>
+                            </>
+                          )}
                           <button className={styles.iconBtn} title="View" onClick={() => router.push(`/recipe/${recipe.id}`)}>
                             <span className="material-symbols-outlined">open_in_new</span>
                           </button>

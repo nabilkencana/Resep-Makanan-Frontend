@@ -1,13 +1,14 @@
 'use client';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '../../../../../lib/api';
-import styles from '../recipes.module.css';
+import { api } from '../../../../lib/api';
+import styles from '../../../(admin)/admin/recipes/recipes.module.css';
 
-export default function NewRecipePage() {
+export default function TambahResepPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
@@ -18,7 +19,6 @@ export default function NewRecipePage() {
   const [cookTime, setCookTime] = useState('30 mins');
   const [servings, setServings] = useState<number>(4);
   const [calories, setCalories] = useState<number>(450);
-  const [isPremium, setIsPremium] = useState(false);
   
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -103,7 +103,6 @@ export default function NewRecipePage() {
       }
 
       // 2. Format payload
-      // Filter out empty ingredients/steps
       const validIngredients = ingredients.filter(i => i.name.trim() !== '');
       const validSteps = steps.filter(s => s.description.trim() !== '');
 
@@ -118,56 +117,77 @@ export default function NewRecipePage() {
         cookTime,
         servings: Number(servings),
         calories: Number(calories),
-        isPremium,
+        isPremium: false,
         imageUrl: imageUrl || undefined,
         ingredients: validIngredients,
         steps: validSteps,
         tags: tags,
       };
 
-      // 3. Create Recipe
+      // 3. Create Recipe (Normal user sets it to PENDING in backend)
       await api.createRecipe(payload);
       
-      // 4. Redirect on success
-      router.push('/admin/recipes');
+      setSuccess(true);
+      setLoading(false);
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Terjadi kesalahan saat menyimpan resep.');
+      setError(err.message || 'Terjadi kesalahan saat menyimpan resep. Apakah kamu sudah login?');
       setLoading(false);
     }
   };
 
-  return (
-    <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <div className={styles.container} style={{ maxWidth: '800px', width: '100%' }}>
-      {/* HEADER */}
-      <div className={styles.pageHeader}>
-        <div>
-          <nav className={styles.breadcrumb}>
-            <span onClick={() => router.push('/admin/recipes')} style={{ cursor: 'pointer', color: 'var(--clr-on-surface-variant)' }}>Recipes</span>
-            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>
-            <span className={styles.breadcrumbActive}>Add New</span>
-          </nav>
-          <h2 className={styles.pageTitle}>Create New Recipe</h2>
-          <p className={styles.pageSubtitle}>Add a new recipe to your vibrant kitchen library.</p>
+  if (success) {
+    return (
+      <div style={{ padding: '6rem 2rem 4rem', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#fff', padding: '3rem', borderRadius: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center', maxWidth: '500px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '64px', color: 'var(--clr-primary)', marginBottom: '1rem' }}>check_circle</span>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--clr-on-surface)' }}>Resep Berhasil Dikirim!</h2>
+          <p style={{ color: 'var(--clr-on-surface-variant)', lineHeight: 1.6, marginBottom: '2rem' }}>
+            Terima kasih telah berbagi resep kreasi Anda. Resep Anda saat ini berstatus <strong>Menunggu Verifikasi</strong> oleh Admin. Setelah disetujui, resep akan langsung tayang di Dapur Nusantara!
+          </p>
+          <button 
+            onClick={() => router.push('/kategori')}
+            style={{ padding: '0.75rem 1.5rem', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '2rem', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Kembali ke Kategori
+          </button>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ paddingTop: '6rem', paddingBottom: '4rem', display: 'flex', justifyContent: 'center', background: 'var(--clr-surface)' }}>
+      <div className={styles.container} style={{ maxWidth: '800px', width: '100%', background: '#fff', borderRadius: '1rem', padding: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+      
+      {/* HEADER */}
+      <div style={{ marginBottom: '2rem', borderBottom: '1px solid var(--clr-outline-variant)', paddingBottom: '1.5rem' }}>
+        <button 
+          onClick={() => router.back()}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--clr-on-surface-variant)', cursor: 'pointer', marginBottom: '1rem' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
+          Kembali
+        </button>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--clr-on-surface)' }}>Kirim Resep Kamu</h1>
+        <p style={{ color: 'var(--clr-on-surface-variant)', marginTop: '0.5rem' }}>Bagikan resep andalanmu agar bisa dicoba oleh ribuan member Dapur Nusantara lainnya.</p>
       </div>
 
       {error && (
-        <div className={styles.errorBanner} style={{ marginBottom: '1rem' }}>
+        <div className={styles.errorBanner} style={{ marginBottom: '1.5rem' }}>
           <span className="material-symbols-outlined">error_outline</span>
           <span>{error}</span>
         </div>
       )}
 
       {/* FORM */}
-      <form className={styles.formCard} onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div className={styles.formGrid}>
           
           {/* IMAGE UPLOAD */}
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Recipe Image</label>
+            <label className={styles.formLabel}>Foto Makanan</label>
             <div 
               className={styles.uploadArea} 
               onClick={() => fileInputRef.current?.click()}
@@ -182,13 +202,13 @@ export default function NewRecipePage() {
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" />
-                  <p style={{ marginTop: '1rem', color: 'var(--clr-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Change Image</p>
+                  <p style={{ marginTop: '1rem', color: 'var(--clr-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Ganti Foto</p>
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--clr-outline)' }}>add_photo_alternate</span>
-                  <p style={{ marginTop: '1rem', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Click to browse or drag and drop</p>
-                  <p style={{ fontSize: '12px', color: 'var(--clr-outline)' }}>PNG, JPG up to 5MB</p>
+                  <p style={{ marginTop: '1rem', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Klik untuk memilih foto (opsional)</p>
+                  <p style={{ fontSize: '12px', color: 'var(--clr-outline)' }}>PNG, JPG maks 5MB</p>
                 </>
               )}
             </div>
@@ -196,11 +216,11 @@ export default function NewRecipePage() {
 
           {/* BASIC INFO */}
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Recipe Title <span style={{ color: 'var(--clr-error)' }}>*</span></label>
+            <label className={styles.formLabel}>Judul Resep <span style={{ color: 'var(--clr-error)' }}>*</span></label>
             <input 
               type="text" 
               className={styles.formInput} 
-              placeholder="e.g. Nasi Goreng Spesial"
+              placeholder="Contoh: Nasi Goreng Spesial Ala Anak Kos"
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
@@ -208,10 +228,10 @@ export default function NewRecipePage() {
           </div>
 
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Description <span style={{ color: 'var(--clr-error)' }}>*</span></label>
+            <label className={styles.formLabel}>Deskripsi Singkat <span style={{ color: 'var(--clr-error)' }}>*</span></label>
             <textarea 
               className={styles.formTextarea} 
-              placeholder="Write a short engaging description about this recipe..."
+              placeholder="Ceritakan sedikit tentang resep ini..."
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
@@ -219,48 +239,35 @@ export default function NewRecipePage() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Category</label>
+            <label className={styles.formLabel}>Kategori</label>
             <select className={styles.formSelect} value={category} onChange={e => setCategory(e.target.value)}>
-              <option value="Indonesian">Indonesian</option>
+              <option value="Indonesian">Nusantara (Indonesian)</option>
               <option value="Western">Western</option>
               <option value="Japanese">Japanese</option>
               <option value="Chinese">Chinese</option>
-              <option value="Dessert">Dessert</option>
-              <option value="Beverage">Beverage</option>
+              <option value="Dessert">Dessert (Makanan Penutup)</option>
+              <option value="Beverage">Beverage (Minuman)</option>
             </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Premium Access</label>
-            <select className={styles.formSelect} value={isPremium ? 'true' : 'false'} onChange={e => setIsPremium(e.target.value === 'true')}>
-              <option value="false">Free (Available to all)</option>
-              <option value="true">Premium (Subscribers only)</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Prep Time</label>
-            <input type="text" className={styles.formInput} placeholder="e.g. 15 mins" value={prepTime} onChange={e => setPrepTime(e.target.value)} required />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Cook Time</label>
-            <input type="text" className={styles.formInput} placeholder="e.g. 30 mins" value={cookTime} onChange={e => setCookTime(e.target.value)} required />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Servings</label>
+            <label className={styles.formLabel}>Porsi</label>
             <input type="number" className={styles.formInput} min="1" value={servings} onChange={e => setServings(Number(e.target.value))} required />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Calories (per serving)</label>
-            <input type="number" className={styles.formInput} min="0" value={calories} onChange={e => setCalories(Number(e.target.value))} required />
+            <label className={styles.formLabel}>Waktu Persiapan</label>
+            <input type="text" className={styles.formInput} placeholder="Misal: 15 mins" value={prepTime} onChange={e => setPrepTime(e.target.value)} required />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Waktu Memasak</label>
+            <input type="text" className={styles.formInput} placeholder="Misal: 30 mins" value={cookTime} onChange={e => setCookTime(e.target.value)} required />
           </div>
 
           {/* TAGS */}
           <div className={styles.formGroupFull}>
-            <label className={styles.formLabel}>Tags (Tekan Enter/Koma)</label>
+            <label className={styles.formLabel}>Tags Populer (Tekan Enter/Koma)</label>
             <div 
               style={{
                 display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center',
@@ -292,7 +299,7 @@ export default function NewRecipePage() {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
-                placeholder={tags.length === 0 ? "Contoh: pedas, sarapan..." : "Tambah tag..."}
+                placeholder={tags.length === 0 ? "Contoh: pedas, sarapan..." : "Tambah tag lain..."}
                 style={{
                   border: 'none', outline: 'none', flex: 1, minWidth: '150px',
                   background: 'transparent', fontSize: '0.95rem'
@@ -303,14 +310,14 @@ export default function NewRecipePage() {
 
           {/* INGREDIENTS */}
           <div className={styles.formGroupFull} style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-outline-variant)' }}>
-            <label className={styles.formLabel}>Ingredients</label>
+            <label className={styles.formLabel}>Bahan-bahan <span style={{ color: 'var(--clr-error)' }}>*</span></label>
             <div className={styles.dynamicList}>
               {ingredients.map((ing, idx) => (
                 <div key={idx} className={styles.dynamicListItem}>
                   <input 
                     type="text" 
                     className={styles.formInput} 
-                    placeholder="Ingredient name (e.g. Bawang Merah)" 
+                    placeholder="Nama bahan (Misal: Bawang Merah)" 
                     value={ing.name}
                     onChange={e => handleIngredientChange(idx, 'name', e.target.value)}
                     style={{ flex: 2 }}
@@ -319,44 +326,44 @@ export default function NewRecipePage() {
                   <input 
                     type="text" 
                     className={styles.formInput} 
-                    placeholder="Amount (e.g. 3 siung)" 
+                    placeholder="Takaran (Misal: 3 siung)" 
                     value={ing.amount}
                     onChange={e => handleIngredientChange(idx, 'amount', e.target.value)}
                     style={{ flex: 1 }}
                   />
-                  <button type="button" className={styles.removeBtn} onClick={() => removeIngredient(idx)} tabIndex={-1}>
+                  <button type="button" className={styles.removeBtn} onClick={() => removeIngredient(idx)} tabIndex={-1} aria-label="Hapus">
                     <span className="material-symbols-outlined">delete</span>
                   </button>
                 </div>
               ))}
               <button type="button" className={styles.dynamicListBtn} onClick={addIngredient}>
-                <span className="material-symbols-outlined">add</span> Add Ingredient
+                <span className="material-symbols-outlined">add</span> Tambah Bahan
               </button>
             </div>
           </div>
 
           {/* STEPS */}
           <div className={styles.formGroupFull} style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-outline-variant)' }}>
-            <label className={styles.formLabel}>Cooking Steps</label>
+            <label className={styles.formLabel}>Langkah Memasak <span style={{ color: 'var(--clr-error)' }}>*</span></label>
             <div className={styles.dynamicList}>
               {steps.map((step, idx) => (
                 <div key={idx} className={styles.dynamicListItem}>
                   <div style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--clr-primary)' }}>{step.stepNumber}.</div>
                   <textarea 
                     className={styles.formTextarea} 
-                    placeholder="Describe this step..." 
+                    placeholder="Tuliskan langkah-langkahnya..." 
                     value={step.description}
                     onChange={e => handleStepChange(idx, e.target.value)}
                     style={{ flex: 1, minHeight: '60px' }}
                     required
                   />
-                  <button type="button" className={styles.removeBtn} onClick={() => removeStep(idx)} tabIndex={-1}>
+                  <button type="button" className={styles.removeBtn} onClick={() => removeStep(idx)} tabIndex={-1} aria-label="Hapus">
                     <span className="material-symbols-outlined">delete</span>
                   </button>
                 </div>
               ))}
               <button type="button" className={styles.dynamicListBtn} onClick={addStep}>
-                <span className="material-symbols-outlined">add</span> Add Step
+                <span className="material-symbols-outlined">add</span> Tambah Langkah
               </button>
             </div>
           </div>
@@ -364,23 +371,23 @@ export default function NewRecipePage() {
         </div>
 
         {/* ACTIONS */}
-        <div className={styles.formActions}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-outline-variant)' }}>
           <button 
             type="button" 
             className={styles.cancelBtn} 
-            style={{ width: 'auto', padding: '0.75rem 1.5rem' }}
-            onClick={() => router.push('/admin/recipes')}
+            style={{ width: 'auto', padding: '0.75rem 1.5rem', border: '1px solid var(--clr-outline)' }}
+            onClick={() => router.back()}
             disabled={loading}
           >
-            Cancel
+            Batal
           </button>
-          <button type="submit" className={styles.saveBtn} disabled={loading}>
+          <button type="submit" className={styles.saveBtn} disabled={loading} style={{ padding: '0.75rem 2rem' }}>
             {loading ? (
               <span className="material-symbols-outlined" style={{ animation: 'spin 1s linear infinite' }}>sync</span>
             ) : (
-              <span className="material-symbols-outlined">save</span>
+              <span className="material-symbols-outlined">send</span>
             )}
-            {loading ? 'Saving...' : 'Save Recipe'}
+            {loading ? 'Mengirim...' : 'Kirim Resep'}
           </button>
         </div>
       </form>

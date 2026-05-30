@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import FavoriteButton from '../../../components/FavoriteButton';
 import styles from './page.module.css';
-import TutorialButton from './TutorialButton';
 import RecipeReviews from './RecipeReviews';
+import TutorialSection from './TutorialSection';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -170,8 +170,6 @@ export default async function RecipePage({ params }: Props) {
                 );
               })}
             </ul>
-
-            <TutorialButton recipeId={recipe.id} />
           </div>
         </aside>
 
@@ -202,6 +200,9 @@ export default async function RecipePage({ params }: Props) {
           </ol>
         </div>
       </section>
+
+      {/* ── Tutorial Video Section ── */}
+      <TutorialSection recipeId={recipe.id} />
 
       {/* ── Reviews Section ── */}
       <RecipeReviews recipeId={recipe.id} />

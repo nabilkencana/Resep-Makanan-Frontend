@@ -1,0 +1,424 @@
+/* ── Admin Tutorials Page CSS ───────────────────────────── */
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--clr-primary);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.addBtn:hover {
+  background: #005a2c;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Table Area ── */
+
+.tableCard {
+  background: var(--clr-surface-bright);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: var(--radius-xl);
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+  min-height: 300px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tableHead th {
+  padding: 1rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--clr-on-surface-variant);
+  border-bottom: 1px solid var(--clr-outline-variant);
+  background: var(--clr-surface-container-low);
+  white-space: nowrap;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--clr-surface-container-high);
+  transition: background var(--transition-fast);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background: var(--clr-surface-container-low);
+}
+
+.tableRow td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+}
+
+/* ── Cells ── */
+
+.tdId {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--clr-outline);
+}
+
+.tutorialInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 240px;
+}
+
+.tutorialThumb {
+  width: 60px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--clr-surface-container);
+  flex-shrink: 0;
+}
+
+.tutorialTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--clr-on-surface);
+  margin-bottom: 0.2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.recipeTitle {
+  font-size: 0.75rem;
+  color: var(--clr-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+
+.priceFree {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.duration {
+  font-size: 0.85rem;
+  color: var(--clr-on-surface-variant);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusPub {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.statusDraft {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.tdAction {
+  white-space: nowrap;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--clr-on-surface);
+}
+
+/* ── Modal ── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background: var(--clr-surface-bright);
+  width: 100%;
+  max-width: 760px;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.modalHeader {
+  padding: 1.5rem 2.5rem;
+  border-bottom: 1px solid var(--clr-surface-container-high);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--clr-surface-bright);
+  border-radius: 24px 24px 0 0;
+}
+
+.modalTitle {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--clr-on-surface);
+  letter-spacing: -0.01em;
+}
+
+.closeBtn {
+  background: var(--clr-surface-container-low);
+  border: none;
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+.modalBody {
+  padding: 2.5rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  background: #fafafa; /* Subtle background for form area */
+}
+
+/* Custom Scrollbar for Modal Body */
+.modalBody::-webkit-scrollbar {
+  width: 8px;
+}
+.modalBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modalBody::-webkit-scrollbar-thumb {
+  background: var(--clr-outline-variant);
+  border-radius: 4px;
+}
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-outline);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+
+.input, .textarea, .select {
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  background: #fff;
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--clr-on-surface);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02) inset;
+}
+
+.input:focus, .textarea:focus, .select:focus {
+  outline: none;
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 4px rgba(0, 109, 54, 0.1);
+  background: #fff;
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 12px;
+}
+
+.checkboxGroup input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--clr-primary);
+  cursor: pointer;
+}
+
+.checkboxGroup label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--clr-on-surface);
+  cursor: pointer;
+}
+
+.modalFooter {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--clr-outline-variant);
+  background: var(--clr-surface-container-low);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+.cancelBtn {
+  background: none;
+  border: 1px solid var(--clr-outline);
+  color: var(--clr-on-surface-variant);
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveBtn {
+  background: var(--clr-primary);
+  border: none;
+  color: #fff;
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── States ── */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem;
+  color: var(--clr-outline);
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 109, 54, 0.1);
+  border-top-color: var(--clr-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .formGrid { grid-template-columns: 1fr; }
+  .modalContent { height: 100%; border-radius: 0; max-height: none; }
+  .modalFooter { border-radius: 0; }
+}

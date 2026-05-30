@@ -6,13 +6,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import styles from './NavBar.module.css';
 import { useAuth } from '../../lib/auth-context';
 
-const GooeyNav    = dynamic(() => import('./GooeyNav'),    { ssr: false });
+const GooeyNav = dynamic(() => import('./GooeyNav'), { ssr: false });
 const TextPressure = dynamic(() => import('./TextPressure'), { ssr: false });
 
 const NAV_ITEMS = [
   { label: 'Jelajahi', href: '/' },
   { label: 'Kategori', href: '/kategori' },
-  { label: 'Jurnal',   href: '/journal' },
+  { label: 'Jurnal', href: '/journal' },
 ];
 
 /* ── Inline SVGs – no external font needed ── */
@@ -20,8 +20,8 @@ const IconSearch = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
     aria-hidden="true">
-    <circle cx="11" cy="11" r="8"/>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
 
@@ -29,8 +29,8 @@ const IconPerson = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
     aria-hidden="true">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
@@ -150,7 +150,7 @@ export default function NavBar() {
           )}
 
           {/* Hamburger Menu (Mobile Only) */}
-          <button 
+          <button
             className={`${styles.hamburgerBtn} ${mobileMenuOpen ? styles.menuOpen : ''}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Menu"

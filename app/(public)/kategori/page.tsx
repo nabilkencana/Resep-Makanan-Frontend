@@ -3,7 +3,6 @@ import Link from 'next/link';
 import RecipesWithFilter from './RecipesWithFilter';
 import { CATEGORIES as FALLBACK_CATEGORIES } from '../../data/categories';
 import styles from './page.module.css';
-import NewsletterForm from './NewsletterForm';
 import HeroStats from './HeroStats';
 import HeroTitle from './HeroTitle';
 import HeroSubtitle from './HeroSubtitle';
@@ -157,16 +156,21 @@ export default async function KategoriPage() {
           </div>
         </section>
 
-        {/* ── Newsletter ── */}
-        <section className={styles.newsletter} aria-label="Newsletter Dapur Nusantara">
+        {/* ── Submit Recipe CTA ── */}
+        <section className={styles.newsletter} aria-label="Kirim Resep Kamu">
           <div className={styles.newsletterBubble1} aria-hidden="true" />
           <div className={styles.newsletterBubble2} aria-hidden="true" />
-          <div className={styles.newsletterEmoji} aria-hidden="true">📬</div>
-          <h2 className={styles.newsletterTitle}>Resep Baru Setiap Minggu</h2>
+          <div className={styles.newsletterEmoji} aria-hidden="true">👨‍🍳</div>
+          <h2 className={styles.newsletterTitle}>Punya Resep Andalan?</h2>
           <p className={styles.newsletterSubtitle}>
-            Daftarkan email-mu dan dapatkan inspirasi masak segar langsung di kotak masuk, gratis!
+            Bagikan resep kreasimu dengan komunitas Dapur Nusantara! Semua resep yang dikirim akan diverifikasi oleh tim kami sebelum dipublikasikan.
           </p>
-          <NewsletterForm />
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+            <Link href="/kategori/tambah" className={styles.submitRecipeBtn}>
+              <span className="material-symbols-outlined">add_circle</span>
+              Kirim Resep Sekarang
+            </Link>
+          </div>
         </section>
 
       </main>

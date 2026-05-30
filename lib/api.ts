@@ -42,6 +42,7 @@ export const api = {
   createRecipe: (data: any) => fetchApi('/recipes', { method: 'POST', body: JSON.stringify(data) }),
   updateRecipe: (id: string, data: any) => fetchApi(`/recipes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteRecipe: (id: string) => fetchApi(`/recipes/${id}`, { method: 'DELETE' }),
+  verifyRecipe: (id: string, status: string) => fetchApi(`/recipes/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   uploadRecipeImage: (formData: FormData) => fetchApi('/recipes/upload', { method: 'POST', body: formData }),
 
   // Auth
@@ -51,7 +52,7 @@ export const api = {
 
   // Categories
   getCategories: () => fetchApi('/categories'),
-  
+
   // Users
   getUsers: () => fetchApi('/users'),
 
@@ -74,6 +75,18 @@ export const api = {
 
   // Users Activity
   getMyReviews: () => fetchApi('/users/me/reviews'),
+
+  // Tutorials
+  getTutorials: () => fetchApi('/tutorials'),
+  getTutorialById: (id: string) => fetchApi(`/tutorials/${id}`),
+  createTutorial: (data: any) => fetchApi('/tutorials', { method: 'POST', body: JSON.stringify(data) }),
+  watchTutorial: (id: string) => fetchApi(`/tutorials/${id}/watch`),
+
+  // Transactions
+  createTransaction: (tutorialId: number) => fetchApi(`/transactions/${tutorialId}`, { method: 'POST' }),
+  getMyTransactions: () => fetchApi('/transactions/me'),
+  getAllTransactions: () => fetchApi('/transactions'),
+  verifyTransaction: (id: number) => fetchApi(`/transactions/${id}/verify`, { method: 'PATCH' }),
 
   // Newsletter
   subscribeNewsletter: (data: { email: string }) => fetchApi('/newsletter', { method: 'POST', body: JSON.stringify(data) }),
