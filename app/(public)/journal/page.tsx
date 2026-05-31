@@ -3,7 +3,8 @@ import JournalClient from './JournalClient';
 
 async function getTrendingRecipes() {
   try {
-    const res = await fetch('http://localhost:3000/recipes', { cache: 'no-store' });
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const res = await fetch(`${API_URL}/recipes`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return data.recipes || [];

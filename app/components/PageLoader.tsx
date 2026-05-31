@@ -11,10 +11,10 @@ export default function PageLoader() {
     // Hide the loader when the window finishes loading
     if (document.readyState === 'complete') {
       // Add a slight delay to ensure the Lottie animation has a chance to play a bit
-      setTimeout(() => setHidden(true), 3500);
+      setTimeout(() => setHidden(true), 500);
     } else {
       const onLoad = () => {
-        setTimeout(() => setHidden(true), 3500);
+        setTimeout(() => setHidden(true), 500);
       };
       window.addEventListener('load', onLoad, { once: true });
     }

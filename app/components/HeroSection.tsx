@@ -76,14 +76,50 @@ const DUMMY_RECIPE_CARDS: RecipeCard[] = [
   { src: '/recipe-bread.png', title: 'Traditional Sourdough', tag: 'Roti',        rating: '5.0', time: '3 jam'  },
 ];
 
-export default function HeroSection({ stats, recipes }: { stats?: any; recipes?: any[] }) {
+export default function HeroSection() {
   const [appReady, setAppReady] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [recipes, setRecipes] = useState<any[]>([]);
 
   useEffect(() => {
-    // Wait for the loader's 3.5s delay to finish before triggering animations
-    const timer = setTimeout(() => setAppReady(true), 3500);
+    // Wait for the loader's delay to finish before triggering animations
+    // Reduced from 3500 to 1500 as per previous optimization
+    const timer = setTimeout(() => setAppReady(true), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    if (!API_URL) {
+      console.error("NEXT_PUBLIC_API_URL is not configured");
+      return;
+    }
+
+    const fetchHeroData = async () => {
+      try {
+        const [statsRes, recipesRes] = await Promise.all([
+          fetch(`${API_URL}/dashboard/stats`, { next: { revalidate: 60 } }).catch(() => null),
+          fetch(`${API_URL}/recipes?limit=4`, { next: { revalidate: 60 } }).catch(() => null)
+        ]);
+        
+        if (statsRes?.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData.stats);
+        }
+        
+        if (recipesRes?.ok) {
+          const recipesData = await recipesRes.json();
+          setRecipes(recipesData.recipes || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch hero data", err);
+      }
+    };
+
+    fetchHeroData();
+  }, []);
+
+
 
   const displayCards = recipes && recipes.length > 0
     ? recipes.slice(0, 4).map(r => ({

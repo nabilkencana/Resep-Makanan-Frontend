@@ -1,36 +1,56 @@
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import styles from './RecipesSection.module.css';
 
 const ASPECTS: Record<string, string> = {
   chicken: '4/5', salad: '4/5', bowl: '1/1', bread: '1/1', pizza: '4/5',
 };
 
-export default async function RecipesSection({ search }: { search?: string }) {
-  let recipes: any[] = [];
-  try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-    const url = new URL(`${API_BASE}/recipes`);
-    if (search) url.searchParams.set('search', search);
+export default function RecipesSection({ search }: { search?: string }) {
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    // Use revalidate for default listing (faster, cached 60s).
-    // If there's an active search query keep no-store so results are always fresh.
-    const cacheStrategy = search
-      ? { cache: 'no-store' as RequestCache }
-      : { next: { revalidate: 60 } };
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      setIsLoading(true);
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+        if (!API_BASE) {
+          console.error("NEXT_PUBLIC_API_URL is not configured");
+          setIsLoading(false);
+          return;
+        }
 
-    const res = await fetch(url.toString(), cacheStrategy);
-    const contentType = res.headers.get('content-type') || '';
-    if (!res.ok || !contentType.includes('application/json')) {
-      console.error('Backend returned non-JSON response, status:', res.status);
-    } else {
-      const data = await res.json();
-      if (data.recipes) recipes = data.recipes;
-      else if (Array.isArray(data)) recipes = data;
-    }
-  } catch (err) {
-    console.error('Failed to fetch recipes', err);
-  }
+        const url = new URL(`${API_BASE}/recipes`);
+        if (search) url.searchParams.set('search', search);
+
+        // Use revalidate for default listing.
+        // If there's an active search query keep no-store so results are always fresh.
+        const cacheStrategy = search
+          ? { cache: 'no-store' as RequestCache }
+          : { next: { revalidate: 60 } };
+
+        const res = await fetch(url.toString(), cacheStrategy);
+        const contentType = res.headers.get('content-type') || '';
+        
+        if (!res.ok || !contentType.includes('application/json')) {
+          console.error('Backend returned non-JSON response, status:', res.status);
+        } else {
+          const data = await res.json();
+          if (data.recipes) setRecipes(data.recipes);
+          else if (Array.isArray(data)) setRecipes(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch recipes', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRecipes();
+  }, [search]);
 
   return (
     <section className={styles.section} id="recipe" aria-labelledby="recipes-title">
@@ -54,45 +74,63 @@ export default async function RecipesSection({ search }: { search?: string }) {
 
         {/* Masonry grid */}
         <div className={styles.masonry} role="list">
-          {recipes.map((r) => (
-            <article key={r.id} className={styles.card} id={`recipe-card-${r.id}`} role="listitem">
-              <Link href={`/recipe/${r.id}`} className={styles.cardLink} aria-label={`Lihat resep ${r.title}`}>
-                <div className={styles.imgWrap} style={{ 
-                  aspectRatio: (r.title.toLowerCase().includes('bowl') || r.title.toLowerCase().includes('bread')) ? '1/1' : '4/5' 
-                }}>
-                  <Image
-                    src={(r.imageUrl?.includes('example.com') ? null : r.imageUrl) || '/recipe-chicken.jpg'}
-                    alt={r.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className={styles.cardImg}
-                  />
-                  <div className={styles.gradient} aria-hidden="true" />
-                  <div className={styles.tags}>
-                    {r.category && <span className={styles.tag}>{r.category}</span>}
-                  </div>
-                  <div className={styles.cardInfo}>
-                    <div className={styles.meta}>
-                      <span className={styles.rating}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true">
-                          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-                        </svg>
-                        {r.rating}
-                      </span>
-                      <span className={styles.time}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
-                        </svg>
-                        {r.prepTime}
-                      </span>
-                    </div>
-                    <h3 className={styles.cardTitle}>{r.title}</h3>
+          {isLoading ? (
+            // Skeleton loader for 6 items
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className={styles.card} style={{ opacity: 0.5 }}>
+                <div className={styles.imgWrap} style={{ aspectRatio: i % 2 === 0 ? '4/5' : '1/1', backgroundColor: 'var(--clr-outline)' }}>
+                  <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px' }}>
+                    <div style={{ height: '16px', backgroundColor: '#e2e8f0', borderRadius: '4px', marginBottom: '8px', width: '40%' }}></div>
+                    <div style={{ height: '24px', backgroundColor: '#e2e8f0', borderRadius: '4px', width: '80%' }}></div>
                   </div>
                 </div>
-              </Link>
-            </article>
-          ))}
+              </div>
+            ))
+          ) : recipes.length === 0 ? (
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--clr-outline)', gridColumn: '1 / -1' }}>
+              Tidak ada resep yang ditemukan.
+            </div>
+          ) : (
+            recipes.map((r) => (
+              <article key={r.id} className={styles.card} id={`recipe-card-${r.id}`} role="listitem">
+                <Link href={`/recipe/${r.id}`} className={styles.cardLink} aria-label={`Lihat resep ${r.title}`}>
+                  <div className={styles.imgWrap} style={{ 
+                    aspectRatio: (r.title.toLowerCase().includes('bowl') || r.title.toLowerCase().includes('bread')) ? '1/1' : '4/5' 
+                  }}>
+                    <Image
+                      src={(r.imageUrl?.includes('example.com') ? null : r.imageUrl) || '/recipe-chicken.jpg'}
+                      alt={r.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className={styles.cardImg}
+                    />
+                    <div className={styles.gradient} aria-hidden="true" />
+                    <div className={styles.tags}>
+                      {r.category && <span className={styles.tag}>{r.category}</span>}
+                    </div>
+                    <div className={styles.cardInfo}>
+                      <div className={styles.meta}>
+                        <span className={styles.rating}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                          </svg>
+                          {r.rating}
+                        </span>
+                        <span className={styles.time}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+                          </svg>
+                          {r.prepTime}
+                        </span>
+                      </div>
+                      <h3 className={styles.cardTitle}>{r.title}</h3>
+                    </div>
+                  </div>
+                </Link>
+              </article>
+            ))
+          )}
         </div>
 
         {/* Mobile "view all" */}
