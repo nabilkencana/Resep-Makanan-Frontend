@@ -105,7 +105,7 @@ export default function RecipesSection({ search }: { search?: string }) {
           ) : (
             recipes.map((r) => (
               <article key={r.id} className={styles.card} id={`recipe-card-${r.id}`} role="listitem">
-                <Link href={`/recipe/${r.id}`} className={styles.cardLink} aria-label={`Lihat resep ${r.title}`}>
+                <Link href={`/recipe/${r.id}`} className={styles.cardLink} aria-label={`Lihat resep ${r.title}`} prefetch={false}>
                   <div className={styles.imgWrap} style={{ 
                     aspectRatio: (r.title.toLowerCase().includes('bowl') || r.title.toLowerCase().includes('bread')) ? '1/1' : '4/5' 
                   }}>

@@ -132,7 +132,7 @@ export default function RecipesWithFilter({ recipes, categories, tags }: Props) 
           </div>
         ) : (
           filtered.map(recipe => (
-            <Link key={recipe.id} href={`/recipe/${recipe.id}`} className={styles.card}>
+            <Link key={recipe.id} href={`/recipe/${recipe.id}`} className={styles.card} prefetch={false}>
               <Image
                 src={(recipe.imageUrl?.includes('example.com') ? null : recipe.imageUrl) || '/recipe-chicken.jpg'}
                 alt={recipe.title}

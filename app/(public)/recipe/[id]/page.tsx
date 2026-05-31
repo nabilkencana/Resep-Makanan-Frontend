@@ -15,7 +15,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 async function getRecipeById(id: string) {
   try {
     // GET /recipes/:id requires JWT, so we fetch from the public list and filter by ID
-    const listRes = await fetch(`${API_URL}/recipes`, { cache: 'no-store' });
+    const listRes = await fetch(`${API_URL}/recipes`, { 
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(5000)
+    });
     if (!listRes.ok) return null;
     const listData = await listRes.json();
     const recipe = (listData.recipes || []).find((r: any) => String(r.id) === String(id));
@@ -24,7 +27,10 @@ async function getRecipeById(id: string) {
     // Fetch reviews (public endpoint)
     let totalReviews = 0;
     try {
-      const reviewRes = await fetch(`${API_URL}/recipes/${id}/reviews`, { cache: 'no-store' });
+      const reviewRes = await fetch(`${API_URL}/recipes/${id}/reviews`, { 
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(3000)
+      });
       if (reviewRes.ok) {
         const reviewData = await reviewRes.json();
         totalReviews = reviewData.totalReviews || 0;
@@ -81,7 +87,7 @@ export default async function RecipePage({ params }: Props) {
         />
         <div className={styles.heroOverlay} />
         {/* Back button */}
-        <Link href="/" className={styles.backBtn} aria-label="Kembali ke beranda">
+        <Link href="/" className={styles.backBtn} aria-label="Kembali ke beranda" prefetch={false}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"/>
