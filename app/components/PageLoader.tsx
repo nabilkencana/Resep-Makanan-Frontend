@@ -4,10 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import styles from './PageLoader.module.css';
 
-const DotLottieReact = dynamic(
-  () => import('@lottiefiles/dotlottie-react').then(mod => mod.DotLottieReact),
-  { ssr: false }
-);
+
 
 export default function PageLoader() {
   const [hidden, setHidden] = useState(false);
@@ -27,13 +24,7 @@ export default function PageLoader() {
 
   return (
     <div className={`${styles.overlay} ${hidden ? styles.hidden : ''}`} aria-hidden="true">
-      <div className={styles.lottieContainer}>
-        <DotLottieReact
-          src="https://lottie.host/21195970-ce13-43b0-92f8-ac5581ff5465/wK3O3EWzfO.lottie"
-          loop
-          autoplay
-        />
-      </div>
+      <div className={styles.spinner}></div>
     </div>
   );
 }
