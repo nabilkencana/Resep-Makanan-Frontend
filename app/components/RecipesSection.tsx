@@ -9,10 +9,17 @@ const ASPECTS: Record<string, string> = {
 export default async function RecipesSection({ search }: { search?: string }) {
   let recipes: any[] = [];
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL;
     const url = new URL(`${API_BASE}/recipes`);
     if (search) url.searchParams.set('search', search);
-    const res = await fetch(url.toString(), { cache: 'no-store' });
+
+    // Use revalidate for default listing (faster, cached 60s).
+    // If there's an active search query keep no-store so results are always fresh.
+    const cacheStrategy = search
+      ? { cache: 'no-store' as RequestCache }
+      : { next: { revalidate: 60 } };
+
+    const res = await fetch(url.toString(), cacheStrategy);
     const contentType = res.headers.get('content-type') || '';
     if (!res.ok || !contentType.includes('application/json')) {
       console.error('Backend returned non-JSON response, status:', res.status);
