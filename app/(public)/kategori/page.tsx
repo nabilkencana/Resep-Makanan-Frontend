@@ -25,7 +25,7 @@ const POPULAR_TAGS = [
 
 async function getRecipes() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/recipes?limit=100`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/recipes?limit=12`, { next: { revalidate: 300 } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.recipes || [];
@@ -36,7 +36,7 @@ async function getRecipes() {
 
 async function getTags() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/recipes/tags`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/recipes/tags`, { next: { revalidate: 300 } });
     if (!res.ok) return POPULAR_TAGS;
     const data = await res.json();
     if (data.success && data.tags) {
