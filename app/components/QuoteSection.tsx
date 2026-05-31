@@ -12,7 +12,7 @@ export default function QuoteSection() {
         <span className={styles.label}>Filosofi Kami</span>
 
         <ScrollReveal
-          baseOpacity={0}
+          baseOpacity={0.1}
           enableBlur={true}
           baseRotation={4}
           blurStrength={8}
