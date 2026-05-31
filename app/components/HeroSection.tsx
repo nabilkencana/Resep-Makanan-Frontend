@@ -6,6 +6,7 @@ import styles from './HeroSection.module.css';
 import CountUp from './CountUp';
 
 import { useEffect, useState } from 'react';
+import { getDashboardStats, getHomeRecipes } from '../../lib/homeData';
 
 // ── Type for Card so dynamic() doesn't erase its props ──
 interface CardProps {
@@ -97,18 +98,16 @@ export default function HeroSection() {
 
     const fetchHeroData = async () => {
       try {
-        const [statsRes, recipesRes] = await Promise.all([
-          fetch(`${API_URL}/dashboard/stats`, { next: { revalidate: 60 } }).catch(() => null),
-          fetch(`${API_URL}/recipes?limit=4`, { next: { revalidate: 60 } }).catch(() => null)
+        const [statsData, recipesData] = await Promise.all([
+          getDashboardStats(API_URL),
+          getHomeRecipes(API_URL)
         ]);
         
-        if (statsRes?.ok) {
-          const statsData = await statsRes.json();
+        if (statsData?.stats) {
           setStats(statsData.stats);
         }
         
-        if (recipesRes?.ok) {
-          const recipesData = await recipesRes.json();
+        if (recipesData?.recipes) {
           setRecipes(recipesData.recipes || []);
         }
       } catch (err) {
@@ -268,7 +267,7 @@ export default function HeroSection() {
             {displayCards.map((r) => (
               <Card key={r.src + r.title} customClass={styles.recipeCard}>
                 <div className={styles.cardImgWrap}>
-                  <Image src={r.src} alt={r.title} fill sizes="400px" className={styles.cardImg} />
+                  <Image src={r.src} alt={r.title} fill sizes="400px" priority={true} className={styles.cardImg} />
                   <div className={styles.cardGradient} />
                 </div>
                 <div className={styles.cardBody}>

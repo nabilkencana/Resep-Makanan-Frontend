@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { getHomeRecipes } from '../../lib/homeData';
 import styles from './RecipesSection.module.css';
 
 const ASPECTS: Record<string, string> = {
@@ -23,24 +24,35 @@ export default function RecipesSection({ search }: { search?: string }) {
           return;
         }
 
-        const url = new URL(`${API_BASE}/recipes`);
-        if (search) url.searchParams.set('search', search);
-
-        // Use revalidate for default listing.
-        // If there's an active search query keep no-store so results are always fresh.
-        const cacheStrategy = search
-          ? { cache: 'no-store' as RequestCache }
-          : { next: { revalidate: 60 } };
-
-        const res = await fetch(url.toString(), cacheStrategy);
-        const contentType = res.headers.get('content-type') || '';
-        
-        if (!res.ok || !contentType.includes('application/json')) {
-          console.error('Backend returned non-JSON response, status:', res.status);
+        if (!search) {
+          // Deduplicate fetch for the homepage
+          const recipesData = await getHomeRecipes(API_BASE);
+          if (recipesData?.recipes) {
+            setRecipes(recipesData.recipes);
+          }
         } else {
-          const data = await res.json();
-          if (data.recipes) setRecipes(data.recipes);
-          else if (Array.isArray(data)) setRecipes(data);
+          // Search query - fetch fresh with timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          
+          const url = new URL(`${API_BASE}/recipes`);
+          url.searchParams.set('search', search);
+
+          const res = await fetch(url.toString(), { 
+            cache: 'no-store',
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          const contentType = res.headers.get('content-type') || '';
+          
+          if (!res.ok || !contentType.includes('application/json')) {
+            console.error('Backend returned non-JSON response, status:', res.status);
+          } else {
+            const data = await res.json();
+            if (data.recipes) setRecipes(data.recipes);
+            else if (Array.isArray(data)) setRecipes(data);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch recipes', err);
@@ -101,6 +113,7 @@ export default function RecipesSection({ search }: { search?: string }) {
                       src={(r.imageUrl?.includes('example.com') ? null : r.imageUrl) || '/recipe-chicken.jpg'}
                       alt={r.title}
                       fill
+                      loading="lazy"
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className={styles.cardImg}
                     />
