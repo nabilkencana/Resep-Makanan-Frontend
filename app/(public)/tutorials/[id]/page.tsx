@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import styles from './WatchTutorial.module.css';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Lock, ArrowLeft, ChevronRight, Clock, ChefHat, Users, Flame, Utensils, ListOrdered } from 'lucide-react';
 
 interface TutorialDetail {
@@ -166,7 +167,15 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
           <div className={styles.recipeSection}>
             <div className={styles.recipeHeader}>
               {tutorial.recipe.imageUrl && (
-                <img src={tutorial.recipe.imageUrl} alt={tutorial.recipe.title} className={styles.recipeImage} />
+                <Image 
+                  src={tutorial.recipe.imageUrl} 
+                  alt={tutorial.recipe.title} 
+                  width={200}
+                  height={200}
+                  className={styles.recipeImage} 
+                  loading="lazy"
+                  style={{ objectFit: 'cover' }}
+                />
               )}
               <div className={styles.recipeInfo}>
                 <h2>Resep: {tutorial.recipe.title}</h2>

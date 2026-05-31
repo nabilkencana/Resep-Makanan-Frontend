@@ -285,7 +285,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
                   <p className={styles.loginTitle}>
                     {isFree ? 'Masuk untuk menonton tutorial ini' : 'Masuk untuk membeli tutorial ini'}
                   </p>
-                  <Link href="/auth" className={styles.loginLink}>
+                  <Link href="/auth" className={styles.loginLink} prefetch={false}>
                     Masuk / Daftar Sekarang →
                   </Link>
                 </div>

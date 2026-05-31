@@ -242,7 +242,7 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
         <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#fff', borderRadius: '20px', border: '1px solid #e8e8ea' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#1a1c1d' }}>Masuk untuk Mengatur Jurnal</h2>
           <p style={{ color: '#6d7b6d', marginBottom: '2rem' }}>Anda perlu akun untuk menyimpan jadwal masakan mingguan Anda.</p>
-          <Link href="/auth" style={{ background: '#006d36', color: '#fff', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 'bold', textDecoration: 'none' }}>
+          <Link href="/auth" style={{ background: '#006d36', color: '#fff', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 'bold', textDecoration: 'none' }} prefetch={false}>
             Masuk Sekarang
           </Link>
         </div>

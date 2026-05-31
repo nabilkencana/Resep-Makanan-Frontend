@@ -78,7 +78,7 @@ export default function TutorialModal({
               <p className={styles.message}>
                 Anda harus masuk (login) terlebih dahulu untuk mengakses video tutorial ini.
               </p>
-              <Link href="/auth" className={styles.loginBtn}>
+              <Link href="/auth" className={styles.loginBtn} prefetch={false}>
                 Masuk Sekarang
               </Link>
             </>
