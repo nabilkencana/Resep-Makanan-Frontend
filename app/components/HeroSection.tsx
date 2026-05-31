@@ -55,7 +55,7 @@ const CardSwap = dynamic<CardSwapProps>(
   () => import('./CardSwap') as any,
   { ssr: false }
 );
-const Card     = dynamic<CardProps>(
+const Card = dynamic<CardProps>(
   // forwardRef makes TS infer RefAttributes<any> which conflicts with CardProps,
   // so we cast to any and let our CardProps interface take over.
   () => import('./CardSwap').then((m) => m.Card as any),
@@ -68,14 +68,15 @@ const BlurText = dynamic<BlurTextProps>(
   { ssr: false }
 );
 
-const RECIPE_CARDS = [
+type RecipeCard = { id?: number | string; src: string; title: string; tag: string; rating: string; time: string };
+const DUMMY_RECIPE_CARDS: RecipeCard[] = [
   { src: '/recipe-salad.png', title: 'Garden Harvest Salad',  tag: 'Vegan',       rating: '4.8', time: '15 mnt' },
   { src: '/recipe-bowl.png',  title: 'Berry & Granola Bowl',  tag: 'Sarapan',     rating: '4.9', time: '10 mnt' },
   { src: '/recipe-pizza.png', title: 'Heirloom Tomato Pizza', tag: 'Makan Malam', rating: '4.7', time: '25 mnt' },
   { src: '/recipe-bread.png', title: 'Traditional Sourdough', tag: 'Roti',        rating: '5.0', time: '3 jam'  },
 ];
 
-export default function HeroSection({ stats }: { stats?: any }) {
+export default function HeroSection({ stats, recipes }: { stats?: any; recipes?: any[] }) {
   const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
@@ -84,11 +85,22 @@ export default function HeroSection({ stats }: { stats?: any }) {
     return () => clearTimeout(timer);
   }, []);
 
+  const displayCards = recipes && recipes.length > 0
+    ? recipes.slice(0, 4).map(r => ({
+      id: r.id,
+      src: r.imageUrl || '/recipe-salad.png', // Fallback to placeholder if no image
+      title: r.title,
+      tag: r.category || 'Resep',
+      rating: r.rating ? Number(r.rating).toFixed(1) : '4.5', // Mock rating if none
+      time: r.cookTime || '15 mnt'
+    }))
+    : DUMMY_RECIPE_CARDS;
+
   const totalRecipes = stats?.totalRecipes || 2400;
   // If we don't have satisfaction score, we'll use a high default like 98%
   const satisfaction = 98;
   const totalUsers = stats?.totalUsers || 12400;
-  
+
   const penggunaVal = totalUsers >= 1000 ? parseFloat((totalUsers / 1000).toFixed(1)) : totalUsers;
   const penggunaUnit = totalUsers >= 1000 ? 'k' : '';
 
@@ -142,8 +154,8 @@ export default function HeroSection({ stats }: { stats?: any }) {
               <svg className={styles.searchIcon} xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               <input
                 type="text"
@@ -159,8 +171,8 @@ export default function HeroSection({ stats }: { stats?: any }) {
                 }}
               />
             </div>
-            <button 
-              className={styles.searchBtn} 
+            <button
+              className={styles.searchBtn}
               id="hero-search-btn"
               onClick={() => {
                 const input = document.getElementById('hero-search-input') as HTMLInputElement;
@@ -210,9 +222,15 @@ export default function HeroSection({ stats }: { stats?: any }) {
             skewAmount={5}
             easing="elastic"
             startWhen={appReady}
+            onCardClick={(idx) => {
+              const clickedCard = displayCards[idx];
+              if (clickedCard && clickedCard.id) {
+                window.location.href = `/recipe/${clickedCard.id}`;
+              }
+            }}
           >
-            {RECIPE_CARDS.map((r) => (
-              <Card key={r.src} customClass={styles.recipeCard}>
+            {displayCards.map((r) => (
+              <Card key={r.src + r.title} customClass={styles.recipeCard}>
                 <div className={styles.cardImgWrap}>
                   <Image src={r.src} alt={r.title} fill sizes="400px" className={styles.cardImg} />
                   <div className={styles.cardGradient} />
@@ -224,14 +242,14 @@ export default function HeroSection({ stats }: { stats?: any }) {
                     <span className={styles.cardRating}>
                       {/* star icon */}
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="#4ade80" aria-hidden="true">
-                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
                       </svg>
                       {r.rating}
                     </span>
                     <span className={styles.cardTime}>
                       {/* clock icon */}
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+                        <circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" />
                       </svg>
                       {r.time}
                     </span>

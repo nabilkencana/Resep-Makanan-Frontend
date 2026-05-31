@@ -1,7 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import type { ComponentType } from 'react';
-import RotatingTextRaw from '../../components/RotatingText';
 import styles from './page.module.css';
 
 interface RotatingTextProps {
@@ -24,7 +24,10 @@ interface RotatingTextProps {
   onNext?: (index: number) => void;
 }
 
-const RotatingText = RotatingTextRaw as ComponentType<RotatingTextProps>;
+const RotatingText = dynamic(
+  () => import('../../components/RotatingText') as any,
+  { ssr: false }
+) as ComponentType<RotatingTextProps>;
 
 const ROTATE_TEXTS = [
   'Hari Ini?',

@@ -1,23 +1,47 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { api } from '../../../../../lib/api';
-import styles from '../../../admin.module.css';
-import tutStyles from '../tutorials.module.css';
+import { useRouter, useParams } from 'next/navigation';
+import { api } from '../../../../../../lib/api';
+import styles from '../../../../admin.module.css';
+import tutStyles from '../../tutorials.module.css';
 
 type InputMode = 'url' | 'upload';
 
-export default function NewTutorialPage() {
+/** Detect if a URL is a YouTube/Vimeo embed-able link */
+function getEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  // YouTube
+  const ytMatch = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/
+  );
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  // Direct video file (mp4, webm, etc.)
+  if (/\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(url)) return url;
+  // Cloudinary video
+  if (url.includes('cloudinary.com') && url.includes('/video/')) return url;
+  return null;
+}
+
+export default function EditTutorialPage() {
   const router = useRouter();
-  const [recipes, setRecipes] = useState<any[]>([]);
-  const [saving, setSaving] = useState(false);
+  const params = useParams();
+  const tutorialId = params.id as string;
+
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+
+  // Original saved URLs (for display / rollback)
+  const [originalVideoUrl, setOriginalVideoUrl] = useState('');
+  const [originalThumbUrl, setOriginalThumbUrl] = useState('');
 
   // Video state
   const [videoMode, setVideoMode] = useState<InputMode>('url');
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPreview, setVideoPreview] = useState('');
   const [videoUploading, setVideoUploading] = useState(false);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +53,6 @@ export default function NewTutorialPage() {
   const thumbInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    recipeId: '',
     title: '',
     description: '',
     videoUrl: '',
@@ -40,29 +63,35 @@ export default function NewTutorialPage() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTutorial = async () => {
       try {
-        const [recRes, tutRes] = await Promise.all([
-          api.getRecipes(),
-          api.getTutorials()
-        ]);
-        const allRecipes = recRes.recipes || [];
-        const allTutorials = tutRes.tutorials || [];
-        const usedRecipeIds = new Set(allTutorials.map((tut: any) => tut.recipe?.id || tut.recipeId));
-        setRecipes(allRecipes.filter((r: any) => !usedRecipeIds.has(r.id)));
-      } catch (err) {
-        console.error('Error fetching data:', err);
+        const res = await api.getTutorialById(tutorialId);
+        const tut = res.tutorial;
+        if (!tut) { setNotFound(true); return; }
+        setFormData({
+          title: tut.title || '',
+          description: tut.description || '',
+          videoUrl: tut.videoUrl || '',
+          thumbnailUrl: tut.thumbnailUrl || '',
+          duration: tut.duration || 0,
+          price: tut.price || 0,
+          isPublished: tut.isPublished || false,
+        });
+        setOriginalVideoUrl(tut.videoUrl || '');
+        setOriginalThumbUrl(tut.thumbnailUrl || '');
+        if (tut.thumbnailUrl) setThumbPreview(tut.thumbnailUrl);
+      } catch (err: any) {
+        console.error('Failed to fetch tutorial:', err);
+        setNotFound(true);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchTutorial();
+  }, [tutorialId]);
 
-  // Upload video to Cloudinary immediately on file pick
   const handleVideoFile = async (file: File) => {
     setVideoFile(file);
-    setVideoPreview(URL.createObjectURL(file));
     setVideoUploading(true);
     try {
       const fd = new FormData();
@@ -76,13 +105,11 @@ export default function NewTutorialPage() {
     } catch (err: any) {
       alert('Gagal upload video: ' + (err.message || 'Unknown error'));
       setVideoFile(null);
-      setVideoPreview('');
     } finally {
       setVideoUploading(false);
     }
   };
 
-  // Upload thumbnail to Cloudinary immediately on file pick
   const handleThumbFile = async (file: File) => {
     setThumbFile(file);
     setThumbPreview(URL.createObjectURL(file));
@@ -95,13 +122,13 @@ export default function NewTutorialPage() {
     } catch (err: any) {
       alert('Gagal upload thumbnail: ' + (err.message || 'Unknown error'));
       setThumbFile(null);
-      setThumbPreview('');
+      setThumbPreview(originalThumbUrl);
     } finally {
       setThumbUploading(false);
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.videoUrl) {
       alert('URL video atau file video wajib diisi.');
@@ -109,25 +136,42 @@ export default function NewTutorialPage() {
     }
     setSaving(true);
     try {
-      await api.createTutorial({
+      await api.updateTutorial(tutorialId, {
         ...formData,
-        recipeId: Number(formData.recipeId),
         duration: Number(formData.duration),
         price: Number(formData.price),
       });
       router.push('/admin/tutorials');
     } catch (err: any) {
-      alert('Gagal membuat tutorial: ' + (err.message || 'Unknown error'));
+      alert('Gagal memperbarui tutorial: ' + (err.message || 'Unknown error'));
       setSaving(false);
     }
   };
+
+  const embedUrl = getEmbedUrl(formData.videoUrl);
+  const isDirectVideo = formData.videoUrl && /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(formData.videoUrl);
+  const isCloudinaryVideo = formData.videoUrl && formData.videoUrl.includes('cloudinary.com') && formData.videoUrl.includes('/video/');
 
   if (loading) {
     return (
       <div className={styles.pageContent}>
         <div className={tutStyles.loadingState}>
           <div className={tutStyles.spinner} />
-          <span>Memuat data resep...</span>
+          <span>Memuat data tutorial...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className={styles.pageContent}>
+        <div className={tutStyles.loadingState}>
+          <span className="material-symbols-outlined" style={{ fontSize: '48px', opacity: 0.4 }}>error_outline</span>
+          <p>Tutorial tidak ditemukan.</p>
+          <button className={tutStyles.cancelBtn} onClick={() => router.push('/admin/tutorials')}>
+            Kembali ke Daftar
+          </button>
         </div>
       </div>
     );
@@ -146,30 +190,14 @@ export default function NewTutorialPage() {
             <span className="material-symbols-outlined">arrow_back</span>
             Kembali ke Daftar Tutorial
           </button>
-          <h1 className={styles.pageTitle}>Tambah Tutorial Baru</h1>
-          <p className={styles.pageSubtitle}>Buat konten video pembelajaran baru</p>
+          <h1 className={styles.pageTitle}>Edit Tutorial</h1>
+          <p className={styles.pageSubtitle}>Perbarui informasi tutorial #{tutorialId}</p>
         </div>
       </div>
 
-      <div className={tutStyles.tableCard} style={{ padding: '2.5rem', maxWidth: '800px', background: '#fff' }}>
-        <form onSubmit={handleCreate} className={tutStyles.modalForm}>
+      <div className={tutStyles.tableCard} style={{ padding: '2.5rem', maxWidth: '860px', background: '#fff' }}>
+        <form onSubmit={handleUpdate} className={tutStyles.modalForm}>
           <div className={tutStyles.formGrid}>
-
-            {/* Recipe Select */}
-            <div className={`${tutStyles.formGroup} ${tutStyles.fullWidth}`}>
-              <label className={tutStyles.label}>Pilih Resep Terkait</label>
-              <select
-                className={tutStyles.select}
-                required
-                value={formData.recipeId}
-                onChange={(e) => setFormData({ ...formData, recipeId: e.target.value })}
-              >
-                <option value="" disabled>-- Pilih Resep --</option>
-                {recipes.map((r) => (
-                  <option key={r.id} value={r.id}>{r.title}</option>
-                ))}
-              </select>
-            </div>
 
             {/* Title */}
             <div className={`${tutStyles.formGroup} ${tutStyles.fullWidth}`}>
@@ -197,6 +225,45 @@ export default function NewTutorialPage() {
             {/* ── VIDEO ── */}
             <div className={`${tutStyles.formGroup} ${tutStyles.fullWidth}`}>
               <label className={tutStyles.label}>Video Tutorial</label>
+
+              {/* Current video preview */}
+              {originalVideoUrl && (
+                <div className={tutStyles.mediaPreviewBlock}>
+                  <div className={tutStyles.mediaPreviewLabel}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>play_circle</span>
+                    Video Saat Ini
+                  </div>
+                  {embedUrl && !isDirectVideo && !isCloudinaryVideo ? (
+                    <iframe
+                      src={embedUrl}
+                      className={tutStyles.videoEmbed}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Video preview"
+                    />
+                  ) : (formData.videoUrl && (isDirectVideo || isCloudinaryVideo)) ? (
+                    <video
+                      src={formData.videoUrl}
+                      controls
+                      className={tutStyles.videoEmbed}
+                      style={{ background: '#000' }}
+                    />
+                  ) : (
+                    <div className={tutStyles.videoEmbedFallback}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '28px', color: 'var(--clr-outline)' }}>link</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--clr-on-surface-variant)', wordBreak: 'break-all' }}>
+                        {formData.videoUrl}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Input tabs */}
+              <div className={tutStyles.mediaChangeLabel}>
+                <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                Ganti Video
+              </div>
               <div className={tutStyles.modeTabs}>
                 <button type="button" className={`${tutStyles.modeTab} ${videoMode === 'url' ? tutStyles.modeTabActive : ''}`} onClick={() => setVideoMode('url')}>
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>link</span> URL
@@ -243,31 +310,51 @@ export default function NewTutorialPage() {
                         <div className={tutStyles.dropzoneFileName}>{videoFile.name}</div>
                         <div className={tutStyles.dropzoneFileSize}>{(videoFile.size / 1024 / 1024).toFixed(2)} MB · Berhasil diupload</div>
                       </div>
-                      <button type="button" className={tutStyles.dropzoneChange} onClick={(e) => { e.stopPropagation(); setVideoFile(null); setVideoPreview(''); setFormData(p => ({ ...p, videoUrl: '' })); }}>
-                        Ganti
+                      <button type="button" className={tutStyles.dropzoneChange} onClick={(e) => {
+                        e.stopPropagation();
+                        setVideoFile(null);
+                        setFormData(p => ({ ...p, videoUrl: originalVideoUrl }));
+                      }}>
+                        Batalkan
                       </button>
                     </div>
                   ) : (
                     <div className={tutStyles.dropzoneEmpty}>
                       <span className="material-symbols-outlined" style={{ fontSize: '36px', color: 'var(--clr-outline)' }}>video_file</span>
-                      <span>Klik atau drag & drop file video di sini</span>
+                      <span>Klik atau drag & drop file video baru</span>
                       <span className={tutStyles.dropzoneHint}>MP4, WebM, MOV — maks 500MB</span>
                     </div>
                   )}
-                </div>
-              )}
-
-              {formData.videoUrl && videoMode === 'url' && (
-                <div className={tutStyles.urlPreview}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--clr-primary)' }}>check_circle</span>
-                  URL video tersimpan
                 </div>
               )}
             </div>
 
             {/* ── THUMBNAIL ── */}
             <div className={`${tutStyles.formGroup} ${tutStyles.fullWidth}`}>
-              <label className={tutStyles.label}>Thumbnail (Opsional)</label>
+              <label className={tutStyles.label}>Thumbnail</label>
+
+              {/* Current thumbnail preview */}
+              {originalThumbUrl && (
+                <div className={tutStyles.mediaPreviewBlock}>
+                  <div className={tutStyles.mediaPreviewLabel}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>image</span>
+                    Thumbnail Saat Ini
+                  </div>
+                  <div className={tutStyles.thumbPreviewLarge}>
+                    <img
+                      src={thumbPreview || originalThumbUrl}
+                      alt="Thumbnail"
+                      className={tutStyles.thumbPreviewImg}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Input tabs */}
+              <div className={tutStyles.mediaChangeLabel}>
+                <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                Ganti Thumbnail
+              </div>
               <div className={tutStyles.modeTabs}>
                 <button type="button" className={`${tutStyles.modeTab} ${thumbMode === 'url' ? tutStyles.modeTabActive : ''}`} onClick={() => setThumbMode('url')}>
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>link</span> URL
@@ -282,7 +369,10 @@ export default function NewTutorialPage() {
                   className={tutStyles.input}
                   placeholder="https://... (kosongkan untuk pakai gambar resep)"
                   value={formData.thumbnailUrl}
-                  onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, thumbnailUrl: e.target.value });
+                    setThumbPreview(e.target.value);
+                  }}
                 />
               ) : (
                 <div
@@ -307,21 +397,26 @@ export default function NewTutorialPage() {
                       <div className={tutStyles.spinner} />
                       <span>Mengupload thumbnail...</span>
                     </div>
-                  ) : thumbPreview ? (
+                  ) : thumbFile ? (
                     <div className={tutStyles.dropzoneDone}>
                       <img src={thumbPreview} alt="preview" className={tutStyles.thumbPreview} />
                       <div>
-                        <div className={tutStyles.dropzoneFileName}>{thumbFile?.name}</div>
-                        <div className={tutStyles.dropzoneFileSize}>Berhasil diupload</div>
+                        <div className={tutStyles.dropzoneFileName}>{thumbFile.name}</div>
+                        <div className={tutStyles.dropzoneFileSize}>{(thumbFile.size / 1024 / 1024).toFixed(2)} MB · Berhasil diupload</div>
                       </div>
-                      <button type="button" className={tutStyles.dropzoneChange} onClick={(e) => { e.stopPropagation(); setThumbFile(null); setThumbPreview(''); setFormData(p => ({ ...p, thumbnailUrl: '' })); }}>
-                        Ganti
+                      <button type="button" className={tutStyles.dropzoneChange} onClick={(e) => {
+                        e.stopPropagation();
+                        setThumbFile(null);
+                        setThumbPreview(originalThumbUrl);
+                        setFormData(p => ({ ...p, thumbnailUrl: originalThumbUrl }));
+                      }}>
+                        Batalkan
                       </button>
                     </div>
                   ) : (
                     <div className={tutStyles.dropzoneEmpty}>
                       <span className="material-symbols-outlined" style={{ fontSize: '36px', color: 'var(--clr-outline)' }}>add_photo_alternate</span>
-                      <span>Klik atau drag & drop gambar thumbnail</span>
+                      <span>Klik atau drag & drop gambar thumbnail baru</span>
                       <span className={tutStyles.dropzoneHint}>JPG, PNG, WebP — maks 10MB</span>
                     </div>
                   )}
@@ -363,7 +458,7 @@ export default function NewTutorialPage() {
                 checked={formData.isPublished}
                 onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
               />
-              <label htmlFor="isPublished">Publikasikan sekarang</label>
+              <label htmlFor="isPublished">Publikasikan tutorial</label>
             </div>
 
           </div>
@@ -376,7 +471,7 @@ export default function NewTutorialPage() {
               {saving ? (
                 <><span className={tutStyles.spinner} style={{ width: '16px', height: '16px', borderWidth: '2px' }} />Menyimpan...</>
               ) : (
-                <><span className="material-symbols-outlined" style={{ fontSize: '18px' }}>save</span>Simpan Tutorial</>
+                <><span className="material-symbols-outlined" style={{ fontSize: '18px' }}>save</span>Simpan Perubahan</>
               )}
             </button>
           </div>

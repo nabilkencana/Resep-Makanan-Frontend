@@ -9,11 +9,18 @@ const ASPECTS: Record<string, string> = {
 export default async function RecipesSection({ search }: { search?: string }) {
   let recipes: any[] = [];
   try {
-    const url = new URL('http://localhost:3000/recipes');
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL
+    const url = new URL(`${API_BASE}/recipes`);
     if (search) url.searchParams.set('search', search);
     const res = await fetch(url.toString(), { cache: 'no-store' });
-    const data = await res.json();
-    if (data.recipes) recipes = data.recipes;
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.includes('application/json')) {
+      console.error('Backend returned non-JSON response, status:', res.status);
+    } else {
+      const data = await res.json();
+      if (data.recipes) recipes = data.recipes;
+      else if (Array.isArray(data)) recipes = data;
+    }
   } catch (err) {
     console.error('Failed to fetch recipes', err);
   }

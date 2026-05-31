@@ -94,7 +94,8 @@ export default function AdminRecipes() {
     try {
       setLoading(true);
       setError(null);
-      const url = new URL('http://localhost:3000/recipes');
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL
+      const url = new URL(`${API_BASE}/recipes`);
       if (search) url.searchParams.append('search', search);
       if (category) url.searchParams.append('category', category);
       url.searchParams.append('status', 'ALL');

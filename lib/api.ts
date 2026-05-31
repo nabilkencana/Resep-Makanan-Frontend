@@ -80,7 +80,11 @@ export const api = {
   getTutorials: () => fetchApi('/tutorials'),
   getTutorialById: (id: string) => fetchApi(`/tutorials/${id}`),
   createTutorial: (data: any) => fetchApi('/tutorials', { method: 'POST', body: JSON.stringify(data) }),
+  updateTutorial: (id: string, data: any) => fetchApi(`/tutorials/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteTutorial: (id: string) => fetchApi(`/tutorials/${id}`, { method: 'DELETE' }),
   watchTutorial: (id: string) => fetchApi(`/tutorials/${id}/watch`),
+  uploadTutorialVideo: (formData: FormData) => fetchApi('/tutorials/upload/video', { method: 'POST', body: formData }),
+  uploadTutorialThumbnail: (formData: FormData) => fetchApi('/tutorials/upload/thumbnail', { method: 'POST', body: formData }),
 
   // Transactions
   createTransaction: (tutorialId: number) => fetchApi(`/transactions/${tutorialId}`, { method: 'POST' }),

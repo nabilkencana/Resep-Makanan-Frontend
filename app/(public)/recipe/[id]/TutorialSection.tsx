@@ -80,9 +80,10 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   if (loading || !tutorial) return null;
 
   const isFree = tutorial.price === 0;
-  const hasAccess = isFree || myTransactions.some((tx) => tx.tutorialId === tutorial.id && tx.status === 'SUCCESS');
+  const hasAccess = isLoggedIn && (isFree || myTransactions.some((tx) => tx.tutorialId === tutorial.id && tx.status === 'SUCCESS'));
   const isPendingTx = !hasAccess && myTransactions.some((tx) => tx.tutorialId === tutorial.id && tx.status === 'PENDING');
   const hasAnyTx = myTransactions.some((tx) => tx.tutorialId === tutorial.id);
+
 
   const handleBuy = async () => {
     if (!isLoggedIn) {
@@ -213,11 +214,13 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             )}
 
             {/* ── Not logged in ── */}
-            {!isLoggedIn && !isFree && (
+            {!isLoggedIn && (
               <div className={styles.loginPrompt}>
                 <span className="material-symbols-outlined">lock</span>
                 <div>
-                  <p className={styles.loginTitle}>Masuk untuk membeli tutorial ini</p>
+                  <p className={styles.loginTitle}>
+                    {isFree ? 'Masuk untuk menonton tutorial ini' : 'Masuk untuk membeli tutorial ini'}
+                  </p>
                   <Link href="/auth" className={styles.loginLink}>
                     Masuk / Daftar Sekarang →
                   </Link>
@@ -225,13 +228,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
               </div>
             )}
 
-            {/* ── Free, not logged in → redirect to watch page ── */}
-            {!isLoggedIn && isFree && (
-              <Link href={`/tutorials/${tutorial.id}`} className={styles.watchBtn}>
-                <span className="material-symbols-outlined">play_circle</span>
-                Tonton Sekarang
-              </Link>
-            )}
+
 
             {/* ── Logged in, no transaction yet → Buy button ── */}
             {isLoggedIn && !isFree && !hasAnyTx && !buySuccess && (

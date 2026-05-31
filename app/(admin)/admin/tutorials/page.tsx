@@ -39,6 +39,9 @@ export default function AdminTutorialsPage() {
   const router = useRouter();
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string>('');
 
   const fetchData = async () => {
     try {
@@ -54,6 +57,25 @@ export default function AdminTutorialsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleDeleteClick = (tut: Tutorial) => {
+    setDeleteConfirmId(tut.id);
+    setDeleteTarget(tut.title);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmId) return;
+    setDeleting(true);
+    try {
+      await api.deleteTutorial(deleteConfirmId.toString());
+      setTutorials((prev) => prev.filter((t) => t.id !== deleteConfirmId));
+      setDeleteConfirmId(null);
+    } catch (err: any) {
+      alert('Gagal menghapus tutorial: ' + (err.message || 'Unknown error'));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className={styles.pageContent}>
@@ -132,10 +154,19 @@ export default function AdminTutorialsPage() {
                     </span>
                   </td>
                   <td className={tutStyles.tdAction}>
-                    <button className={tutStyles.actionBtn} title="Edit">
+                    <button
+                      className={tutStyles.actionBtn}
+                      title="Edit"
+                      onClick={() => router.push(`/admin/tutorials/${tut.id}/edit`)}
+                    >
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
                     </button>
-                    <button className={tutStyles.actionBtn} title="Hapus" style={{ color: 'var(--clr-error)' }}>
+                    <button
+                      className={tutStyles.actionBtn}
+                      title="Hapus"
+                      style={{ color: 'var(--clr-error)' }}
+                      onClick={() => handleDeleteClick(tut)}
+                    >
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
                     </button>
                   </td>
@@ -145,6 +176,39 @@ export default function AdminTutorialsPage() {
           </table>
         )}
       </div>
+
+      {/* ── Delete Confirm Modal ── */}
+      {deleteConfirmId !== null && (
+        <div className={tutStyles.modalOverlay}>
+          <div className={tutStyles.modalBox}>
+            <div className={tutStyles.modalIconWrap}>
+              <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--clr-error)', fontVariationSettings: "'FILL' 1" }}>
+                delete_forever
+              </span>
+            </div>
+            <h3 className={tutStyles.modalTitle}>Hapus Tutorial?</h3>
+            <p className={tutStyles.modalDesc}>
+              Tutorial <strong>"{deleteTarget}"</strong> akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className={tutStyles.modalActions}>
+              <button
+                className={tutStyles.cancelBtn}
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={deleting}
+              >
+                Batal
+              </button>
+              <button
+                className={tutStyles.deleteBtn}
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? 'Menghapus...' : 'Ya, Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

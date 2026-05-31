@@ -1,7 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import type { ComponentType } from 'react';
-import SplitTextRaw from '../../components/SplitText';
 import styles from './page.module.css';
 
 interface SplitTextProps {
@@ -20,7 +20,10 @@ interface SplitTextProps {
   onLetterAnimationComplete?: () => void;
 }
 
-const SplitText = SplitTextRaw as ComponentType<SplitTextProps>;
+const SplitText = dynamic(
+  () => import('../../components/SplitText') as any,
+  { ssr: false }
+) as ComponentType<SplitTextProps>;
 
 export default function HeroSubtitle() {
   return (

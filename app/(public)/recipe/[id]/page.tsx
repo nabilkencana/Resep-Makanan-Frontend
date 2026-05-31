@@ -10,10 +10,12 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 async function getRecipeById(id: string) {
   try {
     // GET /recipes/:id requires JWT, so we fetch from the public list and filter by ID
-    const listRes = await fetch(`http://localhost:3000/recipes`, { cache: 'no-store' });
+    const listRes = await fetch(`${API_URL}/recipes`, { cache: 'no-store' });
     if (!listRes.ok) return null;
     const listData = await listRes.json();
     const recipe = (listData.recipes || []).find((r: any) => String(r.id) === String(id));
@@ -22,7 +24,7 @@ async function getRecipeById(id: string) {
     // Fetch reviews (public endpoint)
     let totalReviews = 0;
     try {
-      const reviewRes = await fetch(`http://localhost:3000/recipes/${id}/reviews`, { cache: 'no-store' });
+      const reviewRes = await fetch(`${API_URL}/recipes/${id}/reviews`, { cache: 'no-store' });
       if (reviewRes.ok) {
         const reviewData = await reviewRes.json();
         totalReviews = reviewData.totalReviews || 0;

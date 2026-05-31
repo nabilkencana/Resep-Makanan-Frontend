@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import RecipesWithFilter from './RecipesWithFilter';
 import { CATEGORIES as FALLBACK_CATEGORIES } from '../../data/categories';
 import styles from './page.module.css';
@@ -134,7 +135,9 @@ export default async function KategoriPage() {
         </div>
 
         {/* ── Filter & Recipe Grid ── */}
-        <RecipesWithFilter recipes={recipes} categories={categories} tags={tags} />
+        <Suspense fallback={<div style={{ padding: '3rem', textAlign: 'center', color: 'var(--clr-outline)' }}>Memuat resep...</div>}>
+          <RecipesWithFilter recipes={recipes} categories={categories} tags={tags} />
+        </Suspense>
 
         {/* ── Popular Tags (Server Rendered Fallback if JS Disabled) ── */}
         <section className={styles.tagsSection} aria-label="Tag populer" style={{ display: 'none' }}>

@@ -1,5 +1,216 @@
 /* ── Admin Tutorials Page CSS ───────────────────────────── */
 
+/* ── Mode Tabs (URL / Upload) ── */
+.modeTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.modeTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--clr-outline-variant);
+  background: transparent;
+  color: var(--clr-on-surface-variant);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+/* Hover on INACTIVE tab only */
+.modeTab:not(.modeTabActive):hover {
+  border-color: var(--clr-primary);
+  color: var(--clr-primary);
+  background: rgba(0, 109, 54, 0.06);
+}
+
+.modeTabActive {
+  background: var(--clr-primary);
+  border-color: var(--clr-primary);
+  color: #fff;
+}
+
+/* Hover on ACTIVE tab — slightly darker, keep white text */
+.modeTabActive:hover {
+  background: #005a2c;
+  border-color: #005a2c;
+  color: #fff;
+}
+
+/* ── Dropzone ── */
+.dropzone {
+  border: 2px dashed var(--clr-outline-variant);
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone:hover {
+  border-color: var(--clr-primary);
+  background: rgba(0, 109, 54, 0.03);
+}
+
+.dropzoneEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--clr-on-surface-variant);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.dropzoneHint {
+  font-size: 0.75rem;
+  color: var(--clr-outline);
+}
+
+.dropzoneUploading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--clr-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+.dropzoneDone {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.dropzoneFileName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-on-surface);
+}
+
+.dropzoneFileSize {
+  font-size: 0.75rem;
+  color: var(--clr-on-surface-variant);
+  margin-top: 0.15rem;
+}
+
+.dropzoneChange {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--clr-outline);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.dropzoneChange:hover {
+  border-color: var(--clr-error);
+  color: var(--clr-error);
+}
+
+/* Thumbnail preview inside dropzone */
+.thumbPreview {
+  width: 64px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* URL saved indicator */
+.urlPreview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--clr-primary);
+  font-weight: 600;
+}
+
+/* ── Edit page: current media preview block ── */
+.mediaPreviewBlock {
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: #f8f8f8;
+}
+
+.mediaPreviewLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--clr-on-surface-variant);
+  background: var(--clr-surface-container-low);
+  border-bottom: 1px solid var(--clr-outline-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* iframe for YouTube / Vimeo */
+.videoEmbed {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  display: block;
+  background: #000;
+}
+
+/* Fallback when URL isn't embed-able */
+.videoEmbedFallback {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+  background: #f1f5f1;
+}
+
+/* Thumbnail large preview */
+.thumbPreviewLarge {
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  background: #f8f8f8;
+}
+
+.thumbPreviewImg {
+  max-height: 200px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* "Ganti Video / Thumbnail" section label */
+.mediaChangeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--clr-on-surface-variant);
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
 .headerRow {
   display: flex;
   align-items: center;
@@ -199,6 +410,71 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* ── Delete Confirm Box ── */
+.modalBox {
+  background: var(--clr-surface-bright);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.25);
+  text-align: center;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modalIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--clr-on-surface);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.modalDesc {
+  font-size: 0.9rem;
+  color: var(--clr-on-surface-variant);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.deleteBtn {
+  background: #ef4444;
+  border: none;
+  color: #fff;
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 
 .modalContent {
   background: var(--clr-surface-bright);

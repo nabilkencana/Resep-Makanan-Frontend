@@ -9,10 +9,10 @@ gsap.registerPlugin(ScrollTrigger);
 const ScrollReveal = ({
   children,
   scrollContainerRef = null,
-  enableBlur = true,
+  enableBlur = false,    // accepted for back-compat, no longer used (removed blur repaint)
   baseOpacity = 0.1,
-  baseRotation = 3,
-  blurStrength = 4,
+  baseRotation = 3,      // accepted for back-compat, no longer used (removed layout thrash)
+  blurStrength = 4,      // accepted for back-compat, no longer used (removed blur repaint)
   containerClassName = '',
   textClassName = '',
   rotationEnd = 'bottom bottom',
