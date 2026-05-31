@@ -17,6 +17,7 @@ export default function FavoriteButton({ recipeId }: { recipeId: string }) {
         setIsSaved(!!saved);
       }).catch(() => {}).finally(() => setInitLoading(false));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInitLoading(false);
     }
   }, [user, recipeId]);

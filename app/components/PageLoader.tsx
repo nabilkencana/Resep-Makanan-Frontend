@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import dynamic from 'next/dynamic';
 import styles from './PageLoader.module.css';
+
+const DotLottieReact = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then(mod => mod.DotLottieReact),
+  { ssr: false }
+);
 
 export default function PageLoader() {
   const [hidden, setHidden] = useState(false);
@@ -11,10 +16,10 @@ export default function PageLoader() {
     // Hide the loader when the window finishes loading
     if (document.readyState === 'complete') {
       // Add a slight delay to ensure the Lottie animation has a chance to play a bit
-      setTimeout(() => setHidden(true), 500);
+      setTimeout(() => setHidden(true), 300);
     } else {
       const onLoad = () => {
-        setTimeout(() => setHidden(true), 500);
+        setTimeout(() => setHidden(true), 300);
       };
       window.addEventListener('load', onLoad, { once: true });
     }

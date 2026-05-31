@@ -1,7 +1,6 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
 import './GooeyNav.css';
 
 
@@ -131,29 +130,16 @@ const GooeyNav = ({
     }
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      const liEl = e.currentTarget.parentElement;
-      if (liEl) handleClick({ currentTarget: liEl }, index);
-    }
-  };
+
 
   // Sync active item whenever the route changes
   useEffect(() => {
     const idx = getActiveFromPath();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIndex(idx);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Prefetch all routes to eliminate loading delay
-  useEffect(() => {
-    items.forEach((item) => {
-      if (item.href && item.href !== '#') {
-        router.prefetch(item.href);
-      }
-    });
-  }, [items, router]);
 
   useEffect(() => {
     if (!navRef.current || !containerRef.current) return;
