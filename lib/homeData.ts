@@ -10,14 +10,14 @@ export function getHomeRecipes(apiUrl: string) {
       return r.json();
     });
 
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Recipes fetch timeout')), 8000)
+    const timeoutPromise = new Promise<any>((resolve) => 
+      setTimeout(() => resolve({ recipes: [] }), 8000)
     );
 
     recipesPromise = Promise.race([fetchPromise, timeoutPromise])
       .catch((err) => {
-        recipesPromise = null; // Reset on error so next call can retry
-        console.error('getHomeRecipes error:', err);
+        recipesPromise = null;
+        console.warn('getHomeRecipes error: API took too long or failed');
         return { recipes: [] };
       });
   }
@@ -33,14 +33,14 @@ export function getDashboardStats(apiUrl: string) {
       return r.json();
     });
 
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Stats fetch timeout')), 5000)
+    const timeoutPromise = new Promise<any>((resolve) => 
+      setTimeout(() => resolve({ stats: null }), 5000)
     );
 
     statsPromise = Promise.race([fetchPromise, timeoutPromise])
       .catch((err) => {
-        statsPromise = null; // Reset on error
-        console.error('getDashboardStats error:', err);
+        statsPromise = null;
+        console.warn('getDashboardStats error: API took too long or failed');
         return { stats: null };
       });
   }

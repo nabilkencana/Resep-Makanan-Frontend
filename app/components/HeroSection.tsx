@@ -71,16 +71,17 @@ const BlurText = dynamic<BlurTextProps>(
 
 type RecipeCard = { id?: number | string; src: string; title: string; tag: string; rating: string; time: string };
 const DUMMY_RECIPE_CARDS: RecipeCard[] = [
-  { src: '/recipe-salad.png', title: 'Garden Harvest Salad',  tag: 'Vegan',       rating: '4.8', time: '15 mnt' },
-  { src: '/recipe-bowl.png',  title: 'Berry & Granola Bowl',  tag: 'Sarapan',     rating: '4.9', time: '10 mnt' },
+  { src: '/recipe-salad.png', title: 'Garden Harvest Salad', tag: 'Vegan', rating: '4.8', time: '15 mnt' },
+  { src: '/recipe-bowl.png', title: 'Berry & Granola Bowl', tag: 'Sarapan', rating: '4.9', time: '10 mnt' },
   { src: '/recipe-pizza.png', title: 'Heirloom Tomato Pizza', tag: 'Makan Malam', rating: '4.7', time: '25 mnt' },
-  { src: '/recipe-bread.png', title: 'Traditional Sourdough', tag: 'Roti',        rating: '5.0', time: '3 jam'  },
+  { src: '/recipe-bread.png', title: 'Traditional Sourdough', tag: 'Roti', rating: '5.0', time: '3 jam' },
 ];
 
 export default function HeroSection() {
   const [appReady, setAppReady] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [recipes, setRecipes] = useState<any[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
     // Wait for the loader's delay to finish before triggering animations
@@ -102,16 +103,18 @@ export default function HeroSection() {
           getDashboardStats(API_URL),
           getHomeRecipes(API_URL)
         ]);
-        
+
         if (statsData?.stats) {
           setStats(statsData.stats);
         }
-        
+
         if (recipesData?.recipes) {
           setRecipes(recipesData.recipes || []);
         }
       } catch (err) {
         console.error("Failed to fetch hero data", err);
+      } finally {
+        setIsLoadingStats(false);
       }
     };
 
@@ -131,9 +134,9 @@ export default function HeroSection() {
     }))
     : DUMMY_RECIPE_CARDS;
 
-  const totalRecipes = stats?.totalRecipes ?? '-';
-  const satisfaction = stats?.satisfaction ?? '-';
-  const totalUsers = stats?.totalUsers ?? '-';
+  const totalRecipes = stats?.totalRecipes ?? (recipes && recipes.length > 0 ? recipes.length : null);
+  const satisfaction = stats?.satisfaction ?? null;
+  const totalUsers = stats?.totalUsers ?? null;
 
   const penggunaVal = typeof totalUsers === 'number' && totalUsers >= 1000 ? parseFloat((totalUsers / 1000).toFixed(1)) : totalUsers;
   const penggunaUnit = typeof totalUsers === 'number' && totalUsers >= 1000 ? 'k' : '';
@@ -222,37 +225,51 @@ export default function HeroSection() {
           <div className={styles.stats} aria-label="Statistik resep">
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                {typeof totalRecipes === 'number' ? (
-                  <CountUp from={0} to={totalRecipes} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                {isLoadingStats ? (
+                  <span style={{ width: '40px', height: '24px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '4px', animation: 'pulse 1.5s infinite' }}></span>
+                ) : typeof totalRecipes === 'number' ? (
+                  <>
+                    <CountUp from={0} to={totalRecipes} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                    <span>+</span>
+                  </>
                 ) : (
-                  <span className={styles.statCountUp}>{totalRecipes}</span>
+                  <span className={styles.statCountUp} style={{ fontSize: '0.85rem', fontWeight: 500 }}>Belum tersedia</span>
                 )}
-                {typeof totalRecipes === 'number' && <span>+</span>}
               </span>
               <span className={styles.statLabel}>Resep</span>
             </div>
-            <div className={styles.statItem}>
-              <span className={styles.statNum}>
-                {typeof satisfaction === 'number' ? (
-                  <CountUp from={0} to={satisfaction} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
-                ) : (
-                  <span className={styles.statCountUp}>{satisfaction}</span>
-                )}
-                {typeof satisfaction === 'number' && <span>%</span>}
-              </span>
-              <span className={styles.statLabel}>Kepuasan</span>
-            </div>
-            <div className={styles.statItem}>
-              <span className={styles.statNum}>
-                {typeof penggunaVal === 'number' ? (
-                  <CountUp from={0} to={penggunaVal} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
-                ) : (
-                  <span className={styles.statCountUp}>{penggunaVal}</span>
-                )}
-                {typeof penggunaVal === 'number' && <span>{penggunaUnit}</span>}
-              </span>
-              <span className={styles.statLabel}>Pengguna</span>
-            </div>
+            
+            {(isLoadingStats || typeof satisfaction === 'number') && (
+              <div className={styles.statItem}>
+                <span className={styles.statNum}>
+                  {isLoadingStats ? (
+                    <span style={{ width: '40px', height: '24px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '4px', animation: 'pulse 1.5s infinite' }}></span>
+                  ) : (
+                    <>
+                      <CountUp from={0} to={satisfaction} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                      <span>%</span>
+                    </>
+                  )}
+                </span>
+                <span className={styles.statLabel}>Kepuasan</span>
+              </div>
+            )}
+
+            {(isLoadingStats || typeof penggunaVal === 'number') && (
+              <div className={styles.statItem}>
+                <span className={styles.statNum}>
+                  {isLoadingStats ? (
+                    <span style={{ width: '40px', height: '24px', display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '4px', animation: 'pulse 1.5s infinite' }}></span>
+                  ) : (
+                    <>
+                      <CountUp from={0} to={penggunaVal} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                      <span>{penggunaUnit}</span>
+                    </>
+                  )}
+                </span>
+                <span className={styles.statLabel}>Pengguna</span>
+              </div>
+            )}
           </div>
         </div>
 
