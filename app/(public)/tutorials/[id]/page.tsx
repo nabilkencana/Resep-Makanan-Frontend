@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, fetchApi } from '@/lib/api';
+import { api } from '@/lib/api';
 import styles from './WatchTutorial.module.css';
 import Link from 'next/link';
+import { Lock, ArrowLeft, ChevronRight, Clock, ChefHat, Users, Flame, Utensils, ListOrdered } from 'lucide-react';
 
 interface TutorialDetail {
   id: number;
@@ -83,7 +84,7 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
     return (
       <div className={styles.errorContainer}>
         <div className={styles.errorIcon}>
-          <span className="material-symbols-outlined">lock</span>
+          <Lock size={32} />
         </div>
         <h1 className={styles.errorTitle}>Akses Tidak Diizinkan</h1>
         <p className={styles.errorDesc}>{error}</p>
@@ -101,7 +102,7 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
         {/* ── Top Actions ── */}
         <div className={styles.topActions}>
           <button className={styles.backTopBtn} onClick={() => router.back()}>
-            <span className="material-symbols-outlined">arrow_back</span>
+            <ArrowLeft size={20} />
             Kembali
           </button>
         </div>
@@ -109,13 +110,13 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
         {/* ── Breadcrumb ── */}
         <div className={styles.breadcrumb}>
           <Link href="/">Beranda</Link>
-          <span className="material-symbols-outlined">chevron_right</span>
+          <ChevronRight size={16} />
           {tutorial?.recipe?.id ? (
             <Link href={`/recipe/${tutorial.recipe.id}`}>Resep: {tutorial.recipe.title}</Link>
           ) : (
             <span>Tutorials</span>
           )}
-          <span className="material-symbols-outlined">chevron_right</span>
+          <ChevronRight size={16} />
           <span className={styles.currentCrumb}>Tonton Video</span>
         </div>
 
@@ -147,7 +148,7 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
               <h1 className={styles.title}>{tutorial?.title}</h1>
               {tutorial?.duration && (
                 <span className={styles.durationBadge}>
-                  <span className="material-symbols-outlined">schedule</span>
+                  <Clock size={16} />
                   {Math.floor(tutorial.duration / 60) > 0 ? `${Math.floor(tutorial.duration / 60)}j ` : ''}
                   {tutorial.duration % 60}m
                 </span>
@@ -175,28 +176,28 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
 
             <div className={styles.metaGrid}>
               <div className={styles.metaItem}>
-                <span className="material-symbols-outlined">schedule</span>
+                <Clock size={20} />
                 <div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--clr-outline)', display: 'block' }}>WAKTU PERSIAPAN</span>
                   {tutorial.recipe.prepTime}
                 </div>
               </div>
               <div className={styles.metaItem}>
-                <span className="material-symbols-outlined">skillet</span>
+                <ChefHat size={20} />
                 <div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--clr-outline)', display: 'block' }}>WAKTU MEMASAK</span>
                   {tutorial.recipe.cookTime}
                 </div>
               </div>
               <div className={styles.metaItem}>
-                <span className="material-symbols-outlined">group</span>
+                <Users size={20} />
                 <div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--clr-outline)', display: 'block' }}>PORSI</span>
                   {tutorial.recipe.servings} Orang
                 </div>
               </div>
               <div className={styles.metaItem}>
-                <span className="material-symbols-outlined">local_fire_department</span>
+                <Flame size={20} />
                 <div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--clr-outline)', display: 'block' }}>KALORI</span>
                   {tutorial.recipe.calories} kcal
@@ -205,7 +206,7 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
             </div>
 
             <h3 className={styles.sectionTitle}>
-              <span className="material-symbols-outlined">kitchen</span>
+              <Utensils size={24} />
               Bahan-bahan
             </h3>
             <div className={styles.ingredientsList}>
@@ -227,7 +228,7 @@ export default function WatchTutorialPage({ params }: { params: Promise<{ id: st
             </div>
 
             <h3 className={styles.sectionTitle}>
-              <span className="material-symbols-outlined">format_list_numbered</span>
+              <ListOrdered size={24} />
               Langkah-langkah
             </h3>
             <div className={styles.stepsList}>

@@ -28,7 +28,6 @@ export default function RootLayout({
   return (
     <html lang="id" className={inter.variable} data-scroll-behavior="smooth">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" rel="stylesheet" />
       </head>
       <body>
         <AuthProvider>

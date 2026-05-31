@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { PlayCircle, Play, Lock, Hourglass, CheckCircle, ShoppingCart, Info, Video } from 'lucide-react';
 import { publicFetch, api } from '@/lib/api';
 import styles from './TutorialSection.module.css';
 
@@ -110,7 +111,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
           <div className={styles.headerIcon}>
-            <span className="material-symbols-outlined">play_circle</span>
+            <PlayCircle size={24} color="#ffffff" />
           </div>
           <div>
             <h2 className={styles.title}>Video Tutorial</h2>
@@ -126,7 +127,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
           <div className={styles.headerIcon}>
-            <span className="material-symbols-outlined">play_circle</span>
+            <PlayCircle size={24} color="#ffffff" />
           </div>
           <div>
             <h2 className={styles.title}>Video Tutorial</h2>
@@ -175,7 +176,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
           <div className={styles.headerIcon}>
-            <span className="material-symbols-outlined">play_circle</span>
+            <PlayCircle size={24} color="#ffffff" />
           </div>
           <div>
             <h2 className={styles.title}>Video Tutorial</h2>
@@ -199,7 +200,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             />
           ) : (
             <div className={styles.thumbPlaceholder}>
-              <span className="material-symbols-outlined" style={{ fontSize: '56px', color: 'rgba(255,255,255,0.4)' }}>movie</span>
+              <Video size={56} color="rgba(255,255,255,0.4)" />
             </div>
           )}
 
@@ -207,11 +208,11 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
           <div className={styles.thumbOverlay}>
             {hasAccess ? (
               <button className={styles.overlayPlayBtn} onClick={handleWatch} title="Tonton">
-                <span className="material-symbols-outlined">play_arrow</span>
+                <Play fill="currentColor" size={30} style={{ marginLeft: 3 }} />
               </button>
             ) : (
               <div className={styles.overlayLockBadge}>
-                <span className="material-symbols-outlined">lock</span>
+                <Lock size={32} color="#fbbf24" />
                 {!isFree && <span>{formatPrice(tutorial.price)}</span>}
               </div>
             )}
@@ -245,7 +246,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             {/* ── User has access → Watch button ── */}
             {hasAccess && (
               <button className={styles.watchBtn} onClick={handleWatch}>
-                <span className="material-symbols-outlined">play_circle</span>
+                <PlayCircle size={20} />
                 Tonton Sekarang
               </button>
             )}
@@ -254,7 +255,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             {!hasAccess && isPendingTx && !buySuccess && (
               <div className={styles.pendingBox}>
                 <div className={styles.pendingIcon}>
-                  <span className="material-symbols-outlined">hourglass_empty</span>
+                  <Hourglass size={20} color="#d97706" />
                 </div>
                 <div>
                   <p className={styles.pendingTitle}>Menunggu Verifikasi Admin</p>
@@ -268,7 +269,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             {/* ── Buy success (just bought) ── */}
             {buySuccess && !hasAccess && (
               <div className={styles.successBox}>
-                <span className="material-symbols-outlined">check_circle</span>
+                <CheckCircle size={24} color="#16a34a" />
                 <div>
                   <p className={styles.successTitle}>Transaksi Berhasil Dibuat!</p>
                   <p className={styles.successDesc}>Admin akan memverifikasi pembayaran kamu. Pantau status di halaman profil.</p>
@@ -279,7 +280,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             {/* ── Not logged in ── */}
             {!isLoggedIn && (
               <div className={styles.loginPrompt}>
-                <span className="material-symbols-outlined">lock</span>
+                <Lock size={22} color="var(--clr-primary)" />
                 <div>
                   <p className={styles.loginTitle}>
                     {isFree ? 'Masuk untuk menonton tutorial ini' : 'Masuk untuk membeli tutorial ini'}
@@ -311,13 +312,13 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined">shopping_cart</span>
+                      <ShoppingCart size={20} />
                       Beli Tutorial – {formatPrice(tutorial.price)}
                     </>
                   )}
                 </button>
                 <p className={styles.buyNote}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>info</span>
+                  <Info size={14} />
                   Setelah transaksi dibuat, admin akan memverifikasi pembayaran Anda
                 </p>
               </>

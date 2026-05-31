@@ -79,7 +79,7 @@ export default function RecipesSection({ search }: { search?: string }) {
             <h2 className={styles.title} id="recipes-title">{search ? `Hasil Pencarian: ${search}` : 'Resep Populer'}</h2>
             <p className={styles.sub}>Hidangan pilihan yang dicintai komunitas kami.</p>
           </div>
-          <Link href="/kategori" className={styles.viewAll} id="btn-view-all">
+          <Link href="/kategori" className={styles.viewAll} id="btn-view-all" prefetch={false}>
             <span>Lihat Semua</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

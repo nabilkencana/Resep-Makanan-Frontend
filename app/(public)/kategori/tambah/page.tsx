@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '../../../../lib/api';
 import styles from '../../../(admin)/admin/recipes/recipes.module.css';
+import { CheckCircle2, ArrowLeft, AlertCircle, ImagePlus, X, Trash2, Plus, RefreshCw, Send } from 'lucide-react';
 
 export default function TambahResepPage() {
   const router = useRouter();
@@ -140,7 +141,7 @@ export default function TambahResepPage() {
     return (
       <div style={{ padding: '6rem 2rem 4rem', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ background: '#fff', padding: '3rem', borderRadius: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center', maxWidth: '500px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '64px', color: 'var(--clr-primary)', marginBottom: '1rem' }}>check_circle</span>
+          <CheckCircle2 size={64} color="var(--clr-primary)" style={{ marginBottom: '1rem' }} />
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--clr-on-surface)' }}>Resep Berhasil Dikirim!</h2>
           <p style={{ color: 'var(--clr-on-surface-variant)', lineHeight: 1.6, marginBottom: '2rem' }}>
             Terima kasih telah berbagi resep kreasi Anda. Resep Anda saat ini berstatus <strong>Menunggu Verifikasi</strong> oleh Admin. Setelah disetujui, resep akan langsung tayang di Dapur Nusantara!
@@ -166,7 +167,7 @@ export default function TambahResepPage() {
           onClick={() => router.back()}
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--clr-on-surface-variant)', cursor: 'pointer', marginBottom: '1rem' }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
+          <ArrowLeft size={16} />
           Kembali
         </button>
         <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--clr-on-surface)' }}>Kirim Resep Kamu</h1>
@@ -175,7 +176,7 @@ export default function TambahResepPage() {
 
       {error && (
         <div className={styles.errorBanner} style={{ marginBottom: '1.5rem' }}>
-          <span className="material-symbols-outlined">error_outline</span>
+          <AlertCircle size={20} />
           <span>{error}</span>
         </div>
       )}
@@ -205,7 +206,7 @@ export default function TambahResepPage() {
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--clr-outline)' }}>add_photo_alternate</span>
+                  <ImagePlus size={48} color="var(--clr-outline)" />
                   <p style={{ marginTop: '1rem', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Klik untuk memilih foto (opsional)</p>
                   <p style={{ fontSize: '12px', color: 'var(--clr-outline)' }}>PNG, JPG maks 5MB</p>
                 </>
@@ -294,7 +295,7 @@ export default function TambahResepPage() {
                     onClick={() => removeTag(idx)}
                     style={{ background: 'none', border: 'none', color: 'var(--clr-primary)', cursor: 'pointer', display: 'flex', padding: 0 }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                    <X size={14} />
                   </button>
                 </span>
               ))}
@@ -336,12 +337,12 @@ export default function TambahResepPage() {
                     style={{ flex: 1 }}
                   />
                   <button type="button" className={styles.removeBtn} onClick={() => removeIngredient(idx)} tabIndex={-1} aria-label="Hapus">
-                    <span className="material-symbols-outlined">delete</span>
+                    <Trash2 size={20} />
                   </button>
                 </div>
               ))}
               <button type="button" className={styles.dynamicListBtn} onClick={addIngredient}>
-                <span className="material-symbols-outlined">add</span> Tambah Bahan
+                <Plus size={20} /> Tambah Bahan
               </button>
             </div>
           </div>
@@ -362,12 +363,12 @@ export default function TambahResepPage() {
                     required
                   />
                   <button type="button" className={styles.removeBtn} onClick={() => removeStep(idx)} tabIndex={-1} aria-label="Hapus">
-                    <span className="material-symbols-outlined">delete</span>
+                    <Trash2 size={20} />
                   </button>
                 </div>
               ))}
               <button type="button" className={styles.dynamicListBtn} onClick={addStep}>
-                <span className="material-symbols-outlined">add</span> Tambah Langkah
+                <Plus size={20} /> Tambah Langkah
               </button>
             </div>
           </div>
@@ -387,9 +388,9 @@ export default function TambahResepPage() {
           </button>
           <button type="submit" className={styles.saveBtn} disabled={loading} style={{ padding: '0.75rem 2rem' }}>
             {loading ? (
-              <span className="material-symbols-outlined" style={{ animation: 'spin 1s linear infinite' }}>sync</span>
+              <RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />
             ) : (
-              <span className="material-symbols-outlined">send</span>
+              <Send size={20} />
             )}
             {loading ? 'Mengirim...' : 'Kirim Resep'}
           </button>

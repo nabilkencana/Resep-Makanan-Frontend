@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { PlusCircle } from 'lucide-react';
 import RecipesWithFilter from './RecipesWithFilter';
 import { CATEGORIES as FALLBACK_CATEGORIES } from '../../data/categories';
 import styles from './page.module.css';
@@ -170,7 +171,7 @@ export default async function KategoriPage() {
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
             <Link href="/kategori/tambah" className={styles.submitRecipeBtn}>
-              <span className="material-symbols-outlined">add_circle</span>
+              <PlusCircle size={20} style={{ marginRight: '8px' }} />
               Kirim Resep Sekarang
             </Link>
           </div>
