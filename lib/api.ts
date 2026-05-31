@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -71,6 +71,7 @@ export const api = {
   // Auth
   login: (data: any) => fetchApi('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: any) => fetchApi('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  googleLogin: (token: string) => fetchApi('/auth/google', { method: 'POST', body: JSON.stringify({ token }) }),
   getProfile: () => fetchApi('/auth/me'),
 
   // Categories
