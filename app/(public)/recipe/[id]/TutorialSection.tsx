@@ -121,7 +121,29 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
     </section>
   );
 
-  if (!tutorial) return <section></section>;
+  if (!tutorial) return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <div className={styles.headerLeft}>
+          <div className={styles.headerIcon}>
+            <PlayCircle size={24} color="#ffffff" />
+          </div>
+          <div>
+            <h2 className={styles.title}>Video Tutorial</h2>
+            <p className={styles.subtitle}>Pelajari langkah demi langkah bersama chef</p>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.card} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', textAlign: 'center', background: '#f9f9fb', border: '1px dashed #bccabb', boxShadow: 'none' }}>
+        <Video size={48} color="#bccabb" style={{ marginBottom: '1rem' }} />
+        <h3 style={{ fontSize: '1.25rem', color: '#1a1c1d', marginBottom: '0.5rem' }}>Video Belum Tersedia</h3>
+        <p style={{ color: '#6d7b6d', fontSize: '0.95rem', maxWidth: '400px' }}>
+          Saat ini belum ada video tutorial untuk resep ini. Silakan ikuti panduan langkah demi langkah di tab Informasi Resep.
+        </p>
+      </div>
+    </section>
+  );
 
   const isFree = tutorial.price === 0;
   const hasAccess = isLoggedIn && (isFree || myTransactions.some((tx) => tx.tutorialId === tutorial.id && tx.status === 'SUCCESS'));
