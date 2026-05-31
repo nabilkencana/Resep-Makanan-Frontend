@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
-import { fetchApi, api } from '@/lib/api';
+import { publicFetch, api } from '@/lib/api';
 import styles from './TutorialSection.module.css';
 
 interface Tutorial {
@@ -52,22 +53,49 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   const [buying, setBuying] = useState(false);
   const [buySuccess, setBuySuccess] = useState(false);
   const [buyError, setBuyError] = useState('');
+  const [inView, setInView] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) return;
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     setIsLoggedIn(!!token);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     // Fetch all tutorials, find the one for this recipe
-    fetchApi('/tutorials')
+    publicFetch('/tutorials', { signal: controller.signal })
       .then((res) => {
         const matched = (res.tutorials || []).find((t: Tutorial) => {
           return String((t as any).recipeId) === String(recipeId);
         });
         if (matched && matched.isPublished) setTutorial(matched);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [recipeId]);
+      .catch((err) => {
+        console.warn('Error fetching tutorials:', err);
+        setFetchFailed(true);
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
+  }, [recipeId, inView]);
 
   // Fetch user's transactions to know if they have a pending/success for this tutorial
   useEffect(() => {
@@ -77,7 +105,39 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
       .catch(() => {});
   }, [isLoggedIn]);
 
-  if (loading || !tutorial) return null;
+  if (loading) return (
+    <section className={styles.section} ref={sectionRef}>
+      <div className={styles.sectionHeader}>
+        <div className={styles.headerLeft}>
+          <div className={styles.headerIcon}>
+            <span className="material-symbols-outlined">play_circle</span>
+          </div>
+          <div>
+            <h2 className={styles.title}>Video Tutorial</h2>
+            <p className={styles.subtitle}>Memuat data tutorial...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  if (fetchFailed) return (
+    <section className={styles.section} ref={sectionRef}>
+      <div className={styles.sectionHeader}>
+        <div className={styles.headerLeft}>
+          <div className={styles.headerIcon}>
+            <span className="material-symbols-outlined">play_circle</span>
+          </div>
+          <div>
+            <h2 className={styles.title}>Video Tutorial</h2>
+            <p className={styles.subtitle}>Tutorial belum tersedia saat ini.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  if (!tutorial) return <section ref={sectionRef}></section>;
 
   const isFree = tutorial.price === 0;
   const hasAccess = isLoggedIn && (isFree || myTransactions.some((tx) => tx.tutorialId === tutorial.id && tx.status === 'SUCCESS'));
@@ -110,7 +170,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} ref={sectionRef}>
       {/* Section header */}
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
@@ -129,9 +189,12 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
         {/* Thumbnail / Preview */}
         <div className={styles.thumbWrap}>
           {tutorial.thumbnailUrl || tutorial.recipe?.imageUrl ? (
-            <img
+            <Image
               src={tutorial.thumbnailUrl || tutorial.recipe?.imageUrl || ''}
               alt={tutorial.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              loading="lazy"
               className={styles.thumbImg}
             />
           ) : (

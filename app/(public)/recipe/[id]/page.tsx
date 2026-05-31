@@ -24,19 +24,6 @@ async function getRecipeById(id: string) {
     const recipe = (listData.recipes || []).find((r: any) => String(r.id) === String(id));
     if (!recipe) return null;
 
-    // Fetch reviews (public endpoint)
-    let totalReviews = 0;
-    try {
-      const reviewRes = await fetch(`${API_URL}/recipes/${id}/reviews`, { 
-        next: { revalidate: 60 },
-        signal: AbortSignal.timeout(3000)
-      });
-      if (reviewRes.ok) {
-        const reviewData = await reviewRes.json();
-        totalReviews = reviewData.totalReviews || 0;
-      }
-    } catch (e) { console.error('Failed to fetch reviews', e); }
-
     // Handle dummy image URL from example.com to avoid 404
     let validImageUrl = recipe.imageUrl || '/recipe-chicken.jpg';
     if (validImageUrl.includes('example.com')) {
@@ -46,7 +33,7 @@ async function getRecipeById(id: string) {
     return {
       ...recipe,
       tags: [recipe.category],
-      reviews: totalReviews,
+      reviews: recipe.reviews || 0,
       heroSrc: validImageUrl,
       ingredients: typeof recipe.ingredients === 'string' ? JSON.parse(recipe.ingredients) : (recipe.ingredients || []),
       steps: typeof recipe.steps === 'string' ? JSON.parse(recipe.steps) : (recipe.steps || []),

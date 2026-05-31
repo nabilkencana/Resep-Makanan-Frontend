@@ -28,7 +28,30 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
 
   return data;
 }
+export async function publicFetch(endpoint: string, options: RequestInit = {}) {
+  const headers: any = {
+    ...options.headers,
+  };
 
+  // Only add Content-Type if not a GET request to avoid preflight
+  const method = options.method || 'GET';
+  if (method !== 'GET' && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'API request failed');
+  }
+
+  return data;
+}
 export const api = {
   // Recipes
   getRecipes: (search?: string, category?: string) => {
@@ -62,7 +85,7 @@ export const api = {
   removeFavorite: (recipeId: string) => fetchApi(`/users/me/favorites/${recipeId}`, { method: 'DELETE' }),
 
   // Reviews
-  getReviews: (recipeId: string) => fetchApi(`/recipes/${recipeId}/reviews`),
+  getReviews: (recipeId: string) => publicFetch(`/recipes/${recipeId}/reviews`),
   addReview: (recipeId: string, data: any) => fetchApi(`/recipes/${recipeId}/reviews`, { method: 'POST', body: JSON.stringify(data) }),
   deleteReview: (recipeId: string) => fetchApi(`/recipes/${recipeId}/reviews`, { method: 'DELETE' }),
 
@@ -77,8 +100,8 @@ export const api = {
   getMyReviews: () => fetchApi('/users/me/reviews'),
 
   // Tutorials
-  getTutorials: () => fetchApi('/tutorials'),
-  getTutorialById: (id: string) => fetchApi(`/tutorials/${id}`),
+  getTutorials: () => publicFetch('/tutorials'),
+  getTutorialById: (id: string) => publicFetch(`/tutorials/${id}`),
   createTutorial: (data: any) => fetchApi('/tutorials', { method: 'POST', body: JSON.stringify(data) }),
   updateTutorial: (id: string, data: any) => fetchApi(`/tutorials/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteTutorial: (id: string) => fetchApi(`/tutorials/${id}`, { method: 'DELETE' }),

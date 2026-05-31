@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import styles from './RecipeReviews.module.css';
-import { fetchApi } from '@/lib/api';
+import { publicFetch, fetchApi } from '@/lib/api';
 
 interface Review {
   id: number;
@@ -52,6 +52,9 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   // Form state
   const [rating, setRating] = useState(0);
@@ -63,20 +66,43 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
 
   const fetchReviews = async () => {
     try {
-      const res = await fetchApi(`/recipes/${recipeId}/reviews`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const res = await publicFetch(`/recipes/${recipeId}/reviews`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
       if (res?.reviews) setReviews(res.reviews);
     } catch (err) {
-      console.error('Error fetching reviews:', err);
+      console.warn('Error fetching reviews:', err);
+      setFetchFailed(true);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) setIsLoggedIn(true);
     fetchReviews();
-  }, [recipeId]);
+  }, [recipeId, inView]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,7 +140,7 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
   const displayRating = hoverRating || rating;
 
   return (
-    <section className={styles.reviewsSection}>
+    <section className={styles.reviewsSection} ref={sectionRef}>
 
       {/* ── Header ── */}
       <div className={styles.sectionHeader}>
@@ -164,7 +190,7 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
 
         {/* LEFT: Reviews List */}
         <div className={styles.reviewsList}>
-          {loading ? (
+          {loading && !fetchFailed ? (
             [1, 2, 3].map((i) => (
               <div key={i} className={styles.skeletonCard}>
                 <div className={styles.skeletonLine} style={{ width: '40%' }} />
@@ -172,6 +198,11 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
                 <div className={styles.skeletonLine} style={{ width: '60%' }} />
               </div>
             ))
+          ) : fetchFailed ? (
+            <div className={styles.emptyState}>
+              <h3 className={styles.emptyTitle}>Review belum tersedia</h3>
+              <p className={styles.emptySubtitle}>Gagal memuat ulasan saat ini. Coba muat ulang halaman.</p>
+            </div>
           ) : reviews.length === 0 ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyEmoji}>
