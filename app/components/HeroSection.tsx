@@ -264,10 +264,10 @@ export default function HeroSection() {
               }
             }}
           >
-            {displayCards.map((r) => (
+            {displayCards.map((r, idx) => (
               <Card key={r.src + r.title} customClass={styles.recipeCard}>
                 <div className={styles.cardImgWrap}>
-                  <Image src={r.src} alt={r.title} fill sizes="400px" priority={true} className={styles.cardImg} />
+                  <Image src={r.src} alt={r.title} fill sizes="400px" priority={idx === 0} className={styles.cardImg} />
                   <div className={styles.cardGradient} />
                 </div>
                 <div className={styles.cardBody}>

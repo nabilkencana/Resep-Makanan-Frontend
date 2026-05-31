@@ -28,7 +28,8 @@ export default function RecipesSection({ search }: { search?: string }) {
           // Deduplicate fetch for the homepage
           const recipesData = await getHomeRecipes(API_BASE);
           if (recipesData?.recipes) {
-            setRecipes(recipesData.recipes);
+            // Take the 6 recipes after the 4 used by HeroSection
+            setRecipes(recipesData.recipes.slice(4, 10));
           }
         } else {
           // Search query - fetch fresh with timeout
@@ -114,7 +115,7 @@ export default function RecipesSection({ search }: { search?: string }) {
                       alt={r.title}
                       fill
                       loading="lazy"
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className={styles.cardImg}
                     />
                     <div className={styles.gradient} aria-hidden="true" />
