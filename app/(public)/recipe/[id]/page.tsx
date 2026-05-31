@@ -5,6 +5,7 @@ import FavoriteButton from '../../../components/FavoriteButton';
 import styles from './page.module.css';
 import RecipeReviews from './RecipeReviews';
 import TutorialSection from './TutorialSection';
+import RecipeTabs from './RecipeTabs';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -127,80 +128,79 @@ export default async function RecipePage({ params }: Props) {
         </div>
       </section>
 
-      {/* ── Two-column body ── */}
-      <section className={styles.body}>
+      {/* ── Tabs for Body, Tutorial, Reviews ── */}
+      <RecipeTabs
+        recipeInfo={
+          <section className={styles.body}>
+            {/* LEFT: sticky ingredients */}
+            <aside className={styles.ingredientsCol}>
+              <div className={styles.ingredientsCard}>
+                <div className={styles.ingredientsHeader}>
+                  <h2 className={styles.colTitle}>Bahan-Bahan</h2>
+                  <span className={styles.servingBadge}>{recipe.servings} porsi</span>
+                </div>
 
-        {/* LEFT: sticky ingredients */}
-        <aside className={styles.ingredientsCol}>
-          <div className={styles.ingredientsCard}>
-            <div className={styles.ingredientsHeader}>
-              <h2 className={styles.colTitle}>Bahan-Bahan</h2>
-              <span className={styles.servingBadge}>{recipe.servings} porsi</span>
+                <ul className={styles.ingredientList}>
+                  {recipe.ingredients.map((ing: any, i: number) => {
+                    const ingText = typeof ing === 'string' ? ing : `${ing.amount || ''} ${ing.name || ''}`.trim();
+                    const ingNote = typeof ing === 'object' ? ing.note : null;
+                    return (
+                      <li key={i} className={styles.ingredientItem}>
+                        <label className={styles.checkLabel} htmlFor={`ing-${i}`}>
+                          <input
+                            type="checkbox"
+                            id={`ing-${i}`}
+                            className={styles.checkInput}
+                          />
+                          <span className={styles.checkBox} aria-hidden="true">
+                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none"
+                              stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                              <polyline points="2,6 5,9 10,3"/>
+                            </svg>
+                          </span>
+                          <span className={styles.ingBody}>
+                            <span className={styles.ingText}>{ingText}</span>
+                            {ingNote && <span className={styles.ingNote}>{ingNote}</span>}
+                          </span>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </aside>
+
+            {/* RIGHT: steps */}
+            <div className={styles.stepsCol}>
+              <h2 className={styles.colTitle}>Cara Membuat</h2>
+
+              <ol className={styles.stepList}>
+                {recipe.steps.map((s: any, index: number) => {
+                  const stepNum = typeof s === 'object' && s.stepNumber ? s.stepNumber : index + 1;
+                  const stepText = typeof s === 'string' ? s : (s.description || s.text || s.title || String(s));
+                  const stepTitle = typeof s === 'string' ? `Langkah ${stepNum}` : (s.title || `Langkah ${stepNum}`);
+                  const stepIcon = typeof s === 'object' ? s.icon : null;
+                  return (
+                    <li key={stepNum} className={styles.stepCard} id={`step-${stepNum}`}>
+                      <div className={styles.stepAccent} aria-hidden="true" />
+                      <div className={styles.stepLeft}>
+                        <div className={styles.stepNum}>{stepNum}</div>
+                        {stepIcon && <span className={styles.stepIcon}>{stepIcon}</span>}
+                      </div>
+                      <div className={styles.stepBody}>
+                        <h3 className={styles.stepTitle}>{stepTitle}</h3>
+                        <p className={styles.stepText}>{stepText}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
             </div>
-
-            <ul className={styles.ingredientList}>
-              {recipe.ingredients.map((ing: any, i: number) => {
-                const ingText = typeof ing === 'string' ? ing : `${ing.amount || ''} ${ing.name || ''}`.trim();
-                const ingNote = typeof ing === 'object' ? ing.note : null;
-                return (
-                  <li key={i} className={styles.ingredientItem}>
-                    <label className={styles.checkLabel} htmlFor={`ing-${i}`}>
-                      <input
-                        type="checkbox"
-                        id={`ing-${i}`}
-                        className={styles.checkInput}
-                      />
-                      <span className={styles.checkBox} aria-hidden="true">
-                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none"
-                          stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                          <polyline points="2,6 5,9 10,3"/>
-                        </svg>
-                      </span>
-                      <span className={styles.ingBody}>
-                        <span className={styles.ingText}>{ingText}</span>
-                        {ingNote && <span className={styles.ingNote}>{ingNote}</span>}
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </aside>
-
-        {/* RIGHT: steps */}
-        <div className={styles.stepsCol}>
-          <h2 className={styles.colTitle}>Cara Membuat</h2>
-
-          <ol className={styles.stepList}>
-            {recipe.steps.map((s: any, index: number) => {
-              const stepNum = typeof s === 'object' && s.stepNumber ? s.stepNumber : index + 1;
-              const stepText = typeof s === 'string' ? s : (s.description || s.text || s.title || String(s));
-              const stepTitle = typeof s === 'string' ? `Langkah ${stepNum}` : (s.title || `Langkah ${stepNum}`);
-              const stepIcon = typeof s === 'object' ? s.icon : null;
-              return (
-                <li key={stepNum} className={styles.stepCard} id={`step-${stepNum}`}>
-                  <div className={styles.stepAccent} aria-hidden="true" />
-                  <div className={styles.stepLeft}>
-                    <div className={styles.stepNum}>{stepNum}</div>
-                    {stepIcon && <span className={styles.stepIcon}>{stepIcon}</span>}
-                  </div>
-                  <div className={styles.stepBody}>
-                    <h3 className={styles.stepTitle}>{stepTitle}</h3>
-                    <p className={styles.stepText}>{stepText}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </section>
-
-      {/* ── Tutorial Video Section ── */}
-      <TutorialSection recipeId={recipe.id} />
-
-      {/* ── Reviews Section ── */}
-      <RecipeReviews recipeId={recipe.id} />
+          </section>
+        }
+        tutorialSection={<TutorialSection recipeId={recipe.id} />}
+        reviewsSection={<RecipeReviews recipeId={recipe.id} />}
+      />
 
     </div>
   );

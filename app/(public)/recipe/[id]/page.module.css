@@ -483,3 +483,60 @@
 
 /* highlight "Pro tip:" bold text */
 .stepText strong { color: #1a1c1d; }
+
+/* ── Tabs Container ── */
+.tabsContainer {
+  max-width: 1200px;
+  margin: 2rem auto 0;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .tabsContainer {
+    padding: 0 2rem;
+  }
+}
+
+.tabList {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #e8e8ea;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding: 0 1rem;
+}
+.tabList::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 768px) {
+  .tabList { padding: 0; }
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6d7b6d;
+  padding: 0.8rem 1.5rem;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tabBtn:hover {
+  color: #006d36;
+}
+.activeTab {
+  color: #006d36;
+  border-bottom-color: #006d36;
+}
+
+.tabPanel {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

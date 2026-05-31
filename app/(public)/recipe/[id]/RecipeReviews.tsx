@@ -52,9 +52,7 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [inView, setInView] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
 
   // Form state
   const [rating, setRating] = useState(0);
@@ -67,7 +65,7 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
   const fetchReviews = async () => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       
       const res = await publicFetch(`/recipes/${recipeId}/reviews`, {
         signal: controller.signal
@@ -84,25 +82,10 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
   };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '300px' }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!inView) return;
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) setIsLoggedIn(true);
     fetchReviews();
-  }, [recipeId, inView]);
+  }, [recipeId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +123,7 @@ export default function RecipeReviews({ recipeId }: { recipeId: number }) {
   const displayRating = hoverRating || rating;
 
   return (
-    <section className={styles.reviewsSection} ref={sectionRef}>
+    <section className={styles.reviewsSection}>
 
       {/* ── Header ── */}
       <div className={styles.sectionHeader}>

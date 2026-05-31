@@ -54,31 +54,14 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   const [buying, setBuying] = useState(false);
   const [buySuccess, setBuySuccess] = useState(false);
   const [buyError, setBuyError] = useState('');
-  const [inView, setInView] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '300px' }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!inView) return;
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     setIsLoggedIn(!!token);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     // Fetch all tutorials, find the one for this recipe
     publicFetch('/tutorials', { signal: controller.signal })
@@ -96,7 +79,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
         clearTimeout(timeoutId);
         setLoading(false);
       });
-  }, [recipeId, inView]);
+  }, [recipeId]);
 
   // Fetch user's transactions to know if they have a pending/success for this tutorial
   useEffect(() => {
@@ -107,7 +90,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   }, [isLoggedIn]);
 
   if (loading) return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className={styles.section}>
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
           <div className={styles.headerIcon}>
@@ -123,7 +106,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   );
 
   if (fetchFailed) return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className={styles.section}>
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
           <div className={styles.headerIcon}>
@@ -131,14 +114,14 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
           </div>
           <div>
             <h2 className={styles.title}>Video Tutorial</h2>
-            <p className={styles.subtitle}>Tutorial belum tersedia saat ini.</p>
+            <p className={styles.subtitle}>Tutorial belum tersedia.</p>
           </div>
         </div>
       </div>
     </section>
   );
 
-  if (!tutorial) return <section ref={sectionRef}></section>;
+  if (!tutorial) return <section></section>;
 
   const isFree = tutorial.price === 0;
   const hasAccess = isLoggedIn && (isFree || myTransactions.some((tx) => tx.tutorialId === tutorial.id && tx.status === 'SUCCESS'));
@@ -171,7 +154,7 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   };
 
   return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className={styles.section}>
       {/* Section header */}
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
