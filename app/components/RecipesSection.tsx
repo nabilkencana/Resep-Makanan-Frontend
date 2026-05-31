@@ -27,24 +27,28 @@ export default function RecipesSection({ search }: { search?: string }) {
         if (!search) {
           // Deduplicate fetch for the homepage
           const recipesData = await getHomeRecipes(API_BASE);
-          if (recipesData?.recipes) {
-            // Take the 6 recipes after the 4 used by HeroSection
-            setRecipes(recipesData.recipes.slice(4, 10));
+          // Flexible parsing just in case
+          let fetchedRecipes = [];
+          if (Array.isArray(recipesData)) fetchedRecipes = recipesData;
+          else if (recipesData?.recipes) fetchedRecipes = recipesData.recipes;
+          else if (recipesData?.data) fetchedRecipes = recipesData.data;
+
+          if (fetchedRecipes.length > 0) {
+            // If we have enough recipes, skip the first 4 (used in Hero). Otherwise, just show them all.
+            const toShow = fetchedRecipes.length > 4 ? fetchedRecipes.slice(4, 10) : fetchedRecipes;
+            setRecipes(toShow);
           }
         } else {
           // Search query - fetch fresh with timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
-          
           const url = new URL(`${API_BASE}/recipes`);
           url.searchParams.set('search', search);
 
-          const res = await fetch(url.toString(), { 
-            cache: 'no-store',
-            signal: controller.signal
-          });
-          
-          clearTimeout(timeoutId);
+          const fetchPromise = fetch(url.toString(), { cache: 'no-store' });
+          const timeoutPromise = new Promise<Response>((_, reject) => 
+            setTimeout(() => reject(new Error('Search fetch timeout')), 8000)
+          );
+
+          const res = await Promise.race([fetchPromise, timeoutPromise]);
           const contentType = res.headers.get('content-type') || '';
           
           if (!res.ok || !contentType.includes('application/json')) {

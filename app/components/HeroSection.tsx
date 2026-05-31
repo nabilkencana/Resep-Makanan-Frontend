@@ -131,13 +131,12 @@ export default function HeroSection() {
     }))
     : DUMMY_RECIPE_CARDS;
 
-  const totalRecipes = stats?.totalRecipes || 2400;
-  // If we don't have satisfaction score, we'll use a high default like 98%
-  const satisfaction = 98;
-  const totalUsers = stats?.totalUsers || 12400;
+  const totalRecipes = stats?.totalRecipes ?? '-';
+  const satisfaction = stats?.satisfaction ?? '-';
+  const totalUsers = stats?.totalUsers ?? '-';
 
-  const penggunaVal = totalUsers >= 1000 ? parseFloat((totalUsers / 1000).toFixed(1)) : totalUsers;
-  const penggunaUnit = totalUsers >= 1000 ? 'k' : '';
+  const penggunaVal = typeof totalUsers === 'number' && totalUsers >= 1000 ? parseFloat((totalUsers / 1000).toFixed(1)) : totalUsers;
+  const penggunaUnit = typeof totalUsers === 'number' && totalUsers >= 1000 ? 'k' : '';
 
   return (
     <section className={styles.hero} aria-label="Hero section">
@@ -223,22 +222,34 @@ export default function HeroSection() {
           <div className={styles.stats} aria-label="Statistik resep">
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={totalRecipes} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
-                <span>+</span>
+                {typeof totalRecipes === 'number' ? (
+                  <CountUp from={0} to={totalRecipes} separator="." duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                ) : (
+                  <span className={styles.statCountUp}>{totalRecipes}</span>
+                )}
+                {typeof totalRecipes === 'number' && <span>+</span>}
               </span>
               <span className={styles.statLabel}>Resep</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={satisfaction} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
-                <span>%</span>
+                {typeof satisfaction === 'number' ? (
+                  <CountUp from={0} to={satisfaction} duration={1.5} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                ) : (
+                  <span className={styles.statCountUp}>{satisfaction}</span>
+                )}
+                {typeof satisfaction === 'number' && <span>%</span>}
               </span>
               <span className={styles.statLabel}>Kepuasan</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statNum}>
-                <CountUp from={0} to={penggunaVal} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
-                <span>{penggunaUnit}</span>
+                {typeof penggunaVal === 'number' ? (
+                  <CountUp from={0} to={penggunaVal} duration={2} className={styles.statCountUp} startWhen={appReady} onStart={undefined} onEnd={undefined} />
+                ) : (
+                  <span className={styles.statCountUp}>{penggunaVal}</span>
+                )}
+                {typeof penggunaVal === 'number' && <span>{penggunaUnit}</span>}
               </span>
               <span className={styles.statLabel}>Pengguna</span>
             </div>

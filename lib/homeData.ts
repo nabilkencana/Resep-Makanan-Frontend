@@ -3,20 +3,19 @@ export let statsPromise: Promise<any> | null = null;
 
 export function getHomeRecipes(apiUrl: string) {
   if (!recipesPromise) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
-    recipesPromise = fetch(`${apiUrl}/recipes?limit=10`, {
+    const fetchPromise = fetch(`${apiUrl}/recipes?limit=10`, {
       next: { revalidate: 60 },
-      signal: controller.signal,
-    })
-      .then((r) => {
-        clearTimeout(timeoutId);
-        if (!r.ok) throw new Error('Failed to fetch recipes');
-        return r.json();
-      })
+    }).then((r) => {
+      if (!r.ok) throw new Error('Failed to fetch recipes');
+      return r.json();
+    });
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Recipes fetch timeout')), 8000)
+    );
+
+    recipesPromise = Promise.race([fetchPromise, timeoutPromise])
       .catch((err) => {
-        clearTimeout(timeoutId);
         recipesPromise = null; // Reset on error so next call can retry
         console.error('getHomeRecipes error:', err);
         return { recipes: [] };
@@ -27,20 +26,19 @@ export function getHomeRecipes(apiUrl: string) {
 
 export function getDashboardStats(apiUrl: string) {
   if (!statsPromise) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
-
-    statsPromise = fetch(`${apiUrl}/dashboard/stats`, {
+    const fetchPromise = fetch(`${apiUrl}/dashboard/stats`, {
       next: { revalidate: 60 },
-      signal: controller.signal,
-    })
-      .then((r) => {
-        clearTimeout(timeoutId);
-        if (!r.ok) throw new Error('Failed to fetch stats');
-        return r.json();
-      })
+    }).then((r) => {
+      if (!r.ok) throw new Error('Failed to fetch stats');
+      return r.json();
+    });
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Stats fetch timeout')), 5000)
+    );
+
+    statsPromise = Promise.race([fetchPromise, timeoutPromise])
       .catch((err) => {
-        clearTimeout(timeoutId);
         statsPromise = null; // Reset on error
         console.error('getDashboardStats error:', err);
         return { stats: null };
