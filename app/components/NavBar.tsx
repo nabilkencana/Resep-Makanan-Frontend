@@ -79,7 +79,7 @@ export default function NavBar() {
       <div className={styles.inner}>
 
         {/* Logo – TextPressure interactive variable font */}
-        <Link href="/" className={styles.logo} id="nav-logo" aria-label="Dapur Nusantara – Beranda">
+        <Link href="/" className={`${styles.logo} ${searchOpen ? styles.logoHiddenMobile : ''}`} id="nav-logo" aria-label="Dapur Nusantara – Beranda">
           <div className={styles.logoBox}>
             <TextPressure
               text="Dapur Nusantara"
@@ -140,9 +140,9 @@ export default function NavBar() {
 
           {/* Profile – icon only */}
           {user ? (
-            <Link href="/profile" className={styles.profileBtn} id="nav-profile" aria-label="Profil" style={{ width: 'auto', padding: '0 12px', gap: '8px' }}>
+            <Link href="/profile" className={`${styles.profileBtn} ${styles.hasUser}`} id="nav-profile" aria-label="Profil">
               <IconPerson />
-              <span className="hidden md:inline" style={{ fontSize: '14px', fontWeight: 600 }}>{user.username || 'User'}</span>
+              <span className={styles.profileName}>{user.username || 'User'}</span>
             </Link>
           ) : (
             <Link href="/auth" className={styles.profileBtn} id="nav-profile" aria-label="Masuk" prefetch={false}>

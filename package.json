@@ -13,6 +13,7 @@
     "@lottiefiles/dotlottie-react": "^0.19.4",
     "gsap": "^3.15.0",
     "lucide-react": "^1.17.0",
+    "mobile-drag-drop": "^3.0.0-rc.0",
     "motion": "^12.39.0",
     "next": "16.2.6",
     "react": "19.2.4",

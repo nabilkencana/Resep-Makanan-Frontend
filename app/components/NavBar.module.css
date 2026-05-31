@@ -40,9 +40,23 @@
 
 /* Fixed container so TextPressure can compute the right font size */
 .logoBox {
-  width: 210px;
+  width: 160px;
   height: 38px;
   position: relative;
+}
+@media (min-width: 768px) {
+  .logoBox {
+    width: 210px;
+  }
+}
+
+.logoHiddenMobile {
+  display: none !important;
+}
+@media (min-width: 768px) {
+  .logoHiddenMobile {
+    display: block !important;
+  }
 }
 
 /* ── GooeyNav wrapper ──────────────── */
@@ -116,7 +130,7 @@
 }
 
 .searchOpen .searchInputWrap {
-  max-width: 200px;
+  max-width: 160px;
   opacity: 1;
 }
 
@@ -127,10 +141,19 @@
   font-size: 0.875rem;
   font-family: var(--font, 'Inter', sans-serif);
   color: var(--clr-on-surface, #1a1c1d);
-  width: 180px;
+  width: 140px;
   padding: 0 0.5rem 0 0.25rem;
 }
 .searchInput::placeholder { color: var(--clr-outline, #6d7b6d); }
+
+@media (min-width: 768px) {
+  .searchOpen .searchInputWrap {
+    max-width: 200px;
+  }
+  .searchInput {
+    width: 180px;
+  }
+}
 
 /* ── Profile icon button ────────────── */
 .profileBtn {
@@ -145,12 +168,35 @@
   color: var(--clr-on-surface-variant, #3d4a3e);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+@media (min-width: 768px) {
+  .profileBtn.hasUser {
+    width: auto;
+    padding: 0 12px;
+    gap: 8px;
+  }
 }
 .profileBtn:hover {
   color: var(--clr-primary, #006d36);
   border-color: var(--clr-primary, #006d36);
   background: #fff;
   box-shadow: 0 0 0 3px rgba(0, 109, 54, 0.1);
+}
+
+.profileName {
+  display: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (min-width: 768px) {
+  .profileName {
+    display: inline-block;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* ── Mobile Hamburger Button ────────── */

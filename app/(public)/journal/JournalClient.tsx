@@ -6,6 +6,9 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import TiltedCard from '../../components/TiltedCard';
 import { fetchApi } from '@/lib/api';
+import { polyfill } from "mobile-drag-drop";
+import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
+import "mobile-drag-drop/default.css";
 
 const IconList = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -76,6 +79,15 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
   };
 
   useEffect(() => {
+    // Initialize mobile drag and drop polyfill
+    if (typeof window !== 'undefined') {
+      polyfill({
+        dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
+      });
+      // Workaround for scrolling while dragging in iOS Safari
+      window.addEventListener('touchmove', function() {}, {passive: false});
+    }
+
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);

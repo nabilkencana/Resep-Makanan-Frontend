@@ -269,7 +269,26 @@
 
 @media (max-width: 900px) {
   .content {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  
+  .sidebar {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .recipeList {
+    flex-direction: row;
+    overflow-x: auto;
+    max-height: none !important;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .recipeItem {
+    min-width: 250px;
+    flex-shrink: 0;
   }
   
   .header {
@@ -280,6 +299,7 @@
   
   .planner {
     overflow-x: auto;
+    width: 100%;
   }
   
   .plannerHeader, .plannerRow {
