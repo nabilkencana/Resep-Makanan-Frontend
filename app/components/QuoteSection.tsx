@@ -12,13 +12,13 @@ export default function QuoteSection() {
         <span className={styles.label}>Filosofi Kami</span>
 
         <ScrollReveal
-          baseOpacity={0.1}
+          baseOpacity={0}
           enableBlur={true}
-          baseRotation={4}
+          baseRotation={0}
           blurStrength={8}
           containerClassName={styles.revealContainer}
           textClassName={styles.revealText}
-          wordAnimationEnd="bottom center"
+          wordAnimationEnd="top 20%"
         >
           Masakan yang baik lahir dari bahan segar, tangan penuh kasih, dan cerita yang ingin kamu bagikan kepada orang-orang yang kamu cintai.
         </ScrollReveal>

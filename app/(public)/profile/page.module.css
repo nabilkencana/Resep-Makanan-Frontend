@@ -780,3 +780,88 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ─── Skeleton / Loading State ──────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.skeletonAvatar,
+.skeletonLine {
+  background: linear-gradient(
+    90deg,
+    var(--clr-surface-container-high) 25%,
+    var(--clr-surface-container-low) 50%,
+    var(--clr-surface-container-high) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeletonAvatar {
+  border-radius: var(--radius-full);
+}
+
+/* Specific skeleton sizes */
+.skeletonTitle {
+  width: 220px;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+}
+
+.skeletonBtn {
+  width: 90px;
+  height: 2.2rem;
+  border-radius: var(--radius-md);
+}
+
+.skeletonBio {
+  width: 80%;
+  height: 1rem;
+}
+
+.skeletonStatNum {
+  width: 50px;
+  height: 1.25rem;
+}
+
+.skeletonStatLabel {
+  width: 80px;
+  height: 0.75rem;
+}
+
+.skeletonTab {
+  width: 90px;
+  height: 1rem;
+  margin: 1.5rem 0;
+}
+
+.skeletonContentTitle {
+  width: 240px;
+  height: 1.5rem;
+}
+
+.skeletonIconCircle {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px;
+  border-radius: 50% !important;
+}
+
+.skeletonCardLabel {
+  width: 100px;
+  height: 0.7rem;
+}
+
+.skeletonCardTitle {
+  width: 75%;
+  height: 1.1rem;
+}
+
+.skeletonCardSub {
+  width: 50%;
+  height: 0.9rem;
+}
+

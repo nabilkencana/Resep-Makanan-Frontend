@@ -2,18 +2,23 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const headers: any = {
+  const hasBody = !!options.body;
+
+  const headers: Record<string, string> = {
     ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
-  // Only set Content-Type to application/json if we are not sending FormData
-  if (options.body && typeof FormData !== 'undefined' && options.body instanceof FormData) {
-    // Let browser set the correct Content-Type with boundary for FormData
-    delete headers['Content-Type'];
-  } else if (!headers['Content-Type']) {
-    headers['Content-Type'] = 'application/json';
+  // Only add Content-Type when there's a body AND it's not FormData
+  if (hasBody) {
+    if (typeof FormData !== 'undefined' && options.body instanceof FormData) {
+      // Let the browser set the correct Content-Type with boundary for FormData
+      delete headers['Content-Type'];
+    } else if (!headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
   }
+  // GET / DELETE without body → no Content-Type, avoids unnecessary CORS preflight
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,

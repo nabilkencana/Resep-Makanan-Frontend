@@ -9,10 +9,10 @@ gsap.registerPlugin(ScrollTrigger);
 const ScrollReveal = ({
   children,
   scrollContainerRef = null,
-  enableBlur = false,    // accepted for back-compat, no longer used (removed blur repaint)
+  enableBlur = true,
   baseOpacity = 0.1,
-  baseRotation = 3,      // accepted for back-compat, no longer used (removed layout thrash)
-  blurStrength = 4,      // accepted for back-compat, no longer used (removed blur repaint)
+  baseRotation = 3,
+  blurStrength = 4,
   containerClassName = '',
   textClassName = '',
   rotationEnd = 'bottom bottom',
@@ -41,62 +41,75 @@ const ScrollReveal = ({
         ? scrollContainerRef.current
         : window;
 
-    gsap.fromTo(
-      el,
-      { transformOrigin: '0% 50%', rotate: baseRotation },
-      {
-        ease: 'none',
-        rotate: 0,
-        scrollTrigger: {
-          trigger: el,
-          scroller,
-          start: 'top bottom',
-          end: rotationEnd,
-          scrub: true,
-        },
-      }
-    );
-
-    const wordElements = el.querySelectorAll('.sr-word');
-
-    gsap.fromTo(
-      wordElements,
-      { opacity: baseOpacity, willChange: 'opacity' },
-      {
-        ease: 'none',
-        opacity: 1,
-        stagger: 0.05,
-        scrollTrigger: {
-          trigger: el,
-          scroller,
-          start: 'top bottom-=20%',
-          end: wordAnimationEnd,
-          scrub: true,
-        },
-      }
-    );
-
-    if (enableBlur) {
+    // Use gsap.context() to scope all animations to this component only.
+    // ctx.revert() will cleanly kill only THIS component's ScrollTriggers,
+    // instead of killing ALL global ScrollTriggers (which caused the reload bug).
+    const ctx = gsap.context(() => {
+      // Container rotation animation
       gsap.fromTo(
-        wordElements,
-        { filter: `blur(${blurStrength}px)` },
+        el,
+        { transformOrigin: '0% 50%', rotate: baseRotation },
         {
           ease: 'none',
-          filter: 'blur(0px)',
+          rotate: 0,
+          scrollTrigger: {
+            trigger: el,
+            scroller,
+            start: 'top 95%',
+            end: rotationEnd,
+            scrub: true,
+          },
+        }
+      );
+
+      const wordElements = el.querySelectorAll('.sr-word');
+
+      // Opacity animation
+      gsap.fromTo(
+        wordElements,
+        { opacity: baseOpacity, willChange: 'opacity, filter' },
+        {
+          ease: 'none',
+          opacity: 1,
           stagger: 0.05,
           scrollTrigger: {
             trigger: el,
             scroller,
-            start: 'top bottom-=20%',
+            start: 'top 95%',
             end: wordAnimationEnd,
             scrub: true,
           },
         }
       );
-    }
 
+      // Blur animation
+      if (enableBlur) {
+        gsap.fromTo(
+          wordElements,
+          { filter: `blur(${blurStrength}px)` },
+          {
+            ease: 'none',
+            filter: 'blur(0px)',
+            stagger: 0.05,
+            scrollTrigger: {
+              trigger: el,
+              scroller,
+              start: 'top 95%',
+              end: wordAnimationEnd,
+              scrub: true,
+            },
+          }
+        );
+      }
+    }, el); // scope to this element
+
+    // Refresh after dynamic component is fully mounted
+    const timer = setTimeout(() => ScrollTrigger.refresh(), 100);
+
+    // Only reverts animations scoped to THIS component
     return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      clearTimeout(timer);
+      ctx.revert();
     };
   }, [
     scrollContainerRef,
