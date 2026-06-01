@@ -59,10 +59,12 @@ export async function publicFetch(endpoint: string, options: RequestInit = {}) {
 }
 export const api = {
   // Recipes
-  getRecipes: (search?: string, category?: string) => {
+  getRecipes: (search?: string, category?: string, page?: number, limit?: number) => {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (category) params.append('category', category);
+    if (page) params.append('page', page.toString());
+    if (limit) params.append('limit', limit.toString());
     const qs = params.toString();
     return fetchApi(`/recipes${qs ? `?${qs}` : ''}`);
   },

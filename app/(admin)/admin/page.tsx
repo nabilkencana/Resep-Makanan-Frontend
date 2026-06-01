@@ -4,6 +4,10 @@ import { useRouter } from 'next/navigation';
 import { api } from '../../../lib/api';
 import MultiLineChart from './MultiLineChart';
 import styles from '../admin.module.css';
+import { 
+  Download, RefreshCw, Utensils, Users, MessageSquare, 
+  Heart, TrendingUp, ArrowRight, BookOpen, Timer, Star, ExternalLink 
+} from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -70,34 +74,44 @@ export default function AdminDashboard() {
   const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
   const [topRecipe, setTopRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [errorStats, setErrorStats] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     const fetchData = async () => {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const [statsRes, recipesRes] = await Promise.all([
-          api.getDashboardStats(),
-          api.getRecipes(),
+          api.getDashboardStats().catch(() => ({ success: false })),
+          api.getRecipes(undefined, undefined, 1, 5).catch(() => ({ recipes: [] })),
         ]);
+        clearTimeout(timeoutId);
 
         // Dashboard stats
         if (statsRes?.success && statsRes.stats) {
           setStats(statsRes.stats);
+        } else {
+          setErrorStats(true);
         }
 
-        // Recipes — API wraps in { recipes: [...] }
+        // Recipes
         const allRecipes: any[] = Array.isArray(recipesRes)
           ? recipesRes
           : (recipesRes?.recipes || recipesRes?.data || []);
 
         if (allRecipes.length > 0) {
-          // Recent 5
           setRecentRecipes(allRecipes.slice(0, 5));
-          // Top recipe = highest rating or first
           const best = [...allRecipes].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
           setTopRecipe(best);
         }
       } catch (error) {
         console.error('Dashboard fetch error:', error);
+        setErrorStats(true);
       } finally {
         setLoading(false);
       }
@@ -222,11 +236,11 @@ export default function AdminDashboard() {
         </div>
         <div className={styles.headerActions}>
           <button className={styles.secondaryBtn} onClick={handleDownloadReport}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>download</span>
+            <Download size={16} style={{ marginRight: '6px' }} />
             Unduh Laporan
           </button>
           <button className={styles.primaryBtn} onClick={() => window.location.reload()}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', fontVariationSettings: "'FILL' 1" }}>refresh</span>
+            <RefreshCw size={16} style={{ marginRight: '6px' }} />
             Perbarui Data
           </button>
         </div>
@@ -234,38 +248,47 @@ export default function AdminDashboard() {
 
       {/* ── Metric Cards ── */}
       <div className={styles.metricsGrid}>
-        <MetricCard
-          title="Total Resep"
-          value={<AnimatedNumber target={stats.totalRecipes} loading={loading} />}
-          icon="restaurant_menu"
-          sparkValues={buildMetricSpark(stats.totalRecipes, 2)}
-          trend="+4.2%"
-          color="var(--clr-primary)"
-        />
-        <MetricCard
-          title="Total Pengguna"
-          value={<AnimatedNumber target={stats.totalUsers} loading={loading} />}
-          icon="group"
-          sparkValues={buildMetricSpark(stats.totalUsers, 3)}
-          trend="+12%"
-          color="#6366f1"
-        />
-        <MetricCard
-          title="Total Ulasan"
-          value={<AnimatedNumber target={stats.totalReviews} loading={loading} />}
-          icon="rate_review"
-          sparkValues={buildMetricSpark(stats.totalReviews, 5)}
-          trend="+8.1%"
-          color="#f59e0b"
-        />
-        <MetricCard
-          title="Total Favorit"
-          value={<AnimatedNumber target={stats.totalFavorites} loading={loading} />}
-          icon="favorite"
-          sparkValues={buildMetricSpark(stats.totalFavorites, 4)}
-          trend="+15%"
-          color="#ef4444"
-        />
+        {errorStats ? (
+          <div style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', background: '#fef2f2', borderRadius: '12px', color: '#ef4444' }}>
+            <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Gagal memuat statistik dasbor</p>
+            <button className={styles.primaryBtn} onClick={() => window.location.reload()}>Coba lagi</button>
+          </div>
+        ) : (
+          <>
+            <MetricCard
+              title="Total Resep"
+              value={<AnimatedNumber target={stats.totalRecipes} loading={loading} />}
+              icon={<Utensils size={20} />}
+              sparkValues={buildMetricSpark(stats.totalRecipes, 2)}
+              trend="+4.2%"
+              color="var(--clr-primary)"
+            />
+            <MetricCard
+              title="Total Pengguna"
+              value={<AnimatedNumber target={stats.totalUsers} loading={loading} />}
+              icon={<Users size={20} />}
+              sparkValues={buildMetricSpark(stats.totalUsers, 3)}
+              trend="+12%"
+              color="#6366f1"
+            />
+            <MetricCard
+              title="Total Ulasan"
+              value={<AnimatedNumber target={stats.totalReviews} loading={loading} />}
+              icon={<MessageSquare size={20} />}
+              sparkValues={buildMetricSpark(stats.totalReviews, 5)}
+              trend="+8.1%"
+              color="#f59e0b"
+            />
+            <MetricCard
+              title="Total Favorit"
+              value={<AnimatedNumber target={stats.totalFavorites} loading={loading} />}
+              icon={<Heart size={20} />}
+              sparkValues={buildMetricSpark(stats.totalFavorites, 4)}
+              trend="+15%"
+              color="#ef4444"
+            />
+          </>
+        )}
       </div>
 
       {/* ── Dashboard Grid ── */}
@@ -343,7 +366,7 @@ export default function AdminDashboard() {
               onClick={() => window.location.href = '/admin/recipes'}
             >
               Lihat Semua
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+              <ArrowRight size={16} />
             </button>
           </div>
 
@@ -379,8 +402,8 @@ export default function AdminDashboard() {
                   <tr>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '40px', color: 'var(--clr-outline)' }}>menu_book</span>
-                        <span style={{ color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Belum ada resep. Tambahkan resep pertama Anda!</span>
+                        <BookOpen size={40} color="var(--clr-outline)" />
+                        <span style={{ color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Data resep belum tersedia.</span>
                       </div>
                     </td>
                   </tr>
@@ -416,13 +439,13 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td style={{ fontSize: '13px', fontWeight: 500, color: 'var(--clr-on-surface-variant)' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '14px', verticalAlign: 'middle', marginRight: '3px' }}>timer</span>
+                        <Timer size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                         {recipe.cookTime || recipe.prepTime || '—'}
                       </td>
                       <td>
                         {recipe.rating > 0 ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '13px', fontWeight: 600 }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#f59e0b', fontVariationSettings: "'FILL' 1" }}>star</span>
+                            <Star size={14} fill="#f59e0b" color="#f59e0b" />
                             {recipe.rating.toFixed(1)}
                           </div>
                         ) : (
@@ -438,7 +461,7 @@ export default function AdminDashboard() {
                             <p className={styles.recentRecipeCategory}>{recipe.category}</p>
                           </button>
                           <button className={styles.iconBtn} title="View" onClick={() => router.push(`/recipe/${recipe.id}`)}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
+                            <ExternalLink size={18} />
                           </button>
                         </div>
                       </td>
@@ -460,7 +483,7 @@ export default function AdminDashboard() {
 interface MetricCardProps {
   title: string;
   value: React.ReactNode;
-  icon: string;
+  icon: React.ReactNode;
   trend: string;
   sparkValues: number[];
   color?: string;
@@ -474,36 +497,16 @@ function MetricCard({ title, value, icon, trend, sparkValues, color = 'var(--clr
     <div className={styles.metricCard}>
       <div className={styles.metricHeader}>
         <span className={styles.metricTitle}>{title}</span>
-        <div className={styles.metricIcon} style={{ background: `${color}18` }}>
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: '20px',
-              color,
-              fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24",
-              lineHeight: 1,
-              display: 'block',
-            }}
-          >
-            {icon}
-          </span>
+        <div className={styles.metricIcon} style={{ background: `${color}18`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {icon}
         </div>
       </div>
 
       <div className={styles.metricBody}>
         <div>
           <div className={styles.metricValue}>{value}</div>
-          <div className={styles.metricTrend} style={{ color }}>
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: '14px',
-                lineHeight: 1,
-                fontVariationSettings: "'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24",
-              }}
-            >
-              trending_up
-            </span>
+          <div className={styles.metricTrend} style={{ color, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <TrendingUp size={14} />
             {trend}
           </div>
         </div>

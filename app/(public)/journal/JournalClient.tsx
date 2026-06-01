@@ -38,6 +38,17 @@ const IconDrag = () => (
   </svg>
 );
 
+const IconRefresh = ({ spinning = false }: { spinning?: boolean }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+    style={{ animation: spinning ? 'spin 1s linear infinite' : 'none' }}>
+    <path d="M21 2v6h-6"></path>
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+    <path d="M3 22v-6h6"></path>
+    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+  </svg>
+);
+
 const DAYS = [
   { label: 'Senin', value: 1 },
   { label: 'Selasa', value: 2 },
@@ -95,13 +106,16 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
   const [showShoppingList, setShowShoppingList] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [shoppingList, setShoppingList] = useState<any[]>([]);
+  const [shoppingListLoading, setShoppingListLoading] = useState(false);
+  const [shoppingListError, setShoppingListError] = useState<string | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('shoppingList_checked');
       if (saved) {
-        try { setCheckedItems(JSON.parse(saved)); } catch (_e) { /* ignore */ }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        try { setCheckedItems(JSON.parse(saved)); } catch (e) { /* ignore */ }
       }
     }
   }, []);
@@ -160,6 +174,7 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
   // Trigger journal fetch when user is available from AuthContext
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchJournal();
     }
   }, [user, fetchJournal]);
@@ -270,9 +285,23 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
     }
   };
 
-  const handleShoppingList = async () => {
+  const handleShoppingList = async (forceRefresh = false) => {
+    setShowShoppingList(true);
+    
+    if (!forceRefresh && shoppingList.length > 0 && !shoppingListError) {
+      return;
+    }
+
+    setShoppingListLoading(true);
+    setShoppingListError(null);
+
     try {
-      const res = await fetchApi('/journals/shopping-list');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const res = await fetchApi('/journals/shopping-list', { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rawList = res.shoppingList || [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -285,10 +314,14 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
       }, {});
 
       setShoppingList(Object.values(grouped));
-      setShowShoppingList(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      alert('Gagal mengambil daftar belanja: ' + err.message);
+      if (err.name === 'AbortError') {
+        setShoppingListError('Waktu permintaan habis. Silakan coba lagi.');
+      } else {
+        setShoppingListError('Gagal memuat daftar belanja: ' + err.message);
+      }
+    } finally {
+      setShoppingListLoading(false);
     }
   };
 
@@ -333,11 +366,11 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
         </div>
         <button
           className={styles.generateBtn}
-          onClick={handleShoppingList}
-          disabled={journalLoading || !journal?.entries?.length}
+          onClick={() => handleShoppingList(false)}
+          disabled={journalLoading || !journal?.entries?.length || shoppingListLoading}
         >
           <IconList />
-          Buat Daftar Belanja
+          {shoppingListLoading ? 'Memuat...' : 'Buat Daftar Belanja'}
         </button>
       </div>
 
@@ -488,12 +521,41 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
       {showShoppingList && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }} onClick={() => setShowShoppingList(false)}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <IconList /> Daftar Belanja Anda
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                <IconList /> Daftar Belanja
+              </h2>
+              <button 
+                onClick={() => handleShoppingList(true)}
+                disabled={shoppingListLoading}
+                style={{ background: 'rgba(0,109,54,0.1)', border: 'none', color: '#006d36', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', fontWeight: 600, padding: '6px 12px', borderRadius: '8px', transition: 'all 0.2s' }}
+                title="Perbarui daftar"
+              >
+                <IconRefresh spinning={shoppingListLoading} />
+                {shoppingListLoading ? 'Memuat...' : 'Refresh'}
+              </button>
+            </div>
 
-            {shoppingList.length === 0 ? (
-              <p>Daftar belanja kosong. Silakan tambahkan resep ke jurnal Anda terlebih dahulu.</p>
+            {shoppingListLoading && shoppingList.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{ height: '60px', borderRadius: '12px', background: 'linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
+                ))}
+                <style>{`@keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} } @keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+              </div>
+            ) : shoppingListError ? (
+              <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#ef4444', marginBottom: '1rem' }}>error_outline</span>
+                <p style={{ color: '#ef4444', marginBottom: '1.5rem' }}>{shoppingListError}</p>
+                <button 
+                  onClick={() => handleShoppingList(true)}
+                  style={{ background: '#ef4444', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Coba Lagi
+                </button>
+              </div>
+            ) : shoppingList.length === 0 ? (
+              <p style={{ color: '#666', textAlign: 'center', padding: '2rem 0' }}>Daftar belanja kosong. Silakan tambahkan resep ke jurnal Anda terlebih dahulu.</p>
             ) : (
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
