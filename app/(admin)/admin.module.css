@@ -410,6 +410,8 @@
   padding-top: 58px;
   min-height: 100vh;
   background-color: var(--clr-surface);
+  min-width: 0;
+  flex: 1;
 }
 
 /* Page container: centers content with max-width */
@@ -654,6 +656,7 @@
   border-radius: 14px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
@@ -665,6 +668,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
@@ -720,6 +724,7 @@
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  min-width: 0;
 }
 
 .tableHeader {
@@ -834,9 +839,6 @@
   transform: scale(1.1);
 }
 
-/* ================================================================
-   SCROLLBAR
-   ================================================================ */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -853,4 +855,258 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--clr-outline);
+}
+
+/* ================================================================
+   MOBILE NAVIGATION
+   ================================================================ */
+
+/* Hamburger button — hidden on desktop, visible on mobile */
+.hamburgerBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--clr-on-surface);
+  cursor: pointer;
+  padding: 0.375rem;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.hamburgerBtn:hover {
+  background-color: rgba(0, 109, 54, 0.08);
+}
+
+/* Mobile page title — only shown on mobile */
+.mobilePageTitle {
+  display: none;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--clr-on-surface);
+  letter-spacing: -0.02em;
+  flex: 1;
+  margin-left: 0.5rem;
+}
+
+/* Sidebar close button — only shown on mobile */
+.sidebarCloseBtn {
+  display: none;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  padding: 0.375rem;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.sidebarCloseBtn:hover {
+  background-color: rgba(0, 109, 54, 0.08);
+}
+
+/* Dark overlay when sidebar is open on mobile */
+.mobileOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 49;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ================================================================
+   MOBILE BREAKPOINT  ≤ 768px
+   ================================================================ */
+@media (max-width: 768px) {
+
+  /* ── Show hamburger & mobile title ── */
+  .hamburgerBtn        { display: flex; }
+  .sidebarCloseBtn     { display: flex; }
+  .mobilePageTitle     { display: block; }
+  .mobileOverlay       { display: block; }
+
+  /* ── Sidebar: slide in from left ── */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+    width: 280px;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  /* ── TopNav: full width, show hamburger ── */
+  .topNav {
+    width: 100%;
+    left: 0;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: 0;
+  }
+
+  /* ── Main content: no left margin ── */
+  .mainContent {
+    margin-left: 0;
+    padding-top: 58px;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── Container: tighter padding on mobile ── */
+  .container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  /* ── Page header: stack vertically ── */
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.875rem;
+  }
+
+  /* ── Metric cards: 2 columns on mobile ── */
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .metricCard {
+    padding: 1rem;
+  }
+
+  .metricValue {
+    font-size: 1.5rem;
+  }
+
+  /* ── Dashboard grid: single column ── */
+  .dashboardGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ── Table: scroll horizontally ── */
+  .tableArea {
+    overflow: hidden;
+    border-radius: 14px;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 540px;
+  }
+
+  /* ── Table header wraps ── */
+  .tableHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  /* ── Recipe image smaller on mobile ── */
+  .recipeImg {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* ── Action buttons: bigger tap target ── */
+  .iconBtn {
+    padding: 0.5rem;
+    font-size: 20px;
+  }
+
+  /* ── Featured card: full width ── */
+  .featuredArea {
+    gap: 0.75rem;
+  }
+
+  .featuredCard {
+    padding: 1rem;
+  }
+
+  .featuredImg {
+    height: 140px;
+  }
+
+  /* ── Chart area padding ── */
+  .chartArea {
+    padding: 1rem;
+  }
+
+  /* ── Profile section in topNav: hide text ── */
+  .profileInfo {
+    display: none;
+  }
+
+  .profileSection {
+    padding: 0.25rem;
+    border: none;
+    background: transparent;
+  }
+
+  .profileSection:hover {
+    background: rgba(0, 109, 54, 0.06);
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* ================================================================
+   SMALL MOBILE  ≤ 480px
+   ================================================================ */
+@media (max-width: 480px) {
+
+  /* ── 1 column metric cards on very small screens ── */
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 0.75rem;
+  }
+
+  .pageTitle {
+    font-size: 1.25rem;
+  }
 }

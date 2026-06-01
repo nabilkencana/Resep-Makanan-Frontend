@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth-context';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './admin.module.css';
 
 interface MenuItem {
@@ -26,6 +26,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'ADMIN')) {
@@ -64,8 +70,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className={styles.adminLayout}>
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" rel="stylesheet" />
 
+      {/* ── MOBILE OVERLAY ── */}
+      {sidebarOpen && (
+        <div
+          className={styles.mobileOverlay}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── SIDEBAR ── */}
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+
+        {/* Mobile close button */}
+        <button
+          className={styles.sidebarCloseBtn}
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Tutup menu"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+        </button>
 
         {/* Logo / Brand */}
         <div className={styles.sidebarHeader}>
@@ -153,8 +177,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── TOP NAV ── */}
       <header className={styles.topNav}>
-        <div className={styles.navRight}>
+        {/* Hamburger — mobile only */}
+        <button
+          className={styles.hamburgerBtn}
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Buka menu"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>menu</span>
+        </button>
 
+        {/* Page title on mobile */}
+        <span className={styles.mobilePageTitle}>DapurAdmin</span>
+
+        <div className={styles.navRight}>
           <div className={styles.profileSection}>
             <div className={styles.profileInfo}>
               <p className={styles.profileName}>{user.username || 'Admin Console'}</p>
