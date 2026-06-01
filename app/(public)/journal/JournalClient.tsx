@@ -118,7 +118,8 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
   useEffect(() => {
     if (typeof window !== 'undefined') {
       polyfill({
-        dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
+        dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
+        holdToDrag: 300 // Required for mobile so users can still scroll by swiping
       });
       window.addEventListener('touchmove', function() {}, { passive: false });
     }

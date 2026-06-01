@@ -283,6 +283,12 @@
     margin-bottom: 0.5rem;
   }
 
+  .sidebarHint::after {
+    content: " Tahan (hold) gambar resep beberapa saat untuk menariknya.";
+    font-weight: 600;
+    color: var(--clr-primary);
+  }
+
   .recipeList {
     flex-direction: row;
     overflow-x: auto;
@@ -302,12 +308,66 @@
     gap: 1rem;
   }
   
+  /* ── Mobile Planner Grid (Vertical Cards) ── */
   .planner {
-    overflow-x: auto;
+    overflow-x: hidden;
     width: 100%;
+    border: none;
+    background: transparent;
+    box-shadow: none;
   }
   
-  .plannerHeader, .plannerRow {
-    min-width: 600px;
+  .plannerHeader {
+    display: none;
+  }
+  
+  .plannerRow {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-bottom: 1rem;
+    background-color: var(--clr-surface-bright);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--clr-surface-container-high);
+    overflow: hidden;
+  }
+  
+  .dayCell {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--clr-surface-container-high);
+    background-color: var(--clr-surface-container-low);
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .mealCell {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--clr-surface-container-high);
+    min-height: 100px;
+    position: relative;
+    padding-top: 2rem;
+  }
+  
+  .mealCell:last-child {
+    border-bottom: none;
+  }
+
+  .mealCell:nth-child(2)::before { content: "SARAPAN"; }
+  .mealCell:nth-child(3)::before { content: "MAKAN SIANG"; }
+  .mealCell:nth-child(4)::before { content: "MAKAN MALAM"; }
+
+  .mealCell::before {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--clr-on-surface-variant);
+    letter-spacing: 0.05em;
   }
 }
