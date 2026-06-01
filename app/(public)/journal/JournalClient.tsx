@@ -164,40 +164,50 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
     }
   }, [user, fetchJournal]);
 
+  const [draggedEntryId, setDraggedEntryId] = useState<number | string | null>(null);
+
   // ── Drag & Drop handlers ──────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragStart = (e: React.DragEvent, recipe: any, entryId?: number | string) => {
-    e.dataTransfer.setData('recipeId', recipe.id.toString());
-    if (entryId) {
-      e.dataTransfer.setData('entryId', entryId.toString());
-    }
+    // Fallback for standard HTML5 drag
+    e.dataTransfer.setData('text/plain', recipe.id.toString());
+    
+    // Primary mechanism for robustness (especially mobile)
     setDraggedRecipe(recipe);
+    setDraggedEntryId(entryId || null);
   };
 
   const handleDrop = async (e: React.DragEvent, dayOfWeek: number, mealType: string) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.style.borderColor = 'transparent';
       e.currentTarget.style.background = 'transparent';
     }
     if (!journal) return;
 
-    const recipeIdStr = e.dataTransfer.getData('recipeId');
-    const entryIdStr = e.dataTransfer.getData('entryId');
+    // Use state if available (robust for mobile), fallback to dataTransfer for external drags if any
+    const recipeIdStr = e.dataTransfer.getData('text/plain');
+    const fallbackId = recipeIdStr ? parseInt(recipeIdStr, 10) : null;
+    
+    const recipeObj = draggedRecipe || recipes.find((r: any) => r.id === fallbackId);
+    if (!recipeObj) {
+      setDraggedRecipe(null);
+      setDraggedEntryId(null);
+      return;
+    }
 
-    if (!recipeIdStr) return;
-    const recipeId = parseInt(recipeIdStr, 10);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recipeObj = recipes.find((r: any) => r.id === recipeId) ||
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (entryIdStr ? journal.entries.find((ent: any) => ent.id === parseInt(entryIdStr, 10))?.recipe : null);
+    const recipeId = recipeObj.id;
+    const entryIdStr = draggedEntryId ? draggedEntryId.toString() : null;
 
     // Skip if dropped in the exact same spot
     if (entryIdStr) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const existingEntry = journal.entries.find((ent: any) => ent.id === parseInt(entryIdStr, 10));
+      const existingEntry = journal.entries.find((ent: any) => ent.id.toString() === entryIdStr);
       if (existingEntry && existingEntry.dayOfWeek === dayOfWeek && existingEntry.mealType === mealType) {
         setDraggedRecipe(null);
+        setDraggedEntryId(null);
         return;
       }
     }
@@ -234,6 +244,7 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
       fetchJournal(true);
     }
     setDraggedRecipe(null);
+    setDraggedEntryId(null);
   };
 
   const handleDeleteEntry = async (entryId: number) => {
@@ -355,7 +366,8 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
                         <div
                           key={type}
                           className={styles.mealCell}
-                          onDragOver={(e) => { e.preventDefault(); }}
+                          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                           onDrop={(e) => handleDrop(e, day.value, type)}
                           style={{ position: 'relative' }}
                         >
@@ -398,11 +410,14 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
                             </div>
                           ) : (
                             <div
-                              style={{ width: '100%', height: '100%', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed transparent', borderRadius: '12px', transition: 'all 0.2s' }}
+                              style={{ width: '100%', height: '100%', minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed transparent', borderRadius: '12px', transition: 'all 0.2s', touchAction: 'none' }}
                               onDragEnter={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 e.currentTarget.style.borderColor = '#006d36';
                                 e.currentTarget.style.background = 'rgba(0,109,54,0.05)';
                               }}
+                              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                               onDragLeave={(e) => {
                                 e.currentTarget.style.borderColor = 'transparent';
                                 e.currentTarget.style.background = 'transparent';
@@ -410,6 +425,7 @@ export default function JournalClient({ initialRecipes }: { initialRecipes: any[
                               onDrop={(e) => {
                                 e.currentTarget.style.borderColor = 'transparent';
                                 e.currentTarget.style.background = 'transparent';
+                                // The event will bubble to mealCell's onDrop
                               }}
                             >
                               <span style={{ color: '#bccabb', fontSize: '0.8rem', pointerEvents: 'none' }}>+ Drop di sini</span>
