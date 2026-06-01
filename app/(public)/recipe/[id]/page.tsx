@@ -17,7 +17,7 @@ async function getRecipeById(id: string) {
   try {
     // GET /recipes/:id requires JWT, so we fetch from the public list and filter by ID
     const listRes = await fetch(`${API_URL}/recipes`, { 
-      next: { revalidate: 60 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(5000)
     });
     if (!listRes.ok) return null;

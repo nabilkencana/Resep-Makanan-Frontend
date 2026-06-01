@@ -2,11 +2,13 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '../../../../lib/api';
+import { useAuth } from '../../../../lib/auth-context';
 import styles from '../../../(admin)/admin/recipes/recipes.module.css';
-import { CheckCircle2, ArrowLeft, AlertCircle, ImagePlus, X, Trash2, Plus, RefreshCw, Send } from 'lucide-react';
+import { CheckCircle2, ArrowLeft, AlertCircle, ImagePlus, X, Trash2, Plus, RefreshCw, Send, Lock } from 'lucide-react';
 
 export default function TambahResepPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -152,6 +154,50 @@ export default function TambahResepPage() {
           >
             Kembali ke Kategori
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (authLoading) {
+    return (
+      <div style={{ paddingTop: '10rem', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--clr-surface)' }}>
+        <RefreshCw size={48} color="var(--clr-primary)" style={{ animation: 'spin 1s linear infinite' }} />
+        <p style={{ marginTop: '1rem', color: 'var(--clr-on-surface-variant)', fontWeight: 500 }}>Memeriksa status masuk...</p>
+        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div style={{ padding: '6rem 2rem 4rem', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--clr-surface)' }}>
+        <div style={{ background: '#fff', padding: '3rem', borderRadius: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center', maxWidth: '500px' }}>
+          <div style={{ width: '80px', height: '80px', background: '#fef2f2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <Lock size={40} color="var(--clr-error)" />
+          </div>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--clr-on-surface)' }}>Anda Harus Login</h2>
+          <p style={{ color: 'var(--clr-on-surface-variant)', lineHeight: 1.6, marginBottom: '2rem' }}>
+            Untuk mengirim resep andalan Anda, silakan masuk ke akun Dapur Nusantara terlebih dahulu.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button 
+              onClick={() => router.push('/kategori')}
+              style={{ padding: '0.75rem 1.5rem', background: 'var(--clr-surface-container)', color: 'var(--clr-on-surface)', border: 'none', borderRadius: '2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--clr-surface-container-high)')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'var(--clr-surface-container)')}
+            >
+              Kembali
+            </button>
+            <button 
+              onClick={() => router.push('/auth')}
+              style={{ padding: '0.75rem 1.5rem', background: 'var(--clr-primary)', color: '#fff', border: 'none', borderRadius: '2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#005a2b')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'var(--clr-primary)')}
+            >
+              Masuk Sekarang
+            </button>
+          </div>
         </div>
       </div>
     );
