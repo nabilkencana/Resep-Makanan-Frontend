@@ -901,6 +901,13 @@
   background-color: rgba(0, 109, 54, 0.02);
 }
 
+.uploadAreaDragging {
+  border-color: var(--clr-primary);
+  background-color: rgba(0, 109, 54, 0.05);
+  border-width: 2px;
+  transform: scale(1.01);
+}
+
 .uploadArea img {
   max-height: 200px;
   border-radius: var(--radius-lg);

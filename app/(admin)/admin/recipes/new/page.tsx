@@ -21,6 +21,7 @@ export default function NewRecipePage() {
   
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [ingredients, setIngredients] = useState([{ name: '', amount: '' }]);
   const [steps, setSteps] = useState([{ stepNumber: 1, description: '' }]);
@@ -77,6 +78,57 @@ export default function NewRecipePage() {
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+        reader.readAsDataURL(file);
+      }
+    } else {
+      let imageUrl = '';
+      const html = e.dataTransfer.getData('text/html');
+      if (html) {
+        const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+        if (match) imageUrl = match[1];
+      }
+      if (!imageUrl) {
+        imageUrl = e.dataTransfer.getData('URL') || e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+      }
+
+      if (imageUrl) {
+        // Remove encoded ampersands if any
+        imageUrl = imageUrl.replace(/&amp;/g, '&');
+        setImagePreview(imageUrl);
+        setImageFile(null); // No file to upload, we'll just send the URL
+      }
     }
   };
 
@@ -167,8 +219,12 @@ export default function NewRecipePage() {
           <div className={styles.formGroupFull}>
             <label className={styles.formLabel}>Gambar Resep</label>
             <div 
-              className={styles.uploadArea} 
+              className={`${styles.uploadArea} ${isDragging ? styles.uploadAreaDragging : ''}`} 
               onClick={() => fileInputRef.current?.click()}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
             >
               <input 
                 type="file" 
