@@ -137,7 +137,15 @@ async function fetchWithTimeout<T>(
 
 // ─── Main Component ───────────────────────────────────────────
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<'RECIPES' | 'ACTIVITY' | 'SETTINGS'>('ACTIVITY');
+  const [activeTab, setActiveTab] = useState<'RECIPES' | 'ACTIVITY' | 'SETTINGS' | 'TRANSACTIONS'>('ACTIVITY');
+
+  // ── Transactions (tab: Riwayat Transaksi) ──
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [txLoading, setTxLoading] = useState(false);
+  const [txFetched, setTxFetched] = useState(false);
+  const [txFilter, setTxFilter] = useState<'ALL' | 'PENDING' | 'SUCCESS' | 'FAILED'>('ALL');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [downloadingReport, setDownloadingReport] = useState(false);
 
   // ── Favorites (tab: Kotak Resep) ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -334,12 +342,59 @@ export default function ProfilePage() {
     setFavLoading(false);
   }, [favFetched, favLoading]);
 
+  // ── Fetch Transactions — lazy, only when tab active ──
+  const fetchTransactions = useCallback(async () => {
+    if (txFetched || txLoading) return;
+    setTxLoading(true);
+
+    const { api } = await import('../../../lib/api');
+
+    const txRes = await fetchWithTimeout(
+      () => api.getMyTransactions(),
+      { transactions: [] }
+    );
+
+    setTransactions(txRes.transactions || []);
+    setTxFetched(true);
+    setTxLoading(false);
+  }, [txFetched, txLoading]);
+
+  // ── Download Receipt PDF ──
+  const downloadReceiptsPdf = async () => {
+    if (downloadingReport) return;
+    setDownloadingReport(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/transactions/download-history`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Gagal mengunduh laporan pembelian');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `laporan-pembelian-${user?.username || 'user'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert('Gagal mengunduh laporan: ' + err.message);
+    } finally {
+      setDownloadingReport(false);
+    }
+  };
+
   // Trigger fetch when tab changes (and user is ready)
   useEffect(() => {
     if (!user) return;
     if (activeTab === 'ACTIVITY') fetchActivity();
     if (activeTab === 'RECIPES') fetchFavorites();
-  }, [activeTab, user, fetchActivity, fetchFavorites]);
+    if (activeTab === 'TRANSACTIONS') fetchTransactions();
+  }, [activeTab, user, fetchActivity, fetchFavorites, fetchTransactions]);
 
   // ── Auth guard ──
   if (loading) return <ProfileSkeleton />;
@@ -351,12 +406,17 @@ export default function ProfilePage() {
     return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
   });
 
+  const filteredTransactions = transactions.filter((tx) => {
+    if (txFilter !== 'ALL' && tx.status !== txFilter) return false;
+    return true;
+  });
+
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
-  const handleTabChange = (tab: 'RECIPES' | 'ACTIVITY' | 'SETTINGS') => {
+  const handleTabChange = (tab: 'RECIPES' | 'ACTIVITY' | 'SETTINGS' | 'TRANSACTIONS') => {
     setActiveTab(tab);
   };
 
@@ -433,6 +493,12 @@ export default function ProfilePage() {
               onClick={() => handleTabChange('ACTIVITY')}
             >
               Aktivitas
+            </button>
+            <button
+              className={`${styles.tabBtn} ${activeTab === 'TRANSACTIONS' ? styles.tabBtnActive : ''}`}
+              onClick={() => handleTabChange('TRANSACTIONS')}
+            >
+              Riwayat Transaksi
             </button>
             <button
               className={`${styles.tabBtn} ${activeTab === 'SETTINGS' ? styles.tabBtnActive : ''}`}
@@ -654,8 +720,181 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* ── Tab: Riwayat Transaksi ── */}
+          {activeTab === 'TRANSACTIONS' && (
+            <>
+              <div className={styles.txHeader}>
+                <h2>Riwayat Transaksi Pembelian</h2>
+                {transactions.length > 0 && (
+                  <button 
+                    className={styles.downloadBtn} 
+                    onClick={downloadReceiptsPdf}
+                    disabled={downloadingReport}
+                  >
+                    <IconHistory />
+                    {downloadingReport ? 'Mengunduh...' : 'Unduh Laporan'}
+                  </button>
+                )}
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className={styles.txFilterBar}>
+                <div className={styles.txFilterTabs}>
+                  {(['ALL', 'PENDING', 'SUCCESS', 'FAILED'] as const).map((f) => {
+                    const labelMap = {
+                      ALL: 'Semua',
+                      PENDING: 'Menunggu',
+                      SUCCESS: 'Berhasil',
+                      FAILED: 'Gagal'
+                    };
+                    const count = f === 'ALL' 
+                      ? transactions.length 
+                      : transactions.filter(t => t.status === f).length;
+                    return (
+                      <button
+                        key={f}
+                        className={`${styles.txFilterTab} ${txFilter === f ? styles.txFilterTabActive : ''}`}
+                        onClick={() => setTxFilter(f)}
+                      >
+                        {labelMap[f]}
+                        <span className={styles.txFilterCount}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {txLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '4rem 0', color: 'var(--clr-outline)' }}>
+                  <div className={styles.spinner} style={{ width: '32px', height: '32px', border: '3px solid rgba(0, 109, 54, 0.1)', borderTopColor: 'var(--clr-primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  <span>Memuat riwayat transaksi...</span>
+                </div>
+              ) : filteredTransactions.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '5rem 2rem', textAlign: 'center' }}>
+                  <span style={{ fontSize: '3rem', opacity: 0.5 }}>💳</span>
+                  <p style={{ color: 'var(--clr-on-surface-variant)', fontSize: '1rem', margin: 0 }}>
+                    {txFilter !== 'ALL' ? 'Tidak ada transaksi dengan status ini.' : 'Belum ada riwayat transaksi pembelian tutorial.'}
+                  </p>
+                  {txFilter === 'ALL' && (
+                    <button className={styles.loadMoreBtn} onClick={() => router.push('/kategori')}>
+                      Jelajahi Resep & Tutorial
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.txTableCard}>
+                  <table className={styles.txTable}>
+                    <thead>
+                      <tr className={styles.txTableHead}>
+                        <th>ID</th>
+                        <th>Tutorial</th>
+                        <th>Jumlah</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTransactions.map((tx) => {
+                        const statusConfig = {
+                          PENDING: { label: 'Menunggu', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+                          SUCCESS: { label: 'Berhasil', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
+                          FAILED:  { label: 'Gagal', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
+                        };
+                        const cfg = (statusConfig as any)[tx.status] || statusConfig.PENDING;
+                        return (
+                          <tr key={tx.id} className={styles.txTableRow}>
+                            <td style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--clr-outline)' }}>#{tx.id}</td>
+                            <td>
+                              <div className={styles.txTutorialCell}>
+                                {tx.tutorial?.recipe?.imageUrl ? (
+                                  <img
+                                    src={tx.tutorial.recipe.imageUrl}
+                                    alt=""
+                                    className={styles.txTutorialThumb}
+                                  />
+                                ) : (
+                                  <div className={styles.txTutorialThumb} style={{ background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>🍳</div>
+                                )}
+                                <div>
+                                  <div className={styles.txTutorialName}>{tx.tutorial?.title || '—'}</div>
+                                  {tx.tutorial?.recipe?.title && (
+                                    <div className={styles.txTutorialRecipe}>{tx.tutorial.recipe.title}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={styles.txAmount}>
+                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(tx.amount)}
+                              </span>
+                            </td>
+                            <td>
+                              <span className={styles.txDate}>
+                                {new Date(tx.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </span>
+                            </td>
+                            <td>
+                              <span
+                                className={styles.statusBadge}
+                                style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}
+                              >
+                                {cfg.label}
+                              </span>
+                            </td>
+                            <td>
+                              <div className={styles.txActions}>
+                                {tx.paymentProof && (
+                                  <button
+                                    className={styles.viewProofBtn}
+                                    onClick={() => setPreviewImage(tx.paymentProof)}
+                                  >
+                                    Bukti
+                                  </button>
+                                )}
+                                {tx.status === 'SUCCESS' ? (
+                                  <button
+                                    className={styles.watchBtn}
+                                    onClick={() => router.push(`/tutorials/${tx.tutorialId}`)}
+                                  >
+                                    Tonton Video
+                                  </button>
+                                ) : tx.status === 'PENDING' ? (
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--clr-outline)' }}>Verifikasi Admin</span>
+                                ) : (
+                                  <span style={{ fontSize: '0.75rem', color: '#dc2626' }}>Transaksi Gagal</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+
         </div>
       </section>
+
+      {/* ── Image Preview Modal ── */}
+      {previewImage && (
+        <div className={styles.modalOverlay} onClick={() => setPreviewImage(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Bukti Pembayaran</h3>
+              <button className={styles.closeBtn} onClick={() => setPreviewImage(null)}>
+                <span style={{ fontSize: '20px', fontWeight: 'bold' }}>&times;</span>
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <img src={previewImage} alt="Bukti Pembayaran" className={styles.previewImgFull} />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
