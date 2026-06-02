@@ -103,42 +103,12 @@ export default async function KategoriPage() {
         </div>
       </div>
 
-      {/* ── Search Bar ── */}
-      <div className={styles.searchSection}>
-        <div className={styles.searchBar}>
-          <span className={styles.searchIcon} aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </span>
-          <input
-            type="text"
-            id="kategori-search"
-            className={styles.searchInput}
-            placeholder="Cari kategori atau resep favorit kamu..."
-            aria-label="Cari kategori"
-          />
-          <span className={styles.searchKbd} aria-hidden="true">⌘ K</span>
-        </div>
-      </div>
+      {/* ── Search & Recipes handled by Client Component ── */}
+      <Suspense fallback={<div style={{ padding: '3rem', textAlign: 'center', color: 'var(--clr-outline)' }}>Memuat resep...</div>}>
+        <RecipesWithFilter recipes={recipes} categories={categories} tags={tags} />
+      </Suspense>
 
-      {/* ── Body ── */}
-      <main className={styles.body}>
-
-        {/* Section Header */}
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>
-            Semua <span>Resep</span>
-          </h2>
-          <span className={styles.sectionCount}>{recipes.length} resep tersedia</span>
-        </div>
-
-        {/* ── Filter & Recipe Grid ── */}
-        <Suspense fallback={<div style={{ padding: '3rem', textAlign: 'center', color: 'var(--clr-outline)' }}>Memuat resep...</div>}>
-          <RecipesWithFilter recipes={recipes} categories={categories} tags={tags} />
-        </Suspense>
+      <main className={styles.body} style={{ marginTop: 0 }}>
 
         {/* ── Popular Tags (Server Rendered Fallback if JS Disabled) ── */}
         <section className={styles.tagsSection} aria-label="Tag populer" style={{ display: 'none' }}>

@@ -40,7 +40,7 @@ export default function Footer() {
         {/* Links */}
         <div className={styles.links}>
           <div className={styles.linkGroup}>
-            <span className={styles.groupLabel}>Perusahaan</span>
+            <span className={styles.groupLabel}>Developer</span>
             <Link href="/tentang-kami" className={styles.link} id="footer-tentang">Tentang Kami</Link>
           </div>
           <div className={styles.newsletterSection}>

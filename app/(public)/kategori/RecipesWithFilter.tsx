@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -37,6 +37,27 @@ export default function RecipesWithFilter({ recipes, categories, tags }: Props) 
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [search, setSearch] = useState(initialSearch);
+  const [shortcutLabel, setShortcutLabel] = useState('⌘ K');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Detect OS for shortcut label
+    if (typeof window !== 'undefined') {
+      const isMac = navigator.userAgent.toLowerCase().includes('mac');
+      setShortcutLabel(isMac ? '⌘ K' : 'Ctrl K');
+    }
+
+    // Keyboard shortcut handler
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const q = searchParams.get('search');
@@ -67,8 +88,43 @@ export default function RecipesWithFilter({ recipes, categories, tags }: Props) 
   }, [recipes, activeCategory, activeTag, search]);
 
   return (
-    <div className={styles.recipePage}>
-      {/* ── Filter Chips ── */}
+    <>
+      {/* ── Search Bar ── */}
+      <div className={styles.searchSection}>
+        <div className={styles.searchBar}>
+          <span className={styles.searchIcon} aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input
+            ref={searchInputRef}
+            type="text"
+            id="kategori-search"
+            className={styles.searchInput}
+            placeholder="Cari kategori atau resep favorit kamu..."
+            aria-label="Cari kategori"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <span className={styles.searchKbd} aria-hidden="true">{shortcutLabel}</span>
+        </div>
+      </div>
+
+      {/* ── Body ── */}
+      <main className={styles.body}>
+        {/* Section Header */}
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            Semua <span>Resep</span>
+          </h2>
+          <span className={styles.sectionCount}>{recipes.length} resep tersedia</span>
+        </div>
+
+      <div className={styles.recipePage}>
+        {/* ── Filter Chips ── */}
       <div className={styles.filterBar} role="tablist" aria-label="Filter kategori">
         <button
           role="tab"
@@ -154,7 +210,9 @@ export default function RecipesWithFilter({ recipes, categories, tags }: Props) 
             </Link>
           ))
         )}
-      </div>
-    </div>
+        </div>
+        </div>
+      </main>
+    </>
   );
 }

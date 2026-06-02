@@ -44,13 +44,13 @@ export default function RecipesSection({ search }: { search?: string }) {
           url.searchParams.set('search', search);
 
           const fetchPromise = fetch(url.toString(), { cache: 'no-store' });
-          const timeoutPromise = new Promise<Response>((_, reject) => 
+          const timeoutPromise = new Promise<Response>((_, reject) =>
             setTimeout(() => reject(new Error('Search fetch timeout')), 8000)
           );
 
           const res = await Promise.race([fetchPromise, timeoutPromise]);
           const contentType = res.headers.get('content-type') || '';
-          
+
           if (!res.ok || !contentType.includes('application/json')) {
             console.error('Backend returned non-JSON response, status:', res.status);
           } else {
@@ -83,8 +83,8 @@ export default function RecipesSection({ search }: { search?: string }) {
             <span>Lihat Semua</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
             </svg>
           </Link>
         </div>
@@ -111,8 +111,8 @@ export default function RecipesSection({ search }: { search?: string }) {
             recipes.map((r) => (
               <article key={r.id} className={styles.card} id={`recipe-card-${r.id}`} role="listitem">
                 <Link href={`/recipe/${r.id}`} className={styles.cardLink} aria-label={`Lihat resep ${r.title}`} prefetch={false}>
-                  <div className={styles.imgWrap} style={{ 
-                    aspectRatio: (r.title.toLowerCase().includes('bowl') || r.title.toLowerCase().includes('bread')) ? '1/1' : '4/5' 
+                  <div className={styles.imgWrap} style={{
+                    aspectRatio: (r.title.toLowerCase().includes('bowl') || r.title.toLowerCase().includes('bread')) ? '1/1' : '4/5'
                   }}>
                     <Image
                       src={(r.imageUrl?.includes('example.com') ? null : r.imageUrl) || '/recipe-chicken.jpg'}
@@ -135,14 +135,14 @@ export default function RecipesSection({ search }: { search?: string }) {
                       <div className={styles.meta}>
                         <span className={styles.rating}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true">
-                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
                           </svg>
                           {r.rating}
                         </span>
                         <span className={styles.time}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+                            <circle cx="12" cy="12" r="10" /><polyline points="12,6 12,12 16,14" />
                           </svg>
                           {r.prepTime}
                         </span>
@@ -162,8 +162,8 @@ export default function RecipesSection({ search }: { search?: string }) {
             <span>Lihat Semua Resep</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
             </svg>
           </button>
         </div>

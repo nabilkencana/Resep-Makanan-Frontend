@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     description: "Temukan resep masakan Indonesia autentik dengan bahan-bahan segar pilihan.",
     type: "website",
   },
+  icons: {
+    icon: '/logo-dapur.png'
+  },
 };
 
 import { AuthProvider } from "../lib/auth-context";
