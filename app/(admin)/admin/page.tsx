@@ -134,67 +134,67 @@ export default function AdminDashboard() {
         api.getUsers().catch(() => ({ users: [] })),
         api.getTutorials().catch(() => ({ tutorials: [] })),
         api.getAllTransactions().catch(() => ({ transactions: [] })),
-        api.getNewsletters().catch(() => ({ newsletters: [] }))
+        api.getNewsletters().catch(() => ({ subscribers: [] }))
       ]);
 
       const recipes = Array.isArray(recipesRes) ? recipesRes : (recipesRes?.recipes || recipesRes?.data || []);
       const users = usersRes?.users || [];
       const tutorials = tutorialsRes?.tutorials || [];
       const transactions = transactionsRes?.transactions || [];
-      const newsletters = newslettersRes?.newsletters || [];
+      const newsletters = newslettersRes?.subscribers || [];
 
       let csvContent = "";
 
       // 1. SUMMARY
-      csvContent += "--- RINGKASAN DASHBOARD ---\\n";
-      csvContent += "Metric,Value\\n";
-      csvContent += `Total Resep,${stats.totalRecipes}\\n`;
-      csvContent += `Total Pengguna,${stats.totalUsers}\\n`;
-      csvContent += `Total Ulasan,${stats.totalReviews}\\n`;
-      csvContent += `Total Favorit,${stats.totalFavorites}\\n`;
-      csvContent += `Total Transaksi,${transactions.length}\\n`;
-      csvContent += `Total Tutorial,${tutorials.length}\\n`;
-      csvContent += `Total Newsletter,${newsletters.length}\\n\\n`;
+      csvContent += "--- RINGKASAN DASHBOARD ---\n";
+      csvContent += "Metric,Value\n";
+      csvContent += `Total Resep,${stats.totalRecipes}\n`;
+      csvContent += `Total Pengguna,${stats.totalUsers}\n`;
+      csvContent += `Total Ulasan,${stats.totalReviews}\n`;
+      csvContent += `Total Favorit,${stats.totalFavorites}\n`;
+      csvContent += `Total Transaksi,${transactions.length}\n`;
+      csvContent += `Total Tutorial,${tutorials.length}\n`;
+      csvContent += `Total Newsletter,${newsletters.length}\n\n`;
 
       // 2. RECIPES
-      csvContent += "--- DATA RESEP ---\\n";
-      csvContent += "ID,Judul,Kategori,Porsi,Kalori,Status,Rating\\n";
+      csvContent += "--- DATA RESEP ---\n";
+      csvContent += "ID,Judul,Kategori,Porsi,Kalori,Status,Rating,URL Gambar\n";
       recipes.forEach((r: any) => {
-        csvContent += `${r.id},"${(r.title || '').replace(/"/g, '""')}","${r.category || ''}",${r.servings || 0},${r.calories || 0},${r.status || ''},${r.rating || 0}\\n`;
+        csvContent += `${r.id},"${(r.title || '').replace(/"/g, '""')}","${r.category || ''}",${r.servings || 0},${r.calories || 0},${r.status || ''},${r.rating || 0},"${r.imageUrl || ''}"\n`;
       });
-      csvContent += "\\n";
+      csvContent += "\n";
 
       // 3. USERS
-      csvContent += "--- DATA PENGGUNA ---\\n";
-      csvContent += "ID,Username,Email,Peran,Tanggal Bergabung\\n";
+      csvContent += "--- DATA PENGGUNA ---\n";
+      csvContent += "ID,Username,Email,Peran,Tanggal Bergabung\n";
       users.forEach((u: any) => {
-        csvContent += `${u.id},"${(u.username || '').replace(/"/g, '""')}","${u.email || ''}",${u.role},"${new Date(u.createdAt).toISOString().split('T')[0]}"\\n`;
+        csvContent += `${u.id},"${(u.username || '').replace(/"/g, '""')}","${u.email || ''}",${u.role},"${new Date(u.createdAt).toISOString().split('T')[0]}"\n`;
       });
-      csvContent += "\\n";
+      csvContent += "\n";
 
       // 4. TUTORIALS
-      csvContent += "--- DATA TUTORIAL ---\\n";
-      csvContent += "ID,Judul,Harga,Durasi (menit),Status\\n";
+      csvContent += "--- DATA TUTORIAL ---\n";
+      csvContent += "ID,Judul,Harga,Durasi (menit),Status\n";
       tutorials.forEach((t: any) => {
-        csvContent += `${t.id},"${(t.title || '').replace(/"/g, '""')}",${t.price || 0},${t.duration || 0},${t.isPublished ? 'PUBLISHED' : 'DRAFT'}\\n`;
+        csvContent += `${t.id},"${(t.title || '').replace(/"/g, '""')}",${t.price || 0},${t.duration || 0},${t.isPublished ? 'PUBLISHED' : 'DRAFT'}\n`;
       });
-      csvContent += "\\n";
+      csvContent += "\n";
 
       // 5. TRANSACTIONS
-      csvContent += "--- DATA TRANSAKSI ---\\n";
-      csvContent += "ID,User ID,Tutorial ID,Jumlah,Status,Tanggal\\n";
+      csvContent += "--- DATA TRANSAKSI ---\n";
+      csvContent += "ID,User ID,Tutorial ID,Jumlah,Status,Tanggal\n";
       transactions.forEach((tx: any) => {
-        csvContent += `${tx.id},${tx.userId},${tx.tutorialId},${tx.amount},${tx.status},"${new Date(tx.createdAt).toISOString().split('T')[0]}"\\n`;
+        csvContent += `${tx.id},${tx.userId},${tx.tutorialId},${tx.amount},${tx.status},"${new Date(tx.createdAt).toISOString().split('T')[0]}"\n`;
       });
-      csvContent += "\\n";
+      csvContent += "\n";
 
       // 6. NEWSLETTERS
-      csvContent += "--- DATA NEWSLETTER ---\\n";
-      csvContent += "ID,Email,Tanggal Berlangganan\\n";
+      csvContent += "--- DATA NEWSLETTER ---\n";
+      csvContent += "ID,Email,Tanggal Berlangganan\n";
       newsletters.forEach((n: any) => {
-        csvContent += `${n.id},"${n.email || ''}","${new Date(n.createdAt).toISOString().split('T')[0]}"\\n`;
+        csvContent += `${n.id},"${n.email || ''}","${new Date(n.createdAt).toISOString().split('T')[0]}"\n`;
       });
-      csvContent += "\\n";
+      csvContent += "\n";
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);

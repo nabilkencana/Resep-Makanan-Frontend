@@ -366,11 +366,18 @@ export default function ProfilePage() {
       <section className={styles.profileSection}>
         <div className={styles.container}>
           <div className={styles.profileHeader}>
-            <div className={styles.profileImageWrap}>
-              {(user as any).profileImage ? (
-                <img src={(user as any).profileImage} alt={user.username || 'User'} className={styles.headerProfileImage} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-              ) : (
-                <span className={styles.profileImageText}>{user.username?.charAt(0).toUpperCase() || 'U'}</span>
+            <div className={styles.profileImageWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--clr-surface-container-high)', fontSize: '4.5rem', fontWeight: 700, color: 'var(--clr-on-surface-variant)' }}>
+              <span className={styles.profileImageText}>{user.username?.charAt(0).toUpperCase() || 'U'}</span>
+              {(user as any).profileImage && (
+                <img 
+                  src={(user as any).profileImage} 
+                  alt={user.username || 'User'} 
+                  className={styles.headerProfileImage} 
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', zIndex: 1 }} 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
               )}
             </div>
 
