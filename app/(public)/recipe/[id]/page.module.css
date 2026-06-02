@@ -165,6 +165,21 @@
   max-width: 680px;
 }
 
+.authorBadge {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4a5a4a;
+  background: #f0f5f0;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  display: inline-block;
+  margin: 0;
+}
+.authorBadge strong {
+  color: #006d36;
+  font-weight: 700;
+}
+
 /* Meta row */
 .metaRow {
   display: flex;

@@ -99,6 +99,12 @@ export default async function RecipePage({ params }: Props) {
           <FavoriteButton recipeId={id} />
         </div>
 
+        {recipe.author?.username && (
+          <p className={styles.authorBadge}>
+            Resep dari <strong>{recipe.author.username}</strong>
+          </p>
+        )}
+
         <p className={styles.description}>{recipe.description}</p>
 
         {/* Metadata row */}

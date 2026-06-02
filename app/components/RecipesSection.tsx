@@ -127,6 +127,11 @@ export default function RecipesSection({ search }: { search?: string }) {
                       {r.category && <span className={styles.tag}>{r.category}</span>}
                     </div>
                     <div className={styles.cardInfo}>
+                      {r.author?.username && (
+                        <div className={styles.authorWatermark}>
+                          Oleh {r.author.username}
+                        </div>
+                      )}
                       <div className={styles.meta}>
                         <span className={styles.rating}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true">

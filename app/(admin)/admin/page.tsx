@@ -74,6 +74,7 @@ export default function AdminDashboard() {
   const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
   const [topRecipe, setTopRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [errorStats, setErrorStats] = useState(false);
   const hasFetchedRef = useRef(false);
 
@@ -119,34 +120,96 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  const handleDownloadReport = () => {
-    // Basic CSV generation
-    const csvContent = [
-      ["Metric", "Value"],
-      ["Total Recipes", stats.totalRecipes],
-      ["Total Users", stats.totalUsers],
-      ["Total Reviews", stats.totalReviews],
-      ["Total Favorites", stats.totalFavorites],
-      ["Traffic (Week 1-4)", stats.trafficData.join(" | ")],
-      [],
-      ["Recent Recipes"],
-      ["Title", "Category", "Rating", "Cook Time"],
-      ...recentRecipes.map(r => [
-        `"${r.title}"`, 
-        `"${r.category || 'Uncategorized'}"`, 
-        r.rating || 0, 
-        `"${r.cookTime || '-'}"`
-      ])
-    ].map(e => e.join(",")).join("\n");
+  const handleDownloadReport = async () => {
+    setIsDownloading(true);
+    try {
+      const [
+        recipesRes,
+        usersRes,
+        tutorialsRes,
+        transactionsRes,
+        newslettersRes
+      ] = await Promise.all([
+        api.getRecipes(undefined, undefined, 1, 10000).catch(() => ({ recipes: [] })),
+        api.getUsers().catch(() => ({ users: [] })),
+        api.getTutorials().catch(() => ({ tutorials: [] })),
+        api.getAllTransactions().catch(() => ({ transactions: [] })),
+        api.getNewsletters().catch(() => ({ newsletters: [] }))
+      ]);
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `DapurNusantara_Report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const recipes = Array.isArray(recipesRes) ? recipesRes : (recipesRes?.recipes || recipesRes?.data || []);
+      const users = usersRes?.users || [];
+      const tutorials = tutorialsRes?.tutorials || [];
+      const transactions = transactionsRes?.transactions || [];
+      const newsletters = newslettersRes?.newsletters || [];
+
+      let csvContent = "";
+
+      // 1. SUMMARY
+      csvContent += "--- RINGKASAN DASHBOARD ---\\n";
+      csvContent += "Metric,Value\\n";
+      csvContent += `Total Resep,${stats.totalRecipes}\\n`;
+      csvContent += `Total Pengguna,${stats.totalUsers}\\n`;
+      csvContent += `Total Ulasan,${stats.totalReviews}\\n`;
+      csvContent += `Total Favorit,${stats.totalFavorites}\\n`;
+      csvContent += `Total Transaksi,${transactions.length}\\n`;
+      csvContent += `Total Tutorial,${tutorials.length}\\n`;
+      csvContent += `Total Newsletter,${newsletters.length}\\n\\n`;
+
+      // 2. RECIPES
+      csvContent += "--- DATA RESEP ---\\n";
+      csvContent += "ID,Judul,Kategori,Porsi,Kalori,Status,Rating\\n";
+      recipes.forEach((r: any) => {
+        csvContent += `${r.id},"${(r.title || '').replace(/"/g, '""')}","${r.category || ''}",${r.servings || 0},${r.calories || 0},${r.status || ''},${r.rating || 0}\\n`;
+      });
+      csvContent += "\\n";
+
+      // 3. USERS
+      csvContent += "--- DATA PENGGUNA ---\\n";
+      csvContent += "ID,Username,Email,Peran,Tanggal Bergabung\\n";
+      users.forEach((u: any) => {
+        csvContent += `${u.id},"${(u.username || '').replace(/"/g, '""')}","${u.email || ''}",${u.role},"${new Date(u.createdAt).toISOString().split('T')[0]}"\\n`;
+      });
+      csvContent += "\\n";
+
+      // 4. TUTORIALS
+      csvContent += "--- DATA TUTORIAL ---\\n";
+      csvContent += "ID,Judul,Harga,Durasi (menit),Status\\n";
+      tutorials.forEach((t: any) => {
+        csvContent += `${t.id},"${(t.title || '').replace(/"/g, '""')}",${t.price || 0},${t.duration || 0},${t.isPublished ? 'PUBLISHED' : 'DRAFT'}\\n`;
+      });
+      csvContent += "\\n";
+
+      // 5. TRANSACTIONS
+      csvContent += "--- DATA TRANSAKSI ---\\n";
+      csvContent += "ID,User ID,Tutorial ID,Jumlah,Status,Tanggal\\n";
+      transactions.forEach((tx: any) => {
+        csvContent += `${tx.id},${tx.userId},${tx.tutorialId},${tx.amount},${tx.status},"${new Date(tx.createdAt).toISOString().split('T')[0]}"\\n`;
+      });
+      csvContent += "\\n";
+
+      // 6. NEWSLETTERS
+      csvContent += "--- DATA NEWSLETTER ---\\n";
+      csvContent += "ID,Email,Tanggal Berlangganan\\n";
+      newsletters.forEach((n: any) => {
+        csvContent += `${n.id},"${n.email || ''}","${new Date(n.createdAt).toISOString().split('T')[0]}"\\n`;
+      });
+      csvContent += "\\n";
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Laporan_Lengkap_DapurNusantara_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Gagal mengunduh laporan", error);
+      alert("Terjadi kesalahan saat mengunduh laporan.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // ── Animated counting for metric values ──
@@ -235,9 +298,9 @@ export default function AdminDashboard() {
           <p className={styles.pageDesc}>Kinerja real-time dan metrik manajemen resep.</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.secondaryBtn} onClick={handleDownloadReport}>
+          <button className={styles.secondaryBtn} onClick={handleDownloadReport} disabled={isDownloading}>
             <Download size={16} style={{ marginRight: '6px' }} />
-            Unduh Laporan
+            {isDownloading ? 'Menyiapkan...' : 'Unduh Laporan'}
           </button>
           <button className={styles.primaryBtn} onClick={() => window.location.reload()}>
             <RefreshCw size={16} style={{ marginRight: '6px' }} />

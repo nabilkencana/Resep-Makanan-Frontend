@@ -68,6 +68,36 @@ export default function UsersPage() {
     setOpenMenuId(null);
   };
 
+  const handleExportCSV = () => {
+    if (users.length === 0) return;
+    
+    const headers = ['ID', 'Username', 'Email', 'Peran', 'Tanggal Bergabung'];
+    
+    const csvRows = users.map(user => {
+      return [
+        user.id,
+        `"${user.username.replace(/"/g, '""')}"`,
+        `"${user.email}"`,
+        user.role,
+        `"${new Date(user.createdAt).toLocaleDateString('id-ID', {
+          month: 'short', day: '2-digit', year: 'numeric'
+        })}"`
+      ].join(',');
+    });
+    
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `data_pengguna_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Recharts Data generation from REAL DATA
   const chartData = (() => {
     if (users.length === 0) return [];
@@ -129,13 +159,9 @@ export default function UsersPage() {
           <p className={styles.pageSubtitle}>Pantau pertumbuhan dan kelola komunitas kuliner.</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.actionBtnOutline}>
+          <button className={styles.actionBtnOutline} onClick={handleExportCSV}>
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
             Ekspor CSV
-          </button>
-          <button className={styles.actionBtnFilled}>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-            Tambah Admin
           </button>
         </div>
       </div>
