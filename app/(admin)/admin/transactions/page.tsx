@@ -22,6 +22,7 @@ interface Transaction {
       imageUrl?: string;
     };
   };
+  paymentProof: string | null;
 }
 
 function formatPrice(price: number) {
@@ -54,6 +55,7 @@ export default function AdminTransactionsPage() {
   const [verifying, setVerifying] = useState<number | null>(null);
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'SUCCESS' | 'FAILED'>('ALL');
   const [search, setSearch] = useState('');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fetchTransactions = async () => {
     try {
@@ -271,23 +273,35 @@ export default function AdminTransactionsPage() {
 
                     {/* Action */}
                     <td className={txStyles.tdAction}>
-                      {tx.status === 'PENDING' ? (
-                        <button
-                          className={txStyles.verifyBtn}
-                          onClick={() => handleVerify(tx.id)}
-                          disabled={verifying === tx.id}
-                        >
-                          {verifying === tx.id ? (
-                            <><div className={txStyles.spinner} style={{ width: '14px', height: '14px', borderWidth: '2px' }} />Memverifikasi...</>
-                          ) : (
-                            <><span className="material-symbols-outlined" style={{ fontSize: '16px' }}>verified</span>Verifikasi</>
-                          )}
-                        </button>
-                      ) : (
-                        <span className={txStyles.actionDone}>
-                          {tx.status === 'SUCCESS' ? '✓ Selesai' : '✗ Gagal'}
-                        </span>
-                      )}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        {tx.paymentProof && (
+                          <button
+                            className={txStyles.viewProofBtn}
+                            onClick={() => setPreviewImage(tx.paymentProof)}
+                            title="Lihat Bukti Pembayaran"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>image</span>
+                            Bukti
+                          </button>
+                        )}
+                        {tx.status === 'PENDING' ? (
+                          <button
+                            className={txStyles.verifyBtn}
+                            onClick={() => handleVerify(tx.id)}
+                            disabled={verifying === tx.id}
+                          >
+                            {verifying === tx.id ? (
+                              <><div className={txStyles.spinner} style={{ width: '14px', height: '14px', borderWidth: '2px' }} />Memverifikasi...</>
+                            ) : (
+                              <><span className="material-symbols-outlined" style={{ fontSize: '16px' }}>verified</span>Verifikasi</>
+                            )}
+                          </button>
+                        ) : (
+                          <span className={txStyles.actionDone}>
+                            {tx.status === 'SUCCESS' ? '✓ Selesai' : '✗ Gagal'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -296,6 +310,23 @@ export default function AdminTransactionsPage() {
           </table>
         )}
       </div>
+
+      {/* ── Image Preview Modal ── */}
+      {previewImage && (
+        <div className={txStyles.modalOverlay} onClick={() => setPreviewImage(null)}>
+          <div className={txStyles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={txStyles.modalHeader}>
+              <h3>Bukti Pembayaran</h3>
+              <button className={txStyles.closeBtn} onClick={() => setPreviewImage(null)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className={txStyles.modalBody}>
+              <img src={previewImage} alt="Bukti Pembayaran" className={txStyles.previewImgFull} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

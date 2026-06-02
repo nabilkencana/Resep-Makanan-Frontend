@@ -119,7 +119,7 @@ export const api = {
   uploadTutorialThumbnail: (formData: FormData) => fetchApi('/tutorials/upload/thumbnail', { method: 'POST', body: formData }),
 
   // Transactions
-  createTransaction: (tutorialId: number) => fetchApi(`/transactions/${tutorialId}`, { method: 'POST' }),
+  createTransaction: (tutorialId: number, formData?: FormData) => fetchApi(`/transactions/${tutorialId}`, { method: 'POST', body: formData }),
   getMyTransactions: () => fetchApi('/transactions/me'),
   getAllTransactions: () => fetchApi('/transactions'),
   verifyTransaction: (id: number) => fetchApi(`/transactions/${id}/verify`, { method: 'PATCH' }),

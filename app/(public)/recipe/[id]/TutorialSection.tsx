@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlayCircle, Play, Lock, Hourglass, CheckCircle, ShoppingCart, Info, Video } from 'lucide-react';
+import { PlayCircle, Play, Lock, Hourglass, CheckCircle, ShoppingCart, Info, Video, Upload, X } from 'lucide-react';
 import { publicFetch, api } from '@/lib/api';
 import styles from './TutorialSection.module.css';
 
@@ -55,6 +55,8 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   const [buySuccess, setBuySuccess] = useState(false);
   const [buyError, setBuyError] = useState('');
   const [fetchFailed, setFetchFailed] = useState(false);
+  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -156,10 +158,21 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
       router.push('/auth');
       return;
     }
+    
+    if (!isFree && !paymentProofFile) {
+      setBuyError('Harap unggah bukti pembayaran terlebih dahulu.');
+      return;
+    }
+    
     setBuying(true);
     setBuyError('');
     try {
-      await api.createTransaction(tutorial.id);
+      const formData = new FormData();
+      if (paymentProofFile) {
+        formData.append('paymentProof', paymentProofFile);
+      }
+      
+      await api.createTransaction(tutorial.id, formData);
       setBuySuccess(true);
       // Refresh transactions
       const res = await api.getMyTransactions();
@@ -302,6 +315,42 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             {/* ── Logged in, no transaction yet → Buy button ── */}
             {isLoggedIn && !isFree && !hasAnyTx && !buySuccess && (
               <>
+                <div className={styles.uploadSection}>
+                  <p className={styles.uploadLabel}>Bukti Pembayaran</p>
+                  {paymentProofPreview ? (
+                    <div className={styles.previewBox}>
+                      <img src={paymentProofPreview} alt="Bukti Pembayaran" className={styles.previewImg} />
+                      <button 
+                        className={styles.removeImgBtn}
+                        onClick={() => {
+                          setPaymentProofFile(null);
+                          setPaymentProofPreview('');
+                        }}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className={styles.uploadBox}>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setPaymentProofFile(file);
+                            setPaymentProofPreview(URL.createObjectURL(file));
+                            setBuyError('');
+                          }
+                        }} 
+                        style={{ display: 'none' }} 
+                      />
+                      <Upload size={24} color="#6d7b6d" />
+                      <span>Unggah Bukti Transfer</span>
+                    </label>
+                  )}
+                </div>
+
                 {buyError && (
                   <p className={styles.buyError}>{buyError}</p>
                 )}

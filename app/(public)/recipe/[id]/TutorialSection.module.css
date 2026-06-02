@@ -449,3 +449,79 @@
   .thumbWrap { min-height: 200px; }
   .info { padding: 1.25rem; }
 }
+
+/* ── Upload Section ── */
+.uploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.uploadLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--clr-on-surface);
+}
+
+.uploadBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--clr-outline-variant);
+  border-radius: 12px;
+  background: var(--clr-surface-container-low);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.uploadBox:hover {
+  border-color: var(--clr-primary);
+  background: var(--clr-surface-container);
+}
+
+.uploadBox span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--clr-on-surface-variant);
+}
+
+.previewBox {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--clr-outline-variant);
+}
+
+.previewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeImgBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all var(--transition-fast);
+}
+
+.removeImgBtn:hover {
+  background: rgba(220, 38, 38, 0.9);
+}
