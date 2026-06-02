@@ -141,7 +141,11 @@ export default function NavBar() {
           {/* Profile – icon only */}
           {user ? (
             <Link href="/profile" prefetch={false} className={`${styles.profileBtn} ${styles.hasUser}`} id="nav-profile" aria-label="Profil">
-              <IconPerson />
+              {(user as any).profileImage ? (
+                <img src={(user as any).profileImage} alt={user.username || 'User'} className={styles.navProfileImage} />
+              ) : (
+                <IconPerson />
+              )}
               <span className={styles.profileName}>{user.username || 'User'}</span>
             </Link>
           ) : (

@@ -24,6 +24,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const itemsPerPage = 4;
 
   useEffect(() => {
@@ -50,6 +51,21 @@ export default function UsersPage() {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
+  };
+
+  const handleRoleChange = async (userId: number, currentRole: string) => {
+    const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+    if (!confirm(`Ubah peran pengguna ini menjadi ${newRole}?`)) return;
+    
+    try {
+      const formData = new FormData();
+      formData.append('role', newRole);
+      await api.updateUser(userId.toString(), formData);
+      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    } catch (err) {
+      alert('Gagal mengubah peran pengguna');
+    }
+    setOpenMenuId(null);
   };
 
   // Recharts Data generation from REAL DATA
@@ -237,10 +253,27 @@ export default function UsersPage() {
                         month: 'short', day: '2-digit', year: 'numeric'
                       })}
                     </td>
-                    <td>
-                      <button className={styles.actionMenuBtn}>
+                    <td style={{ position: 'relative' }}>
+                      <button 
+                        className={styles.actionMenuBtn}
+                        onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                      >
                         <span className="material-symbols-outlined">more_vert</span>
                       </button>
+
+                      {openMenuId === user.id && (
+                        <div className={styles.dropdownMenu}>
+                          <button 
+                            className={styles.dropdownItem}
+                            onClick={() => handleRoleChange(user.id, user.role)}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                              {user.role === 'ADMIN' ? 'person' : 'admin_panel_settings'}
+                            </span>
+                            Jadikan {user.role === 'ADMIN' ? 'User' : 'Admin'}
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))

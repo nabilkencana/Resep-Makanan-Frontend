@@ -86,6 +86,7 @@ export const api = {
 
   // Users
   getUsers: () => fetchApi('/users'),
+  updateUser: (id: string, formData: FormData) => fetchApi(`/users/${id}`, { method: 'PATCH', body: formData }),
 
   // Favorites
   getFavorites: () => fetchApi('/users/me/favorites'),

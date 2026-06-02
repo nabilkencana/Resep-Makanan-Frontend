@@ -155,8 +155,71 @@ export default function ProfilePage() {
   // ── Journals (used for stat count) ──
   const [journalCount, setJournalCount] = useState(0);
 
-  const { user, loading, logout } = useAuth();
+  const { user, loading, login, logout } = useAuth();
   const router = useRouter();
+
+  // ── Settings Form ──
+  const [settingsForm, setSettingsForm] = useState({
+    username: '',
+    email: ''
+  });
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setSettingsForm({
+        username: user.username || '',
+        email: user.email || ''
+      });
+      if ((user as any).profileImage) {
+        setProfileImagePreview((user as any).profileImage);
+      }
+    }
+  }, [user]);
+
+  const handleSettingsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setSettingsLoading(true);
+    setSettingsError(null);
+    setSettingsSuccess(null);
+    try {
+      const { api } = await import('../../../lib/api');
+      const formData = new FormData();
+      formData.append('username', settingsForm.username);
+      formData.append('email', settingsForm.email);
+      if (profileImageFile) {
+        formData.append('image', profileImageFile);
+      }
+      const updatedUser = await api.updateUser(user.id.toString(), formData);
+      setSettingsSuccess('Profil berhasil diperbarui!');
+      
+      const token = localStorage.getItem('token');
+      if (token && updatedUser) {
+        login(token, updatedUser);
+      }
+      
+      setTimeout(() => setSettingsSuccess(null), 3000);
+    } catch (err: any) {
+      setSettingsError(err.message || 'Gagal memperbarui profil');
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfileImagePreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Redirect if not logged in
   useEffect(() => {
@@ -303,8 +366,12 @@ export default function ProfilePage() {
       <section className={styles.profileSection}>
         <div className={styles.container}>
           <div className={styles.profileHeader}>
-            <div className={styles.profileImageWrap} style={{ background: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#666' }}>
-              {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+            <div className={styles.profileImageWrap}>
+              {(user as any).profileImage ? (
+                <img src={(user as any).profileImage} alt={user.username || 'User'} className={styles.headerProfileImage} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              ) : (
+                <span className={styles.profileImageText}>{user.username?.charAt(0).toUpperCase() || 'U'}</span>
+              )}
             </div>
 
             <div className={styles.profileInfo}>
@@ -498,119 +565,84 @@ export default function ProfilePage() {
           {/* ── Tab: Pengaturan ── */}
           {activeTab === 'SETTINGS' && (
             <div className={styles.settingsGrid}>
-              {/* Left Column */}
-              <div className={styles.settingsColLeft}>
+              <div className={styles.settingsColLeft} style={{ width: '100%', maxWidth: '600px', margin: '0 auto', gridColumn: '1 / -1' }}>
                 <section className={styles.settingsCard}>
                   <h2 className={styles.settingsCardHeader}>Informasi Pribadi</h2>
-                  <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Nama Lengkap</label>
-                      <input type="text" className={styles.formInput} defaultValue="Rina Maharani" />
+                  {settingsError && <div style={{ color: 'var(--clr-error)', marginBottom: '1rem', padding: '1rem', background: '#fee2e2', borderRadius: '8px' }}>{settingsError}</div>}
+                  {settingsSuccess && <div style={{ color: 'var(--clr-primary)', marginBottom: '1rem', padding: '1rem', background: '#dcfce7', borderRadius: '8px' }}>{settingsSuccess}</div>}
+                  
+                  <form onSubmit={handleSettingsSubmit} className={styles.formGrid}>
+                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                      <label className={styles.formLabel}>Foto Profil</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid var(--clr-outline-variant)' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', background: '#eee', flexShrink: 0, border: '2px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                          {profileImagePreview ? (
+                            <img src={profileImagePreview} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '12px', fontWeight: 600 }}>Pilih Foto</div>
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label 
+                            htmlFor="profile-upload" 
+                            style={{ 
+                              display: 'inline-block', 
+                              padding: '0.5rem 1rem', 
+                              background: '#fff', 
+                              border: '1.5px solid var(--clr-outline-variant)', 
+                              borderRadius: '8px', 
+                              cursor: 'pointer',
+                              fontWeight: 500,
+                              fontSize: '0.875rem',
+                              color: 'var(--clr-on-surface-variant)',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--clr-primary)'; e.currentTarget.style.color = 'var(--clr-primary)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--clr-outline-variant)'; e.currentTarget.style.color = 'var(--clr-on-surface-variant)'; }}
+                          >
+                            Unggah Foto Baru
+                          </label>
+                          <input 
+                            id="profile-upload" 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleImageChange} 
+                            style={{ display: 'none' }} 
+                          />
+                          <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666' }}>Format yang didukung: JPG, PNG. Maksimal 2MB.</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Nama Tampilan</label>
-                      <input type="text" className={styles.formInput} defaultValue={user.username || ''} />
+                    
+                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                      <label className={styles.formLabel}>Nama Tampilan / Username</label>
+                      <input 
+                        type="text" 
+                        className={styles.formInput} 
+                        value={settingsForm.username} 
+                        onChange={(e) => setSettingsForm({ ...settingsForm, username: e.target.value })} 
+                        required 
+                      />
                     </div>
-                    <div className={styles.formGroup}>
+                    
+                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                       <label className={styles.formLabel}>Alamat Email</label>
-                      <input type="email" className={styles.formInput} defaultValue={user.email || ''} />
+                      <input 
+                        type="email" 
+                        className={styles.formInput} 
+                        value={settingsForm.email} 
+                        onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })} 
+                        required 
+                      />
                     </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Nomor Telepon</label>
-                      <input type="tel" className={styles.formInput} placeholder="+62 812 000 000" />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Tanggal Lahir</label>
-                      <input type="date" className={styles.formInput} defaultValue="1995-05-15" />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Lokasi</label>
-                      <input type="text" className={styles.formInput} defaultValue="Jakarta, ID" />
-                    </div>
-                    <div className={`${styles.formGroup} ${styles.formGroupFull}`}>
-                      <label className={styles.formLabel}>Bio Profil</label>
-                      <textarea className={`${styles.formInput} ${styles.formTextarea}`} defaultValue="Koki rumahan & penggemar kuliner minimalis. Menjelajahi perpaduan bahan musiman dengan keanggunan cita rasa nusantara." />
-                    </div>
-                  </div>
-                </section>
 
-                <section className={styles.settingsCard}>
-                  <h2 className={styles.settingsCardHeader}>
-                    Preferensi Diet
-                    <span className={styles.settingsCardHeaderIcon}><IconRestaurant /></span>
-                  </h2>
-                  <p className={styles.chipSubtitle}>Pilih untuk menyesuaikan rekomendasi resep Anda.</p>
-                  <div className={styles.chipGrid}>
-                    {['Vegan', 'Bebas Gluten', 'Halal', 'Kosher', 'Bebas Kacang', 'Keto', 'Paleo', 'Vegetarian'].map((diet) => (
-                      <label key={diet} className={styles.chipWrap}>
-                        <input type="checkbox" className={styles.chipInput} defaultChecked={diet === 'Bebas Gluten' || diet === 'Vegetarian'} />
-                        <span className={styles.chipLabel}>{diet}</span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              {/* Right Column */}
-              <div className={styles.settingsColRight}>
-                <section className={styles.settingsCard}>
-                  <h2 className={styles.settingsCardHeader}>Akun &amp; Keamanan</h2>
-                  <h3 className={styles.sectionTitle}>Akun Terhubung</h3>
-                  <button className={styles.socialBtn}>
-                    <IconGoogle />
-                    Google Terhubung
-                  </button>
-                  <h3 className={`${styles.sectionTitle} mt-4`}>Ubah Alamat Email</h3>
-                  <div className={styles.emailChangeGroup}>
-                    <input type="email" className={styles.formInput} placeholder="Email Baru" style={{ flexGrow: 1 }} />
-                    <button className={styles.verifyBtn}>Verifikasi</button>
-                  </div>
-                  <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <IconHistory /> Aktivitas Terkini
-                  </h3>
-                  <div className={styles.activityList}>
-                    <div className={styles.activityListItem}>
-                      <div>
-                        <p className={styles.activityDevice}>MacBook Pro (Chrome)</p>
-                        <p className={styles.activityLocation}>Jakarta, ID</p>
-                      </div>
-                      <span className={`${styles.activityStatus} ${styles.activityStatusActive}`}>Aktif Sekarang</span>
+                    <div className={`${styles.saveBtnWrap} ${styles.formGroupFull}`} style={{ marginTop: '2rem' }}>
+                      <button type="submit" className={styles.saveBtn} disabled={settingsLoading}>
+                        {settingsLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                      </button>
                     </div>
-                    <div className={styles.activityListItem}>
-                      <div>
-                        <p className={styles.activityDevice}>iPhone 13 (Safari)</p>
-                        <p className={styles.activityLocation}>Jakarta, ID</p>
-                      </div>
-                      <span className={styles.activityStatus}>2 hari yang lalu</span>
-                    </div>
-                  </div>
+                  </form>
                 </section>
-
-                <section className={styles.settingsCard}>
-                  <h2 className={styles.settingsCardHeader}>Notifikasi</h2>
-                  {[
-                    { id: 'notif1', title: 'Ringkasan Mingguan', desc: 'Resep teratas minggu ini.', checked: true },
-                    { id: 'notif2', title: 'Peringatan Pengikut Baru', desc: 'Saat seseorang mengikuti profil Anda.', checked: false },
-                    { id: 'notif3', title: 'Komentar Resep', desc: 'Pembaruan pada resep yang Anda bagikan.', checked: true },
-                    { id: 'notif4', title: 'Ringkasan Aktivitas', desc: 'Ringkasan aktivitas aplikasi Anda.', checked: false },
-                  ].map((notif) => (
-                    <div key={notif.id} className={styles.toggleRow}>
-                      <div className={styles.toggleInfo}>
-                        <h3>{notif.title}</h3>
-                        <p>{notif.desc}</p>
-                      </div>
-                      <div className={styles.toggleWrap}>
-                        <input type="checkbox" id={notif.id} className={styles.toggleInput} defaultChecked={notif.checked} />
-                        <label htmlFor={notif.id} className={styles.toggleLabel}></label>
-                      </div>
-                    </div>
-                  ))}
-                </section>
-              </div>
-
-              {/* Save Button */}
-              <div className={`${styles.saveBtnWrap} ${styles.formGroupFull}`}>
-                <button className={styles.saveBtn}>Simpan Perubahan</button>
               </div>
             </div>
           )}
