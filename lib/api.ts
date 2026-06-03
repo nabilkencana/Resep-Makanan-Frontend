@@ -122,7 +122,7 @@ export const api = {
   createTransaction: (tutorialId: number, formData?: FormData) => fetchApi(`/transactions/${tutorialId}`, { method: 'POST', body: formData }),
   getMyTransactions: () => fetchApi('/transactions/me'),
   getAllTransactions: () => fetchApi('/transactions'),
-  verifyTransaction: (id: number) => fetchApi(`/transactions/${id}/verify`, { method: 'PATCH' }),
+  verifyTransaction: (id: number, status: 'SUCCESS' | 'FAILED' = 'SUCCESS') => fetchApi(`/transactions/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 
   // Newsletter
   getNewsletters: () => fetchApi('/newsletter'),

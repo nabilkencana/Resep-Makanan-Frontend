@@ -72,14 +72,14 @@ export default function AdminTransactionsPage() {
     fetchTransactions();
   }, []);
 
-  const handleVerify = async (txId: number) => {
+  const handleVerify = async (txId: number, status: 'SUCCESS' | 'FAILED') => {
     setVerifying(txId);
     try {
-      await api.verifyTransaction(txId);
+      await api.verifyTransaction(txId, status);
       // Refresh list
       await fetchTransactions();
     } catch (err: any) {
-      alert('Gagal verifikasi: ' + (err.message || 'Error tidak diketahui'));
+      alert('Gagal memproses transaksi: ' + (err.message || 'Error tidak diketahui'));
     } finally {
       setVerifying(null);
     }
@@ -285,17 +285,30 @@ export default function AdminTransactionsPage() {
                           </button>
                         )}
                         {tx.status === 'PENDING' ? (
-                          <button
-                            className={txStyles.verifyBtn}
-                            onClick={() => handleVerify(tx.id)}
-                            disabled={verifying === tx.id}
-                          >
-                            {verifying === tx.id ? (
-                              <><div className={txStyles.spinner} style={{ width: '14px', height: '14px', borderWidth: '2px' }} />Memverifikasi...</>
-                            ) : (
-                              <><span className="material-symbols-outlined" style={{ fontSize: '16px' }}>verified</span>Verifikasi</>
-                            )}
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            <button
+                              className={txStyles.verifyBtn}
+                              onClick={() => handleVerify(tx.id, 'SUCCESS')}
+                              disabled={verifying === tx.id}
+                            >
+                              {verifying === tx.id ? (
+                                <div className={txStyles.spinner} style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
+                              ) : (
+                                <><span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check_circle</span>Setujui</>
+                              )}
+                            </button>
+                            <button
+                              className={txStyles.rejectBtn}
+                              onClick={() => handleVerify(tx.id, 'FAILED')}
+                              disabled={verifying === tx.id}
+                            >
+                              {verifying === tx.id ? (
+                                <div className={txStyles.spinner} style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
+                              ) : (
+                                <><span className="material-symbols-outlined" style={{ fontSize: '16px' }}>cancel</span>Tolak</>
+                              )}
+                            </button>
+                          </div>
                         ) : (
                           <span className={txStyles.actionDone}>
                             {tx.status === 'SUCCESS' ? '✓ Selesai' : '✗ Gagal'}
