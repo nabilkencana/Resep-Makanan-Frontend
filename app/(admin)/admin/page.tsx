@@ -358,7 +358,7 @@ export default function AdminDashboard() {
       <div className={styles.dashboardGrid}>
 
         {/* Traffic Area Chart (Replaced with MultiLineChart) */}
-        <div className={styles.chartArea} style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none' }}>
+        <div className={styles.chartArea} style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none', minWidth: 0 }}>
           <MultiLineChart data={formatMultiLineData()} />
         </div>
 

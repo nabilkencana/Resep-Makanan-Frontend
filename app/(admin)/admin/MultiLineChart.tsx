@@ -34,7 +34,7 @@ export default function MultiLineChart({ data }: MultiLineChartProps) {
       <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#111827', marginBottom: '1.5rem' }}>
         Tren Aktivitas Mingguan
       </h3>
-      <div style={{ width: '100%', height: '300px' }}>
+      <div style={{ width: '100%', height: '300px', minWidth: 0 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
