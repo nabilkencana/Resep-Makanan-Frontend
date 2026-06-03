@@ -54,6 +54,11 @@ export default function AuthPage() {
           router.push('/');
         }
       } else {
+        if (formData.password.length < 6) {
+          setError('Password minimal harus 6 karakter.');
+          setLoading(false);
+          return;
+        }
         await api.register({
           username: formData.username,
           email: formData.email,
