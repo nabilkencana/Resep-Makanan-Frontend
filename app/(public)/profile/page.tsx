@@ -36,6 +36,22 @@ const IconTime = () => (
   </svg>
 );
 
+const IconSpinner = () => (
+  <svg className={styles.spinner} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle className={styles.spinnerTrack} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+    <path className={styles.spinnerHead} d="M12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04337 16.4523" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+  </svg>
+);
+
+const IconLogout = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+    <polyline points="16 17 21 12 16 7"></polyline>
+    <line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+);
+
 // ─── Inline Profile Skeleton ──────────────────────────────────
 // Shown when AuthProvider is still resolving (rare on client-nav, common on hard reload)
 function ProfileSkeleton() {
@@ -169,7 +185,8 @@ export default function ProfilePage() {
   // ── Settings Form ──
   const [settingsForm, setSettingsForm] = useState({
     username: '',
-    email: ''
+    email: '',
+    bio: ''
   });
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
@@ -181,10 +198,11 @@ export default function ProfilePage() {
     if (user) {
       setSettingsForm({
         username: user.username || '',
-        email: user.email || ''
+        email: user.email || '',
+        bio: user.bio || ''
       });
-      if ((user as any).profileImage) {
-        setProfileImagePreview((user as any).profileImage);
+      if (user.profileImage) {
+        setProfileImagePreview(user.profileImage);
       }
     }
   }, [user]);
@@ -200,6 +218,7 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append('username', settingsForm.username);
       formData.append('email', settingsForm.email);
+      formData.append('bio', settingsForm.bio);
       if (profileImageFile) {
         formData.append('image', profileImageFile);
       }
@@ -428,9 +447,9 @@ export default function ProfilePage() {
           <div className={styles.profileHeader}>
             <div className={styles.profileImageWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--clr-surface-container-high)', fontSize: '4.5rem', fontWeight: 700, color: 'var(--clr-on-surface-variant)' }}>
               <span className={styles.profileImageText}>{user.username?.charAt(0).toUpperCase() || 'U'}</span>
-              {(user as any).profileImage && (
+              {user.profileImage && (
                 <img 
-                  src={(user as any).profileImage} 
+                  src={user.profileImage} 
                   alt={user.username || 'User'} 
                   className={styles.headerProfileImage} 
                   style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', zIndex: 1 }} 
@@ -444,13 +463,14 @@ export default function ProfilePage() {
             <div className={styles.profileInfo}>
               <div className={styles.profileTitleRow}>
                 <h1 className={styles.profileName}>{user.username || 'User'}</h1>
-                <button className={styles.editBtn} onClick={handleLogout} style={{ background: '#fee2e2', color: '#b91c1c', border: 'none' }}>
+                <button className={styles.logoutBtn} onClick={handleLogout}>
+                  <IconLogout />
                   Keluar
                 </button>
               </div>
 
               <p className={styles.profileBio}>
-                Koki rumahan &amp; penggemar kuliner minimalis. Menjelajahi perpaduan bahan musiman dengan keanggunan cita rasa nusantara.
+                {user.bio || 'Koki rumahan & penggemar kuliner minimalis. Menjelajahi perpaduan bahan musiman dengan keanggunan cita rasa nusantara.'}
               </p>
 
               <div className={styles.profileStats}>
@@ -638,80 +658,119 @@ export default function ProfilePage() {
           {/* ── Tab: Pengaturan ── */}
           {activeTab === 'SETTINGS' && (
             <div className={styles.settingsGrid}>
-              <div className={styles.settingsColLeft} style={{ width: '100%', maxWidth: '600px', margin: '0 auto', gridColumn: '1 / -1' }}>
+              <div className={styles.settingsColLeft} style={{ width: '100%', maxWidth: '700px', margin: '0 auto', gridColumn: '1 / -1' }}>
                 <section className={styles.settingsCard}>
                   <h2 className={styles.settingsCardHeader}>Informasi Pribadi</h2>
                   {settingsError && <div style={{ color: 'var(--clr-error)', marginBottom: '1rem', padding: '1rem', background: '#fee2e2', borderRadius: '8px' }}>{settingsError}</div>}
                   {settingsSuccess && <div style={{ color: 'var(--clr-primary)', marginBottom: '1rem', padding: '1rem', background: '#dcfce7', borderRadius: '8px' }}>{settingsSuccess}</div>}
                   
-                  <form onSubmit={handleSettingsSubmit} className={styles.formGrid}>
-                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-                      <label className={styles.formLabel}>Foto Profil</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid var(--clr-outline-variant)' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', background: '#eee', flexShrink: 0, border: '2px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-                          {profileImagePreview ? (
-                            <img src={profileImagePreview} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '12px', fontWeight: 600 }}>Pilih Foto</div>
-                          )}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <label 
-                            htmlFor="profile-upload" 
-                            style={{ 
-                              display: 'inline-block', 
-                              padding: '0.5rem 1rem', 
-                              background: '#fff', 
-                              border: '1.5px solid var(--clr-outline-variant)', 
-                              borderRadius: '8px', 
-                              cursor: 'pointer',
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              color: 'var(--clr-on-surface-variant)',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--clr-primary)'; e.currentTarget.style.color = 'var(--clr-primary)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--clr-outline-variant)'; e.currentTarget.style.color = 'var(--clr-on-surface-variant)'; }}
-                          >
-                            Unggah Foto Baru
-                          </label>
-                          <input 
-                            id="profile-upload" 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={handleImageChange} 
-                            style={{ display: 'none' }} 
-                          />
-                          <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666' }}>Format yang didukung: JPG, PNG. Maksimal 2MB.</p>
+                  <form onSubmit={handleSettingsSubmit} className={styles.settingsFormHorizontal}>
+                    
+                    {/* Row: Foto Profil */}
+                    <div className={`${styles.formRowHorizontal} ${styles.alignStart}`}>
+                      <label className={styles.formLabelHorizontal}>Foto Profil</label>
+                      <div className={styles.formInputWrapper}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1rem', background: 'var(--clr-surface-container-low)', borderRadius: '12px', border: '1px solid var(--clr-surface-container-high)' }}>
+                          <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', background: '#eee', flexShrink: 0, border: '2px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', position: 'relative' }}>
+                            {profileImagePreview ? (
+                              <img src={profileImagePreview} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '12px', fontWeight: 600 }}>Pilih Foto</div>
+                            )}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label 
+                              htmlFor="profile-upload" 
+                              style={{ 
+                                display: 'inline-block', 
+                                padding: '0.5rem 1rem', 
+                                background: '#fff', 
+                                border: '1.5px solid var(--clr-outline-variant)', 
+                                borderRadius: '8px', 
+                                cursor: 'pointer',
+                                fontWeight: 600,
+                                fontSize: '0.875rem',
+                                color: 'var(--clr-on-surface-variant)',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--clr-primary)'; e.currentTarget.style.color = 'var(--clr-primary)'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--clr-outline-variant)'; e.currentTarget.style.color = 'var(--clr-on-surface-variant)'; }}
+                            >
+                              Unggah Foto Baru
+                            </label>
+                            <input 
+                              id="profile-upload" 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleImageChange} 
+                              style={{ display: 'none' }} 
+                            />
+                            <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666' }}>Format yang didukung: JPG, PNG. Maksimal 2MB.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
                     
-                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-                      <label className={styles.formLabel}>Nama Tampilan / Username</label>
-                      <input 
-                        type="text" 
-                        className={styles.formInput} 
-                        value={settingsForm.username} 
-                        onChange={(e) => setSettingsForm({ ...settingsForm, username: e.target.value })} 
-                        required 
-                      />
+                    {/* Row: Username */}
+                    <div className={styles.formRowHorizontal}>
+                      <label className={styles.formLabelHorizontal}>Username</label>
+                      <div className={styles.formInputWrapper}>
+                        <input 
+                          type="text" 
+                          className={styles.formInput} 
+                          value={settingsForm.username} 
+                          onChange={(e) => setSettingsForm({ ...settingsForm, username: e.target.value })} 
+                          required 
+                        />
+                      </div>
                     </div>
                     
-                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-                      <label className={styles.formLabel}>Alamat Email</label>
-                      <input 
-                        type="email" 
-                        className={styles.formInput} 
-                        value={settingsForm.email} 
-                        onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })} 
-                        required 
-                      />
+                    {/* Row: Email */}
+                    <div className={styles.formRowHorizontal}>
+                      <label className={styles.formLabelHorizontal}>Alamat Email</label>
+                      <div className={styles.formInputWrapper}>
+                        <input 
+                          type="email" 
+                          className={styles.formInput} 
+                          value={settingsForm.email} 
+                          disabled 
+                          readOnly 
+                        />
+                        <p style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--clr-outline)' }}>
+                          Alamat email tidak dapat diubah demi keamanan akun.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Row: Bio */}
+                    <div className={`${styles.formRowHorizontal} ${styles.alignStart}`}>
+                      <label className={styles.formLabelHorizontal}>Bio Singkat</label>
+                      <div className={styles.formInputWrapper}>
+                        <textarea 
+                          className={`${styles.formInput} ${styles.formTextarea}`} 
+                          placeholder="Ceritakan sedikit tentang petualangan kuliner Anda..." 
+                          value={settingsForm.bio} 
+                          onChange={(e) => setSettingsForm({ ...settingsForm, bio: e.target.value })} 
+                          maxLength={200}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--clr-outline)' }}>
+                            {settingsForm.bio ? settingsForm.bio.length : 0}/200
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className={`${styles.saveBtnWrap} ${styles.formGroupFull}`} style={{ marginTop: '2rem' }}>
+                    {/* Actions Row */}
+                    <div className={styles.formActionsRow}>
+                      <div className={styles.formActionsSpacer} />
                       <button type="submit" className={styles.saveBtn} disabled={settingsLoading}>
-                        {settingsLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                        {settingsLoading ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <IconSpinner />
+                            Menyimpan...
+                          </span>
+                        ) : 'Simpan Perubahan'}
                       </button>
                     </div>
                   </form>
