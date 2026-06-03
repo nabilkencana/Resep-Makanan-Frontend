@@ -526,3 +526,274 @@
 .removeImgBtn:hover {
   background: rgba(220, 38, 38, 0.9);
 }
+
+/* ── Bank Account Info Card ── */
+.bankAccountCard {
+  background: var(--clr-surface-container-low);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bankHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bankBadge {
+  background: #005aab;
+  color: white;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.bankName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+
+.bankDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.bankRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.825rem;
+}
+
+.bankRowLabel {
+  color: var(--clr-on-surface-variant);
+  font-weight: 500;
+}
+
+.bankRowVal {
+  color: var(--clr-on-surface);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--clr-surface-container);
+  border: 1px solid var(--clr-outline-variant);
+  color: var(--clr-on-surface-variant);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.copyBtn:hover {
+  background: var(--clr-surface-container-high);
+  color: var(--clr-on-surface);
+  border-color: var(--clr-outline);
+}
+
+/* ── Payment Method Tabs ── */
+.methodTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  background: var(--clr-surface-container-low);
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--clr-outline-variant);
+}
+
+.methodTab {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--clr-on-surface-variant);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.methodTab:hover {
+  color: var(--clr-on-surface);
+  background: rgba(0,0,0,0.03);
+}
+
+.methodTabActive {
+  background: var(--clr-surface-bright);
+  color: var(--clr-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── QRIS Card ── */
+.qrisCard {
+  background: var(--clr-surface-container-low);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.qrisHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.qrisBadge {
+  background: #dc2626;
+  color: white;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.qrisName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+
+.qrisQrWrapper {
+  background: white;
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--clr-outline-variant);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 270px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.qrisQrWrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.qrisImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.qrisNote {
+  font-size: 0.72rem;
+  color: var(--clr-on-surface-variant);
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── QRIS Modal Styles ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modalContent {
+  background: var(--clr-surface-bright);
+  border: 1px solid var(--clr-outline-variant);
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--clr-outline-variant);
+}
+
+.modalTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--clr-on-surface);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--clr-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: var(--clr-surface-container);
+  color: var(--clr-error);
+}
+
+.modalBody {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.modalQrImage {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+}

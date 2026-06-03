@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlayCircle, Play, Lock, Hourglass, CheckCircle, ShoppingCart, Info, Video, Upload, X } from 'lucide-react';
+import { PlayCircle, Play, Lock, Hourglass, CheckCircle, ShoppingCart, Info, Video, Upload, X, Copy, Check } from 'lucide-react';
 import { publicFetch, api } from '@/lib/api';
 import styles from './TutorialSection.module.css';
 
@@ -57,6 +57,15 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
   const [fetchFailed, setFetchFailed] = useState(false);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
+  const [copied, setCopied] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'BANK' | 'QRIS'>('BANK');
+  const [showQrModal, setShowQrModal] = useState(false);
+
+  const handleCopyAccount = () => {
+    navigator.clipboard.writeText('8905273391');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -315,6 +324,73 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
             {/* ── Logged in, no transaction yet → Buy button ── */}
             {isLoggedIn && !isFree && !hasAnyTx && !buySuccess && (
               <>
+                <div className={styles.methodTabs}>
+                  <button 
+                    type="button" 
+                    className={`${styles.methodTab} ${paymentMethod === 'BANK' ? styles.methodTabActive : ''}`}
+                    onClick={() => setPaymentMethod('BANK')}
+                  >
+                    Transfer BCA
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`${styles.methodTab} ${paymentMethod === 'QRIS' ? styles.methodTabActive : ''}`}
+                    onClick={() => setPaymentMethod('QRIS')}
+                  >
+                    QRIS Code
+                  </button>
+                </div>
+
+                {paymentMethod === 'BANK' ? (
+                  <div className={styles.bankAccountCard}>
+                    <div className={styles.bankHeader}>
+                      <span className={styles.bankBadge}>BCA</span>
+                      <span className={styles.bankName}>Bank Central Asia</span>
+                    </div>
+                    <div className={styles.bankDetails}>
+                      <div className={styles.bankRow}>
+                        <span className={styles.bankRowLabel}>Nomor Rekening:</span>
+                        <span className={styles.bankRowVal}>
+                          8905 2733 91
+                          <button
+                            type="button"
+                            className={styles.copyBtn}
+                            onClick={handleCopyAccount}
+                            title="Salin Nomor Rekening"
+                          >
+                            {copied ? (
+                              <>
+                                <Check size={12} color="#16a34a" />
+                                <span style={{ color: '#16a34a', fontSize: '11px', fontWeight: 600 }}>Tersalin</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={12} />
+                                <span style={{ fontSize: '11px', fontWeight: 600 }}>Salin</span>
+                              </>
+                            )}
+                          </button>
+                        </span>
+                      </div>
+                      <div className={styles.bankRow}>
+                        <span className={styles.bankRowLabel}>Nama Penerima:</span>
+                        <span className={styles.bankRowVal}>Dapur Nusantara</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.qrisCard}>
+                    <div className={styles.qrisHeader}>
+                      <span className={styles.qrisBadge}>QRIS</span>
+                      <span className={styles.qrisName}>Pindai atau Klik untuk Memperbesar</span>
+                    </div>
+                    <div className={styles.qrisQrWrapper} onClick={() => setShowQrModal(true)}>
+                      <img src="/csan-qr-a.jpg" alt="QRIS Code" className={styles.qrisImage} />
+                    </div>
+                    <p className={styles.qrisNote}>Mendukung GoPay, OVO, Dana, LinkAja, & Mobile Banking</p>
+                  </div>
+                )}
+
                 <div className={styles.uploadSection}>
                   <p className={styles.uploadLabel}>Bukti Pembayaran</p>
                   {paymentProofPreview ? (
@@ -380,6 +456,22 @@ export default function TutorialSection({ recipeId }: { recipeId: number }) {
           </div>
         </div>
       </div>
+
+      {showQrModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowQrModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Scan QRIS Pembayaran</h3>
+              <button className={styles.closeBtn} onClick={() => setShowQrModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <img src="/csan-qr-a.jpg" alt="QRIS Code Full" className={styles.modalQrImage} />
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
